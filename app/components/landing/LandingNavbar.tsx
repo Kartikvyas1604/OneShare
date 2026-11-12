@@ -17,10 +17,11 @@ export function LandingNavbar() {
         </Link>
         <nav className="hidden items-center gap-6 md:flex" aria-label="Landing">
           {[
-            { href: "#limits", label: "Loss limit" },
+            { href: "#what", label: "What it does" },
             { href: "#how", label: "How it works" },
-            { href: "#features", label: "Features" },
-            { href: "#demo", label: "Demo" },
+            { href: "#why", label: "Why Floorline" },
+            { href: "#limits", label: "Calculator" },
+            { href: "#faq", label: "FAQ" },
           ].map((item) => (
             <a
               key={item.href}

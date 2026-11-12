@@ -7,12 +7,6 @@ import { Reveal } from "@/app/components/motion/Reveal";
 
 const EASE_OUT: [number, number, number, number] = [0, 0, 0.2, 1];
 
-interface Node {
-  label: string;
-  value: string;
-  sub?: string;
-}
-
 const STEPS = [
   {
     num: "01",
