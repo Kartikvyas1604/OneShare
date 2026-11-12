@@ -1,3 +1,11 @@
+/**
+ * Fixed epoch for all mock timestamps (2026-11-12T06:00:00Z).
+ * Using a constant keeps server and client renders byte-identical,
+ * which prevents hydration mismatches. Real adapters will replace
+ * this with live data fetched inside effects/requests.
+ */
+export const MOCK_EPOCH = Date.UTC(2026, 10, 12, 6, 0, 0);
+
 export type PositionState =
   | "created"
   | "funding"
@@ -85,7 +93,7 @@ export const MOCK_POSITIONS: Position[] = [
     nvdax_amount: 744_783,
     entry_px: 13_426_500,
     policy: DEFAULT_POLICY,
-    last_dca_ns: Date.now() * 1_000_000,
+    last_dca_ns: MOCK_EPOCH * 1_000_000,
     in_flight: null,
   },
   {
@@ -99,14 +107,14 @@ export const MOCK_POSITIONS: Position[] = [
     nvdax_amount: 1_860_000,
     entry_px: 13_405_000,
     policy: { ...DEFAULT_POLICY, stop_loss_bps: 700 },
-    last_dca_ns: Date.now() * 1_000_000,
+    last_dca_ns: MOCK_EPOCH * 1_000_000,
     in_flight: null,
   },
 ];
 
 export const AUDIT_LOG: AuditEntry[] = [
   {
-    ts: Date.now() - 1000 * 60 * 60 * 2,
+    ts: MOCK_EPOCH - 1000 * 60 * 60 * 2,
     position_id: 1,
     action: "Bought",
     quote_hash: "a1b2c3d4",
@@ -114,13 +122,13 @@ export const AUDIT_LOG: AuditEntry[] = [
     signer_request_id: "req-001",
   },
   {
-    ts: Date.now() - 1000 * 60 * 60 * 1,
+    ts: MOCK_EPOCH - 1000 * 60 * 60 * 1,
     position_id: 1,
     action: "PriceUpdate",
     quote_hash: "e5f6g7h8",
   },
   {
-    ts: Date.now() - 1000 * 60 * 30,
+    ts: MOCK_EPOCH - 1000 * 60 * 30,
     position_id: 2,
     action: "StopExecuted",
     quote_hash: "i9j0k1l2",
@@ -149,7 +157,7 @@ export function generateMockQuote(amountUsdc: number): Quote {
     amount_out: estimatedOut,
     fee_bps: feeBps,
     price_impact_bps: priceImpactBps,
-    expires_at_ns: (Date.now() + 60_000) * 1_000_000,
+    expires_at_ns: (MOCK_EPOCH + 60_000) * 1_000_000,
     raw: "mock-quote-payload",
   };
 }
@@ -190,13 +198,13 @@ export const NVDA_PRICE_HISTORY = [
 
 export const RECENT_ACTIVITY: AuditEntry[] = [
   {
-    ts: Date.now() - 1000 * 60 * 12,
+    ts: MOCK_EPOCH - 1000 * 60 * 12,
     position_id: 1,
     action: "PriceUpdate",
     quote_hash: "k3m4n5o6",
   },
   {
-    ts: Date.now() - 1000 * 60 * 60 * 3,
+    ts: MOCK_EPOCH - 1000 * 60 * 60 * 3,
     position_id: 1,
     action: "DcaExecuted",
     quote_hash: "p7q8r9s0",
@@ -204,7 +212,7 @@ export const RECENT_ACTIVITY: AuditEntry[] = [
     signer_request_id: "req-011",
   },
   {
-    ts: Date.now() - 1000 * 60 * 60 * 26,
+    ts: MOCK_EPOCH - 1000 * 60 * 60 * 26,
     position_id: 2,
     action: "StopExecuted",
     quote_hash: "t1u2v3w4",
@@ -212,7 +220,7 @@ export const RECENT_ACTIVITY: AuditEntry[] = [
     signer_request_id: "req-009",
   },
   {
-    ts: Date.now() - 1000 * 60 * 60 * 49,
+    ts: MOCK_EPOCH - 1000 * 60 * 60 * 49,
     position_id: 1,
     action: "Bought",
     quote_hash: "x5y6z7a8",
