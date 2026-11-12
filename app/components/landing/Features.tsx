@@ -1,5 +1,6 @@
 import { Lock, TrendingDown, Zap, Cuboid, BrainCircuit, ShieldCheck } from "lucide-react";
-import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
+import { Reveal } from "@/app/components/motion/Reveal";
+import { STAGGER } from "@/app/components/motion/timing";
 
 const features = [
   {

@@ -1,6 +1,7 @@
 import { Button } from "@/app/components/Button";
 import { ArrowRight } from "lucide-react";
-import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
+import { Reveal } from "@/app/components/motion/Reveal";
+import { STAGGER } from "@/app/components/motion/timing";
 
 export function FinalCta() {
   return (

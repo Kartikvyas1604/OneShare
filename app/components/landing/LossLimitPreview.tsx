@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/app/components/Button";
 import { Slider } from "@/app/components/Slider";
-import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
+import { Reveal } from "@/app/components/motion/Reveal";
+import { STAGGER } from "@/app/components/motion/timing";
 import { VAULT_CONFIG, splitDeposit } from "@/app/lib/floorline";
 import { formatUsd } from "@/app/lib/utils";
 

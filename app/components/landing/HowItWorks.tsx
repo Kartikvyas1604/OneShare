@@ -1,5 +1,6 @@
 import { Coins, Landmark, TrendingDown, CheckCircle2 } from "lucide-react";
-import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
+import { Reveal } from "@/app/components/motion/Reveal";
+import { STAGGER } from "@/app/components/motion/timing";
 
 const steps = [
   {

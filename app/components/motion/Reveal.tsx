@@ -2,8 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
-
-const EASE_OUT: [number, number, number, number] = [0, 0, 0.2, 1]; // brand --ease-out
+import { EASE_OUT } from "./timing";
 
 interface RevealProps {
   children: ReactNode;
@@ -64,11 +63,3 @@ export function Reveal({
     </motion.div>
   );
 }
-
-/** Stagger presets — see page-load-animations skill, list-stagger. */
-export const STAGGER = {
-  /** Dense grids (6+ cards). */
-  dense: 0.06,
-  /** Feature rows, steps (2–5 items). */
-  row: 0.12,
-} as const;

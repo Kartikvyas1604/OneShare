@@ -8,8 +8,10 @@ interface CountUpProps {
   value: number;
   /** ms to count from 0 once in view. */
   duration?: number;
-  /** Optional formatter (e.g. v => `$${v}`). */
-  format?: (value: number) => string;
+  /** Static strings wrapped around the number — props must stay serializable
+   * across the server/client boundary (no function props). */
+  prefix?: string;
+  suffix?: string;
   className?: string;
 }
 
@@ -17,7 +19,7 @@ interface CountUpProps {
  * Count-up on scroll: starts when the element enters the viewport (once),
  * easeOutCubic to the final value. Reduced motion renders the final value.
  */
-export function CountUp({ value, duration = 1_200, format, className }: CountUpProps) {
+export function CountUp({ value, duration = 1_200, prefix = "", suffix = "", className }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-64px 0px" });
   const reduced = useReducedMotion();
@@ -46,7 +48,9 @@ export function CountUp({ value, duration = 1_200, format, className }: CountUpP
 
   return (
     <span ref={ref} className={className} style={{ fontVariantNumeric: "tabular-nums" }}>
-      {format ? format(display) : String(display)}
+      {prefix}
+      {String(display)}
+      {suffix}
     </span>
   );
 }
