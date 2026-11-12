@@ -5,6 +5,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
   isLoading?: boolean;
+  href?: string;
 }
 
 export function Button({
@@ -14,6 +15,7 @@ export function Button({
   isLoading,
   children,
   disabled,
+  href,
   ...props
 }: ButtonProps) {
   const variants = {
@@ -36,20 +38,36 @@ export function Button({
     icon: "h-11 w-11",
   };
 
+  const classes = cn(
+    "inline-flex items-center justify-center gap-2 rounded-xl transition-all duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    variants[variant],
+    sizes[size],
+    className
+  );
+
+  const content = (
+    <>
+      {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+      {children}
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} className={classes} aria-busy={isLoading}>
+        {content}
+      </a>
+    );
+  }
+
   return (
     <button
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl transition-all duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        variants[variant],
-        sizes[size],
-        className
-      )}
+      className={classes}
       disabled={disabled || isLoading}
       aria-busy={isLoading}
       {...props}
     >
-      {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-      {children}
+      {content}
     </button>
   );
 }

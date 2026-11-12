@@ -24,18 +24,11 @@ export function EmptyState({ icon: Icon, title, description, action, className }
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">{description}</p>
       </div>
-      {action &&
-        (action.href ? (
-          <a href={action.href}>
-            <Button variant="secondary" size="sm">
-              {action.label}
-            </Button>
-          </a>
-        ) : (
-          <Button variant="secondary" size="sm" onClick={action.onClick}>
-            {action.label}
-          </Button>
-        ))}
+      {action && (
+        <Button variant="secondary" size="sm" href={action.href} onClick={action.onClick}>
+          {action.label}
+        </Button>
+      )}
     </div>
   );
 }

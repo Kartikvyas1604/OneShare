@@ -7,7 +7,6 @@ import { ErrorState } from "@/app/components/ErrorState";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
 import { MOCK_POSITIONS, NVDA_TICKER } from "@/app/lib/data";
 import { PieChart, Plus } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/app/components/Button";
 
 export default function PositionsPage() {
@@ -50,12 +49,10 @@ export default function PositionsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Positions</h1>
-        <Link href="/buy">
-          <Button size="sm" variant="secondary">
-            <Plus className="h-4 w-4" aria-hidden />
-            New
-          </Button>
-        </Link>
+        <Button size="sm" variant="secondary" href="/buy">
+          <Plus className="h-4 w-4" aria-hidden />
+          New
+        </Button>
       </div>
 
       <div className="space-y-4">

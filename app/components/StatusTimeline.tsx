@@ -12,21 +12,37 @@ const steps: { key: PositionState; label: string }[] = [
 
 const order: PositionState[] = ["created", "funding", "buying", "active", "closed"];
 
+const stateIndexMap: Partial<Record<PositionState, number>> = {
+  refunding: 1,
+  withdrawn: 4,
+};
+
 export function StatusTimeline({ state }: { state: PositionState }) {
-  const currentIndex = order.indexOf(state);
+  const currentIndex = stateIndexMap[state] ?? order.indexOf(state);
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="relative flex items-start justify-between">
+      {/* Background line */}
+      <div className="absolute left-0 right-0 top-4 h-0.5 bg-border" aria-hidden />
+      {/* Progress line */}
+      <div
+        className="absolute left-0 top-4 h-0.5 bg-success transition-all duration-500"
+        style={{
+          width: `${Math.max(0, Math.min(100, (currentIndex / (order.length - 1)) * 100))}%`,
+        }}
+        aria-hidden
+      />
+
       {steps.map((step, idx) => {
         const isCompleted = idx < currentIndex;
         const isCurrent = idx === currentIndex;
         const Icon = isCompleted ? CheckCircle2 : isCurrent ? Clock : Circle;
 
         return (
-          <div key={step.key} className="flex flex-1 flex-col items-center gap-2">
+          <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
             <div
               className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors",
+                "flex h-8 w-8 items-center justify-center rounded-full border-2 bg-background transition-colors",
                 isCompleted
                   ? "border-success bg-success/15 text-success"
                   : isCurrent
@@ -44,15 +60,6 @@ export function StatusTimeline({ state }: { state: PositionState }) {
             >
               {step.label}
             </span>
-            {idx < steps.length - 1 && (
-              <div
-                className={cn(
-                  "absolute h-0.5 w-[calc(25%-2rem)] translate-x-[calc(50%+1rem)]",
-                  isCompleted ? "bg-success" : "bg-border"
-                )}
-                aria-hidden
-              />
-            )}
           </div>
         );
       })}
