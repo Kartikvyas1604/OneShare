@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { NavBar } from "./NavBar";
+import { Footer } from "@/app/components/Footer";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
