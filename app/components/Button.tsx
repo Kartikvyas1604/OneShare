@@ -20,15 +20,15 @@ export function Button({
 }: ButtonProps) {
   const variants = {
     primary:
-      "bg-primary text-primary-foreground shadow-glow-brand hover:bg-primary/90 active:scale-[0.98] active:translate-y-px",
+      "bg-gradient-to-b from-brand-400 to-brand-600 text-white shadow-glow-brand hover:from-brand-300 hover:to-brand-500 active:scale-[0.98] active:translate-y-px",
     secondary:
-      "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98] active:translate-y-px",
+      "border border-white/[0.08] bg-white/[0.05] text-foreground hover:bg-white/[0.09] active:scale-[0.98] active:translate-y-px",
     outline:
-      "border border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground active:scale-[0.98] active:translate-y-px",
+      "border border-white/[0.1] bg-transparent text-foreground hover:border-white/[0.2] hover:bg-white/[0.04] active:scale-[0.98] active:translate-y-px",
     ghost:
-      "bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground active:scale-[0.98] active:translate-y-px",
+      "bg-transparent text-foreground hover:bg-white/[0.06] active:scale-[0.98] active:translate-y-px",
     destructive:
-      "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98] active:translate-y-px",
+      "bg-gradient-to-b from-red-500 to-red-600 text-white hover:brightness-110 active:scale-[0.98] active:translate-y-px",
   };
 
   const sizes = {
