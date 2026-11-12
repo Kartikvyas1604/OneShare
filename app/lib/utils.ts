@@ -32,10 +32,13 @@ export function formatTokenAmount(value: number, decimals = 4) {
   }).format(value);
 }
 
-/** Signed percent: +18.40% / −1.12% */
+/** Signed percent: default keeps the natural sign (−1.12%); `sign: true` forces an explicit +/−. */
 export function formatPercent(value: number, opts: { sign?: boolean } = {}) {
-  const sign = opts.sign ? (value > 0 ? "+" : value < 0 ? "−" : "") : "";
-  return `${sign}${Math.abs(value * 100).toFixed(2)}%`;
+  if (opts.sign) {
+    const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+    return `${sign}${Math.abs(value * 100).toFixed(2)}%`;
+  }
+  return `${(value * 100).toFixed(2)}%`;
 }
 
 export function formatBps(value: number) {
