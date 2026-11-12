@@ -160,12 +160,12 @@ export function deRiskTriggered(
   );
 }
 
-/** Current drawdown of the risk bucket from cost basis, in bps (0 when flat). */
+/** Current drawdown of the risk bucket from cost basis, in bps (0 when flat or empty). */
 export function drawdownBps(
   p: Pick<FloorlinePosition, "cost_basis" | "risk_units">,
   priceUsdc: number
 ): number {
-  if (p.cost_basis <= 0) return 0;
+  if (p.cost_basis <= 0 || p.risk_units <= 0) return 0;
   const value = unitValueQuote(p.risk_units, priceUsdc);
   return Math.max(0, Math.round(((p.cost_basis - value) / p.cost_basis) * 10_000));
 }
