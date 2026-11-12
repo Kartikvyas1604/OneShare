@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/app/components/Button";
 import { Slider } from "@/app/components/Slider";
+import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
 import { VAULT_CONFIG, splitDeposit } from "@/app/lib/floorline";
 import { formatUsd } from "@/app/lib/utils";
 
@@ -16,33 +17,35 @@ export function LossLimitPreview() {
   return (
     <section id="limits" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto grid max-w-[1100px] items-center gap-10 px-4 py-16 md:px-6 md:py-24 lg:grid-cols-2 lg:gap-16">
-        <div className="animate-fade-up">
-          <p className="eyebrow">The loss limit</p>
-          <h2 className="display mt-2 max-w-md text-4xl text-foreground md:text-5xl">
-            Discipline is a bad strategy.
-          </h2>
-          <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
-            &ldquo;Just hold 10% back&rdquo; fails at 3am in a red market. Floorline splits your
-            deposit at the contract level: the reserve moves to a separate escrow the moment you
-            deposit, before any trade exists. You are buying custody, not a promise.
-          </p>
-          <ul className="mt-6 space-y-2.5 text-[14px] text-foreground">
-            <li className="flex items-start gap-2.5">
-              <span className="num mt-0.5 text-xs text-faint">01</span>
-              The reserve is escrowed before the first buy settles.
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="num mt-0.5 text-xs text-faint">02</span>
-              The risk budget is the only bucket the market can touch.
-            </li>
-            <li className="flex items-start gap-2.5">
-              <span className="num mt-0.5 text-xs text-faint">03</span>
-              The worst case is printed in dollars before you send anything.
-            </li>
-          </ul>
-        </div>
+        <Reveal>
+          <div>
+            <p className="eyebrow">The loss limit</p>
+            <h2 className="display mt-2 max-w-md text-4xl text-foreground md:text-5xl">
+              Discipline is a bad strategy.
+            </h2>
+            <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
+              &ldquo;Just hold 10% back&rdquo; fails at 3am in a red market. Floorline splits your
+              deposit at the contract level: the reserve moves to a separate escrow the moment you
+              deposit, before any trade exists. You are buying custody, not a promise.
+            </p>
+            <ul className="mt-6 space-y-2.5 text-[14px] text-foreground">
+              <li className="flex items-start gap-2.5">
+                <span className="num mt-0.5 text-xs text-faint">01</span>
+                The reserve is escrowed before the first buy settles.
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="num mt-0.5 text-xs text-faint">02</span>
+                The risk budget is the only bucket the market can touch.
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="num mt-0.5 text-xs text-faint">03</span>
+                The worst case is printed in dollars before you send anything.
+              </li>
+            </ul>
+          </div>
+        </Reveal>
 
-        <div className="animate-fade-up delay-150 mx-auto w-full max-w-sm">
+        <Reveal delay={STAGGER.row} className="mx-auto w-full max-w-sm">
           <div className="rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <span className="eyebrow">Live preview</span>
@@ -92,7 +95,7 @@ export function LossLimitPreview() {
               </Button>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

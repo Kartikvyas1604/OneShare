@@ -79,6 +79,26 @@ export function LandingFooter() {
           </p>
         </div>
       </div>
+
+      {/* Wordmark marquee — the closer */}
+      <div className="overflow-hidden pb-2" aria-hidden>
+        <div className="animate-marquee flex">
+          <WordmarkRow />
+          <WordmarkRow />
+        </div>
+      </div>
     </footer>
+  );
+}
+
+function WordmarkRow() {
+  return (
+    <div className="flex shrink-0 items-center gap-16 pr-16">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <span key={i} className="display text-[64px] leading-none text-faint md:text-[96px]">
+          Floorline
+        </span>
+      ))}
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Button } from "@/app/components/Button";
 import { ArrowRight, Check } from "lucide-react";
+import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
 
 const facts = [
   "Transfer the NFT — settle pays whoever holds it",
@@ -11,36 +12,38 @@ export function NftShowcase() {
   return (
     <section id="nft" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto grid max-w-[1100px] items-center gap-10 px-4 py-16 md:px-6 md:py-24 lg:grid-cols-2 lg:gap-16">
-        <div className="animate-fade-up">
-          <p className="eyebrow">Position NFT</p>
-          <h2 className="display mt-2 max-w-md text-4xl text-foreground md:text-5xl">
-            The position is the product.
-          </h2>
-          <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
-            The position mints as an NEP-171 NFT on NEAR. Whoever holds the NFT owns the floor, the
-            risk budget, and the de-risk rule — so it can be moved, gifted, or sold without
-            unwinding a single position.
-          </p>
-          <ul className="mt-6 space-y-2.5">
-            {facts.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-[14px] text-foreground">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-up-soft text-up">
-                  <Check className="h-2.5 w-2.5" aria-hidden />
-                </span>
-                {f}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-8">
-            <Button href="/create">
-              Mint your first position
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Button>
+        <Reveal>
+          <div>
+            <p className="eyebrow">Position NFT</p>
+            <h2 className="display mt-2 max-w-md text-4xl text-foreground md:text-5xl">
+              The position is the product.
+            </h2>
+            <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
+              The position mints as an NEP-171 NFT on NEAR. Whoever holds the NFT owns the floor, the
+              risk budget, and the de-risk rule — so it can be moved, gifted, or sold without
+              unwinding a single position.
+            </p>
+            <ul className="mt-6 space-y-2.5">
+              {facts.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-[14px] text-foreground">
+                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-up-soft text-up">
+                    <Check className="h-2.5 w-2.5" aria-hidden />
+                  </span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <Button href="/create">
+                Mint your first position
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Button>
+            </div>
           </div>
-        </div>
+        </Reveal>
 
         {/* NFT panel */}
-        <div className="animate-fade-up delay-150 mx-auto w-full max-w-sm">
+        <Reveal delay={STAGGER.row} className="mx-auto w-full max-w-sm">
           <div className="rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <span className="eyebrow">NEP-171</span>
@@ -72,7 +75,7 @@ export function NftShowcase() {
               </span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

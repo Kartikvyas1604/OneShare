@@ -1,4 +1,5 @@
 import { Coins, Landmark, TrendingDown, CheckCircle2 } from "lucide-react";
+import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
 
 const steps = [
   {
@@ -42,9 +43,11 @@ export function HowItWorks() {
 
         <ol className="mt-12 divide-y divide-border border-y border-border">
           {steps.map((s, idx) => (
-            <li
+            <Reveal
               key={s.num}
-              className={`animate-fade-up delay-${(idx + 1) * 100} grid gap-4 py-8 md:grid-cols-[80px_240px_1fr] md:items-baseline md:gap-8`}
+              as="li"
+              delay={idx * STAGGER.row}
+              className="grid gap-4 py-8 md:grid-cols-[80px_240px_1fr] md:items-baseline md:gap-8"
             >
               <span className="num text-sm text-faint">{s.num}</span>
               <div className="flex items-center gap-3 md:block">
@@ -54,7 +57,7 @@ export function HowItWorks() {
               <p className="max-w-xl text-[15px] leading-relaxed text-muted-foreground">
                 {s.description}
               </p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </div>

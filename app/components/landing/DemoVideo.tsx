@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/app/components/Button";
 import { VideoOff } from "lucide-react";
+import { Reveal } from "@/app/components/motion/Reveal";
 
 /**
  * Embedded demo video (§6.5 "/" contents; demo fallback 1). While the 75s cut
@@ -15,12 +16,14 @@ export function DemoVideo() {
   return (
     <section id="demo" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-6 md:py-24">
-        <p className="eyebrow animate-fade-up">The demo</p>
-        <h2 className="display animate-fade-up delay-75 mt-2 max-w-xl text-4xl text-foreground md:text-5xl">
-          75 seconds, three numbers.
-        </h2>
+        <Reveal>
+          <p className="eyebrow">The demo</p>
+          <h2 className="display mt-2 max-w-xl text-4xl text-foreground md:text-5xl">
+            75 seconds, three numbers.
+          </h2>
+        </Reveal>
 
-        <div className="animate-fade-up delay-150 mx-auto mt-10 max-w-3xl">
+        <Reveal delay={0.12} className="mx-auto mt-10 max-w-3xl">
           {failed ? (
             <div className="rounded-xl border border-border bg-card">
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
@@ -68,7 +71,7 @@ export function DemoVideo() {
               </div>
             </div>
           )}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

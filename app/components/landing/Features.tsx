@@ -1,4 +1,5 @@
 import { Lock, TrendingDown, Zap, Cuboid, BrainCircuit, ShieldCheck } from "lucide-react";
+import { Reveal, STAGGER } from "@/app/components/motion/Reveal";
 
 const features = [
   {
@@ -54,9 +55,10 @@ export function Features() {
 
         <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, idx) => (
-            <div
+            <Reveal
               key={f.title}
-              className={`animate-fade-up delay-${(idx % 3) * 100 + 100} bg-card p-6 transition-colors duration-150 hover:bg-secondary`}
+              delay={(idx % 3) * STAGGER.dense + Math.floor(idx / 3) * STAGGER.row}
+              className="bg-card p-6 transition-colors duration-150 hover:bg-secondary"
             >
               <f.icon className="h-4 w-4 text-faint" aria-hidden />
               <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-foreground">
@@ -65,7 +67,7 @@ export function Features() {
               <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
                 {f.description}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
