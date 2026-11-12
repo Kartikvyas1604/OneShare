@@ -24,7 +24,7 @@ Active. This file is the source of truth for all color, typography, spacing, voi
 | `--brand-200` | `#B6D0FF` | Focus rings, highlights |
 | `--brand-300` | `#84B1FF` | Links, secondary accents |
 | `--brand-400` | `#4F8CFF` | Interactive emphasis |
-| `--brand-500` | `#2563FF` | **Primary brand color** — CTAs, key data |
+| `--brand-500` | `#2F6BFF` | **Primary brand color** — CTAs, key data |
 | `--brand-600` | `#154AE0` | Primary hover / pressed |
 | `--brand-700` | `#103AB6` | Strong emphasis backgrounds |
 | `--brand-800` | `#12338F` | Surfaces |
@@ -64,11 +64,29 @@ Active. This file is the source of truth for all color, typography, spacing, voi
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--bg-base` | `#020617` | App background |
-| `--bg-elevated` | `#0B1221` | Cards, sheets |
-| `--bg-sunken` | `#01040F` | Input backgrounds, deepest wells |
-| `--border-subtle` | `#1E293B` | Borders in dark |
-| `--border-strong` | `#334155` | Focused borders |
+| `--bg-base` | `#05070D` | App background |
+| `--bg-elevated` | `#0B101C` | Cards, sheets |
+| `--bg-sunken` | `#0D1322` | Input backgrounds, deepest wells |
+| `--border-subtle` | `#1A2336` | Borders in dark |
+| `--border-strong` | `#2A3A5C` | Focused borders |
+
+## Surfaces & effects
+
+- **Hairline borders:** cards use `border-white/[0.07]` over elevated dark surfaces — subtle depth without heavy outlines.
+- **Glass:** `surface-glass` utility for translucent panels (navbar, mobile dock) with 16px backdrop blur.
+- **Glow:** `shadow-glow-brand` for primary buttons and brand-tinted hover states.
+- **Backgrounds:** `bg-grid` (56px grid, masked radially) for hero sections; brand orbs with `blur-[100px+]` and float/pulse animations.
+- **Gradient text:** `gradient-text-brand` for headline emphasis.
+
+## Motion vocabulary
+
+| Utility | Duration | Use |
+|---|---|---|
+| `animate-fade-up` + `delay-{75..600}` | 500ms | Staggered section/card entrances |
+| `animate-fade-in` | 400ms | State swaps (quotes, errors) |
+| `animate-float-slow` | 9s loop | Ambient background orbs |
+| `animate-pulse-glow` | 5s loop | Hero glow breathing |
+| `animate-ticker` | 30s linear | Landing price ticker |
 
 ## Typography
 

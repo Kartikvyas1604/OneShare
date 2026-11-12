@@ -21,9 +21,21 @@ Not a brokerage, not a custodial exchange, not a staking product, not a memecoin
 
 - **Frontend:** Next.js 16 App Router, React 19, Tailwind CSS 4, TypeScript
 - **Fonts:** Geist + Geist Mono via `next/font`
-- **Charts:** Recharts
+- **Charts:** Recharts (portfolio + simulator)
 - **Icons:** Lucide React
 - **Chain side:** NEAR (`near-sdk-rs`), Solana (`@solana/web3.js`), Jupiter, 1Click API
+
+## Screens
+
+| Route | What |
+|---|---|
+| `/` | Marketing landing: hero, live ticker, how-it-works, features, position-NFT showcase, stats, CTA |
+| `/dashboard` | Portfolio value, equity chart with range tabs, active positions, recent activity |
+| `/buy` | Quote → deposit → swap → mint flow with fee breakdown and progress |
+| `/positions` | List with summary bar and premium position cards |
+| `/positions/[id]` | PnL, status timeline, custody panel, policy editor, audit log |
+| `/sim` | Deterministic policy backtester on 2025–26 NVDA daily closes |
+| `/explain` | TEE-attested explanation UI with cached fallback |
 
 ## Getting started
 
