@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OneShare
 
-## Getting Started
+> One tap, any chain, $10 of NVIDIA — a stock that manages itself.
 
-First, run the development server:
+OneShare lets anyone buy a real tokenized US equity (e.g. NVDAx, a 1:1 custodied xStock on Solana) in under 60 seconds by paying with any token on any chain, and receive it as a NEAR NEP-171 "position NFT" that carries its own risk policy: stop-loss, take-profit and DCA rules enforced onchain, custody via NEAR Chain Signatures, and a collateralizable object.
+
+Built for the NEAR Hackathon 2026.
+
+## What it is
+
+- **Cross-chain funding:** Pay with USDC on Base (or any NEAR Intent route) and land Solana USDC in one tap.
+- **Self-custody via Chain Signatures:** The Solana address is derived from your NEAR account by the MPC network. We never hold a key.
+- **Position NFT:** The position itself is a NEP-171 NFT. Whoever holds the NFT controls the underlying Solana account.
+- **Policy engine:** Set stop-loss, take-profit, and DCA rules. A bonded keeper can only act inside your bounds, with an onchain audit log.
+
+## What it is NOT
+
+Not a brokerage, not a custodial exchange, not a staking product, not a memecoin, not an AI-trading-signal bot, not hardware, not a yield farm, not available to US persons.
+
+## Tech stack
+
+- **Frontend:** Next.js 16 App Router, React 19, Tailwind CSS 4, TypeScript
+- **Fonts:** Geist + Geist Mono via `next/font`
+- **Charts:** Recharts
+- **Icons:** Lucide React
+- **Chain side:** NEAR (`near-sdk-rs`), Solana (`@solana/web3.js`), Jupiter, 1Click API
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The app redirects to `/buy`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  (app)/          # Authenticated app shell
+    buy/page.tsx
+    positions/
+    sim/page.tsx
+    explain/page.tsx
+  components/     # Reusable UI kit + domain components
+  lib/            # Types, fixtures, formatting utilities
+brand.md          # Visual identity source of truth
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Limitations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- This repository contains the frontend prototype. Contract, keeper, and adapter code are in separate modules.
+- Smart contracts are not audited.
+- Custody in the hackathon build relies on NEAR Chain Signatures; residual risks include issuer solvency, oracle staleness, and MPC trust assumptions.
+- Non-US only, per xStocks terms. We do not give investment advice.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
