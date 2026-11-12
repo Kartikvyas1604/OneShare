@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Button } from "@/app/components/Button";
 import { PositionCard } from "@/app/components/PositionCard";
 import { EmptyState } from "@/app/components/EmptyState";
