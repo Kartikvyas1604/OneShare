@@ -2,26 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { StatusBadge } from "@/app/components/StatusBadge";
 import { StatusTimeline } from "@/app/components/StatusTimeline";
 import { AuditLog } from "@/app/components/AuditLog";
 import { PolicyEditor } from "@/app/components/PolicyEditor";
 import { WhyNearPanel } from "@/app/components/WhyNearPanel";
+import { CopyButton } from "@/app/components/CopyButton";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
 import { ErrorState } from "@/app/components/ErrorState";
-import { CopyButton } from "@/app/components/CopyButton";
 import { MOCK_POSITIONS, NVDA_TICKER, AUDIT_LOG, Policy } from "@/app/lib/data";
 import { EXPLORERS } from "@/app/lib/constants";
 import { formatUsd, formatPercent, formatTokenAmount, truncateAddress } from "@/app/lib/utils";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  ArrowDownRight,
-  ExternalLink,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, ChevronRight, ExternalLink } from "lucide-react";
 
 export function PositionDetail({ id }: { id: number }) {
   const [loading] = useState(false);
@@ -68,133 +61,144 @@ export function PositionDetail({ id }: { id: number }) {
   const isPositive = pnl >= 0;
 
   const handlePolicyChange = (next: Policy) => {
-    // In a real app this would call set_policy on the vault contract.
+    // Real app: vault.set_policy via wallet signature.
     console.log("Policy updated", next);
   };
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <Link
-          href="/positions"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Back to positions"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
+    <div className="space-y-10">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Link href="/positions" className="transition-colors hover:text-foreground focus-visible:outline-none">
+          Stocks
         </Link>
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          {NVDA_TICKER.symbol} <span className="text-muted-foreground">#{position.id}</span>
-        </h1>
-        <StatusBadge state={position.state} />
-      </div>
+        <ChevronRight className="h-3 w-3 text-faint" aria-hidden />
+        <span className="num text-foreground">#{position.id}</span>
+      </nav>
 
-      {/* Value card */}
-      <Card className="relative animate-fade-up overflow-hidden">
-        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-brand-600/15 blur-3xl" aria-hidden />
-        <CardContent className="relative pt-5">
-          <div className="flex items-baseline justify-between">
+      {/* Title + actions */}
+      <header className="animate-fade-up flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-card">
+            <span className="num text-sm font-semibold text-foreground">N</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">
+              {NVDA_TICKER.symbol} <span className="font-normal text-muted-foreground">#{position.id}</span>
+            </h1>
+            <div className="mt-1 flex items-center gap-2">
+              <StatusBadge state={position.state} />
+              <span className="text-xs text-muted-foreground">{NVDA_TICKER.name}</span>
+            </div>
+          </div>
+        </div>
+        {position.state === "active" && (
+          <div className="flex gap-2">
+            <Button size="md" variant="sell">
+              Sell
+            </Button>
+            <Button size="md" variant="secondary">
+              Withdraw
+            </Button>
+          </div>
+        )}
+      </header>
+
+      {/* Value */}
+      <section className="animate-fade-up delay-75">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <span className="num text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+            {formatUsd(value)}
+          </span>
+          <span
+            className={`num inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[13px] font-semibold ${
+              isPositive ? "bg-up-soft text-up" : "bg-down-soft text-down"
+            }`}
+          >
+            {isPositive ? (
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <ArrowDownRight className="h-3.5 w-3.5" aria-hidden />
+            )}
+            {formatPercent(pnlPct, { sign: true })}
+          </span>
+        </div>
+
+        <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
+          <Stat label="Invested" value={formatUsd(invested)} />
+          <Stat label="Shares" value={formatTokenAmount(shares)} />
+          <Stat label="Entry price" value={formatUsd(entryPrice)} />
+          <Stat label="Current price" value={formatUsd(currentPrice)} />
+        </dl>
+      </section>
+
+      {/* Custody */}
+      <section className="animate-fade-up delay-100">
+        <div className="rounded-xl border border-border bg-card">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3.5">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Position value
-              </p>
-              <p className="mt-1 font-mono text-3xl font-semibold tabular-nums text-foreground md:text-4xl">
-                {formatUsd(value)}
+              <p className="eyebrow">Custody</p>
+              <p className="mt-1 text-[13px] text-foreground">
+                Solana account derived by NEAR Chain Signatures
               </p>
             </div>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold ${
-                isPositive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-              }`}
-            >
-              {isPositive ? (
-                <ArrowUpRight className="h-4 w-4" aria-hidden />
-              ) : (
-                <ArrowDownRight className="h-4 w-4" aria-hidden />
-              )}
-              {formatPercent(pnlPct, { sign: true })}
+            <span className="rounded-md border border-border bg-secondary px-2 py-1 text-[11px] font-medium text-muted-foreground">
+              NEP-171 · pos-{position.id}
             </span>
           </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Metric label="Invested" value={formatUsd(invested)} />
-            <Metric label="Shares" value={formatTokenAmount(shares)} />
-            <Metric label="Entry" value={formatUsd(entryPrice)} />
-            <Metric label="Current" value={formatUsd(currentPrice)} />
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5">
+            <code className="num text-[13px] text-foreground">
+              {truncateAddress(position.derived_sol, 12)}
+            </code>
+            <CopyButton value={position.derived_sol} />
+            <a
+              href={`${EXPLORERS.solana.mainnet}/account/${position.derived_sol}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ExternalLink className="h-3 w-3" aria-hidden />
+              Solscan
+            </a>
           </div>
+          <p className="border-t border-border px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+            No one — including OneShare — holds a key. The vault contract requests signatures from
+            the MPC network, bounded to your policy.
+          </p>
+        </div>
+      </section>
 
-          {/* Custody */}
-          <div className="mt-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-brand-300" aria-hidden />
-                <span className="text-xs font-semibold text-foreground">Custody via Chain Signatures</span>
-              </div>
-              <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                pos-{position.id}
-              </span>
-            </div>
-            <div className="mt-2.5 flex items-center gap-2">
-              <code className="font-mono text-xs text-muted-foreground">
-                {truncateAddress(position.derived_sol, 12)}
-              </code>
-              <CopyButton value={position.derived_sol} label="Copy" />
-              <a
-                href={`${EXPLORERS.solana.mainnet}/account/${position.derived_sol}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-300 hover:text-brand-200"
-              >
-                <ExternalLink className="h-3 w-3" aria-hidden />
-                Solscan
-              </a>
-            </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-              No one — including OneShare — holds a key. Signatures are requested by the vault
-              contract via the MPC network.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Timeline */}
-      <Card className="animate-fade-up delay-100">
-        <CardContent className="pt-5">
+      {/* Lifecycle */}
+      <section className="animate-fade-up delay-150">
+        <div className="rounded-xl border border-border bg-card px-4 py-5">
           <StatusTimeline state={position.state} />
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {/* Policy */}
       {position.state === "active" && (
-        <PolicyEditor initialPolicy={position.policy} onChange={handlePolicyChange} />
+        <section className="animate-fade-up delay-200">
+          <PolicyEditor initialPolicy={position.policy} onChange={handlePolicyChange} />
+        </section>
       )}
 
       {/* Audit */}
       {audit.length > 0 && (
-        <div className="animate-fade-up delay-200">
+        <section className="animate-fade-up delay-300">
           <AuditLog entries={audit} />
-        </div>
+        </section>
       )}
 
       <WhyNearPanel />
-
-      {position.state === "active" && (
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="secondary">Sell</Button>
-          <Button variant="secondary">Withdraw</Button>
-        </div>
-      )}
     </div>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 font-mono text-sm font-semibold tabular-nums text-foreground">{value}</p>
+    <div className="bg-card px-4 py-3">
+      <dt className="eyebrow">{label}</dt>
+      <dd className="num mt-1 text-sm font-semibold text-foreground">{value}</dd>
     </div>
   );
 }
