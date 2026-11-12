@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:copy": "grep -rEn \"revolutionary|game.changing|disrupting|seamless(ly)? |world.class|next.gen|guaranteed|risk.free|principal protected|passive income|to the moon|safe returns|you cannot lose\" app docs README.md && exit 1 || exit 0"
   },
   "dependencies": {
     "clsx": "^2.1.1",
