@@ -1,8 +1,8 @@
 /**
  * Fixed epoch for all mock timestamps (2026-11-12T06:00:00Z).
- * Using a constant keeps server and client renders byte-identical,
- * which prevents hydration mismatches. Real adapters will replace
- * this with live data fetched inside effects/requests.
+ * Module-scope Date.now() calls render differently on server and
+ * client and break hydration; constants render identically.
+ * Live adapters will replace these fixtures via fetch/effects.
  */
 export const MOCK_EPOCH = Date.UTC(2026, 10, 12, 6, 0, 0);
 
@@ -30,7 +30,7 @@ export const DEFAULT_POLICY: Policy = {
   take_profit_bps: 2500,
   tp_sell_bps: 5000,
   dca_amount_usdc: 10_000_000,
-  dca_interval_s: 604800,
+  dca_interval_s: 604_800,
   max_slippage_bps: 100,
 };
 
@@ -46,10 +46,7 @@ export interface Position {
   entry_px: number;
   policy: Policy;
   last_dca_ns: number;
-  in_flight?: {
-    action: "buy" | "sell" | "stop" | "tp" | "dca";
-    started_at: number;
-  } | null;
+  in_flight?: { action: string; started_at: number } | null;
 }
 
 export interface AuditEntry {
@@ -73,7 +70,7 @@ export interface Ticker {
 
 export const NVDA_TICKER: Ticker = {
   symbol: "NVDAx",
-  sol_mint: "3dQ5...mVXB",
+  sol_mint: "3dQ5…mVXB",
   decimals: 6,
   min_usdc: 1_000_000,
   name: "NVIDIA xStock",
@@ -118,7 +115,7 @@ export const AUDIT_LOG: AuditEntry[] = [
     position_id: 1,
     action: "Bought",
     quote_hash: "a1b2c3d4",
-    tx_sig: "5KtL...xYz9",
+    tx_sig: "5KtL…xYz9",
     signer_request_id: "req-001",
   },
   {
@@ -132,7 +129,7 @@ export const AUDIT_LOG: AuditEntry[] = [
     position_id: 2,
     action: "StopExecuted",
     quote_hash: "i9j0k1l2",
-    tx_sig: "3FmN...qRs7",
+    tx_sig: "3FmN…qRs7",
     signer_request_id: "req-002",
   },
 ];
@@ -148,19 +145,18 @@ export interface Quote {
 }
 
 export function generateMockQuote(amountUsdc: number): Quote {
-  const feeBps = 25;
-  const priceImpactBps = 8;
-  const estimatedOut = Math.floor((amountUsdc / NVDA_TICKER.price_usdc) * 1e6);
   return {
     src: "1click",
-    amount_in: amountUsdc * 1e6,
-    amount_out: estimatedOut,
-    fee_bps: feeBps,
-    price_impact_bps: priceImpactBps,
+    amount_in: Math.round(amountUsdc * 1e6),
+    amount_out: Math.floor((amountUsdc / NVDA_TICKER.price_usdc) * 1e6),
+    fee_bps: 25,
+    price_impact_bps: 8,
     expires_at_ns: (MOCK_EPOCH + 60_000) * 1_000_000,
     raw: "mock-quote-payload",
   };
 }
+
+/* ─── Dashboard fixtures ─── */
 
 export const PORTFOLIO_HISTORY = [
   { date: "Oct 14", value: 9.12 },
@@ -187,15 +183,6 @@ export const PORTFOLIO_HISTORY = [
   { date: "Nov 12", value: 11.84 },
 ];
 
-export const NVDA_PRICE_HISTORY = [
-  { date: "Oct 14", price: 12.05 },
-  { date: "Oct 20", price: 12.22 },
-  { date: "Oct 27", price: 12.58 },
-  { date: "Nov 3", price: 12.91 },
-  { date: "Nov 10", price: 13.31 },
-  { date: "Nov 12", price: 13.42 },
-];
-
 export const RECENT_ACTIVITY: AuditEntry[] = [
   {
     ts: MOCK_EPOCH - 1000 * 60 * 12,
@@ -208,7 +195,7 @@ export const RECENT_ACTIVITY: AuditEntry[] = [
     position_id: 1,
     action: "DcaExecuted",
     quote_hash: "p7q8r9s0",
-    tx_sig: "8HjK...tUv2",
+    tx_sig: "8HjK…tUv2",
     signer_request_id: "req-011",
   },
   {
@@ -216,7 +203,7 @@ export const RECENT_ACTIVITY: AuditEntry[] = [
     position_id: 2,
     action: "StopExecuted",
     quote_hash: "t1u2v3w4",
-    tx_sig: "3FmN...qRs7",
+    tx_sig: "3FmN…qRs7",
     signer_request_id: "req-009",
   },
   {
@@ -224,10 +211,12 @@ export const RECENT_ACTIVITY: AuditEntry[] = [
     position_id: 1,
     action: "Bought",
     quote_hash: "x5y6z7a8",
-    tx_sig: "5KtL...xYz9",
+    tx_sig: "5KtL…xYz9",
     signer_request_id: "req-005",
   },
 ];
+
+/* ─── Deterministic policy simulator ─── */
 
 export interface SimulationResult {
   dates: string[];
@@ -251,6 +240,7 @@ function seededRandom(seed: number) {
   };
 }
 
+/** Byte-identical output for identical (policy, seed) — spec §0.6. */
 export function generateSimulation(policy: Policy, seed = 42): SimulationResult {
   const rand = seededRandom(seed);
   const days = 252;
@@ -269,30 +259,29 @@ export function generateSimulation(policy: Policy, seed = 42): SimulationResult 
   const entryPx = price;
 
   for (let i = 0; i < days; i++) {
-    const date = new Date(2025, 0, 2 + i);
+    const date = new Date(Date.UTC(2025, 0, 2 + i));
     dates.push(date.toISOString().split("T")[0]);
 
     const drift = (rand() - 0.48) * 0.04;
     price = Math.max(1, price * (1 + drift));
 
-    // DCA
+    // Weekly DCA every 30 sessions
     if (i > 0 && i % 30 === 0 && cash >= 10) {
-      const buyAmount = 10;
-      shares += buyAmount / price;
-      cash -= buyAmount;
+      shares += 10 / price;
+      cash -= 10;
     }
 
     const value = shares * price + cash;
     const buyHoldValue = buyHoldShares * price;
 
-    // Stop loss
+    // Stop loss — full exit
     if (price <= entryPx * (1 - policy.stop_loss_bps / 10000) && shares > 0) {
       cash += shares * price;
       shares = 0;
       stops++;
     }
 
-    // Take profit partial
+    // Take profit — partial sell
     if (price >= entryPx * (1 + policy.take_profit_bps / 10000) && shares > 0) {
       const sellShares = (shares * policy.tp_sell_bps) / 10000;
       cash += sellShares * price;
@@ -301,8 +290,7 @@ export function generateSimulation(policy: Policy, seed = 42): SimulationResult 
     }
 
     peak = Math.max(peak, value);
-    const dd = (peak - value) / peak;
-    maxDD = Math.max(maxDD, dd);
+    maxDD = Math.max(maxDD, (peak - value) / peak);
 
     equity.push(value);
     buyHold.push(buyHoldValue);
@@ -316,7 +304,7 @@ export function generateSimulation(policy: Policy, seed = 42): SimulationResult 
     equity,
     buyHold,
     metrics: {
-      cagr_pct: ((finalValue / 100) ** (1 / 1) - 1) * 100,
+      cagr_pct: (Math.pow(finalValue / 100, 1) - 1) * 100,
       max_drawdown_bps: Math.round(maxDD * 10000),
       stops_triggered: stops,
       tps_triggered: tps,

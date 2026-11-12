@@ -11,7 +11,7 @@ export const EXPLORERS = {
 
 export const APP_CONFIG = {
   name: "OneShare",
-  tagline: "Own $10 of NVIDIA in 60 seconds",
+  tagline: "Own $10 of NVIDIA. In 60 seconds.",
   ticker: "NVDAx",
   minDepositUsdc: 1,
   defaultAmountUsdc: 10,
