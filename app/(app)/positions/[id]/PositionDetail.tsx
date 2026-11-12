@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/Card";
+import { Card, CardContent } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { StatusBadge } from "@/app/components/StatusBadge";
 import { StatusTimeline } from "@/app/components/StatusTimeline";
@@ -19,7 +19,6 @@ import {
   ArrowLeft,
   ArrowUpRight,
   ArrowDownRight,
-  Wallet,
   ExternalLink,
   ShieldCheck,
 } from "lucide-react";
