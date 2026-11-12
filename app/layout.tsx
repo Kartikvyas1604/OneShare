@@ -23,21 +23,21 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "OneShare — Own $10 of NVIDIA in 60 seconds",
+  title: "Floorline — deposit USDC from any chain, pick a loss limit",
   description:
-    "Buy tokenized US equities with any token on any chain. Receive a NEAR position NFT that manages itself with stop-loss, take-profit, and DCA rules enforced onchain.",
-  keywords: ["NEAR", "Solana", "tokenized stocks", "xStocks", "intents", "chain signatures"],
+    "Deposit USDC from any of 30+ chains, pick a loss limit, and own a self-managing slice of NVIDIA as a NEAR NFT. The reserve sits in a separate escrow contract; the de-risk rule is automated and backtested.",
+  keywords: ["NEAR", "intents", "chain signatures", "NEP-171", "loss limit", "tokenized stocks"],
   openGraph: {
-    title: "OneShare — Own $10 of NVIDIA in 60 seconds",
+    title: "Floorline — deposit USDC from any chain, pick a loss limit",
     description:
-      "Buy tokenized US equities with any token on any chain. Self-managing positions on NEAR.",
+      "Own a self-managing tokenized-equity position as a NEAR NFT. Worst case in dollars, set before you deposit.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OneShare — Own $10 of NVIDIA in 60 seconds",
+    title: "Floorline — deposit USDC from any chain, pick a loss limit",
     description:
-      "Buy tokenized US equities with any token on any chain. Self-managing positions on NEAR.",
+      "Own a self-managing tokenized-equity position as a NEAR NFT. Worst case in dollars, set before you deposit.",
   },
 };
 

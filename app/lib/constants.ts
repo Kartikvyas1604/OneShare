@@ -10,11 +10,11 @@ export const EXPLORERS = {
 };
 
 export const APP_CONFIG = {
-  name: "OneShare",
-  tagline: "Own $10 of NVIDIA. In 60 seconds.",
-  ticker: "NVDAx",
-  minDepositUsdc: 1,
-  defaultAmountUsdc: 10,
+  name: "Floorline",
+  tagline: "Deposit USDC from any chain, pick a loss limit, own the floor.",
+  ticker: "wNEAR",
+  minDepositUsdc: 10,
+  defaultAmountUsdc: 100,
 };
 
 export const ONECLICK = {

@@ -7,17 +7,17 @@ import { Button } from "@/app/components/Button";
 import {
   LayoutDashboard,
   Plus,
-  ChartCandlestick,
-  LineChart,
+  Layers,
+  TrendingDown,
   MessageSquareText,
-  ArrowLeftRight,
+  Landmark,
 } from "lucide-react";
 
 const nav = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/buy", label: "Buy", icon: Plus },
-  { href: "/positions", label: "Stocks", icon: ChartCandlestick },
-  { href: "/sim", label: "Simulator", icon: LineChart },
+  { href: "/create", label: "Create", icon: Plus },
+  { href: "/positions", label: "Positions", icon: Layers },
+  { href: "/crash", label: "Crash test", icon: TrendingDown },
   { href: "/explain", label: "Explain", icon: MessageSquareText },
 ];
 
@@ -29,10 +29,10 @@ export function AppSidebar() {
       {/* Brand */}
       <div className="flex h-16 items-center gap-2.5 border-b border-border px-5">
         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <ArrowLeftRight className="h-4 w-4" aria-hidden />
+          <Landmark className="h-4 w-4" aria-hidden />
         </span>
         <Link href="/dashboard" className="display text-lg text-foreground focus-visible:outline-none">
-          OneShare
+          Floorline
         </Link>
       </div>
 
@@ -64,7 +64,7 @@ export function AppSidebar() {
 
       {/* Bottom */}
       <div className="space-y-3 border-t border-border p-3">
-        <Button className="w-full" href="/buy">
+        <Button className="w-full" href="/create">
           New position
         </Button>
         <div className="rounded-lg border border-border bg-card px-3 py-2.5">
@@ -117,12 +117,12 @@ export function MobileHeader() {
         className="flex items-center gap-2 focus-visible:outline-none"
       >
         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden />
+          <Landmark className="h-3.5 w-3.5" aria-hidden />
         </span>
-        <span className="display text-lg text-foreground">OneShare</span>
+        <span className="display text-lg text-foreground">Floorline</span>
       </Link>
-      <Button size="sm" href="/buy" className="h-8">
-        Buy
+      <Button size="sm" href="/create" className="h-8">
+        Create
       </Button>
     </header>
   );
