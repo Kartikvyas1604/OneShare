@@ -1,159 +1,86 @@
 # Brand — OneShare
 
-> One tap, any chain, $10 of NVIDIA — a stock that manages itself.
+> Own $10 of NVIDIA in 60 seconds.
 
-## Status
+## Direction
 
-Active. This file is the source of truth for all color, typography, spacing, voice, and motion decisions in the OneShare web app.
-
-## Positioning
-
-- **Category:** Cross-chain tokenized equities + self-managing positions.
-- **Feeling:** Premium, calm, institutional-trustful but mobile-native.
-- **Personality:** Confident, precise, quietly futuristic. No hype, no casino vibes.
-- **Motion:** Fast, responsive, never decorative. Motion explains state changes.
+**Editorial finance.** The product competes for trust with brokerages, not with memecoin casinos. Every surface reads like a precise financial instrument: true-gray monochrome, one money-green accent, hairline borders, tabular numbers, restrained motion. If a decoration doesn't communicate state or hierarchy, it doesn't ship.
 
 ## Palette
 
-### Primary
+### Canvas & surfaces (dark, true neutral — no blue tint)
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--brand-50` | `#EEF4FF` | Very light backgrounds, badges |
-| `--brand-100` | `#D9E6FF` | Hover states on light |
-| `--brand-200` | `#B6D0FF` | Focus rings, highlights |
-| `--brand-300` | `#84B1FF` | Links, secondary accents |
-| `--brand-400` | `#4F8CFF` | Interactive emphasis |
-| `--brand-500` | `#2F6BFF` | **Primary brand color** — CTAs, key data |
-| `--brand-600` | `#154AE0` | Primary hover / pressed |
-| `--brand-700` | `#103AB6` | Strong emphasis backgrounds |
-| `--brand-800` | `#12338F` | Surfaces |
-| `--brand-900` | `#142E6E` | Deep surfaces |
-| `--brand-950` | `#0F1C3D` | Darkest brand layer |
+| `--background` | `#0A0A0A` | App canvas |
+| `--card` | `#101010` | Cards, panels |
+| `--secondary` | `#161616` | Hover fills, secondary surfaces |
+| `--input` | `#0D0D0D` | Inputs, wells |
+| `--border` | `#1F1F1F` | Hairline borders |
+| `--border-strong` | `#2E2E2E` | Hovered/focused borders |
 
-### Neutral scale (cool gray)
+### Text
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--neutral-0` | `#FFFFFF` | White |
-| `--neutral-50` | `#F8FAFC` | Card backgrounds (light mode) |
-| `--neutral-100` | `#F1F5F9` | Subtle fills |
-| `--neutral-200` | `#E2E8F0` | Borders, dividers |
-| `--neutral-300` | `#CBD5E1` | Disabled, placeholders |
-| `--neutral-400` | `#94A3B8` | Muted text |
-| `--neutral-500` | `#64748B` | Secondary text |
-| `--neutral-600` | `#475569` | Body text light |
-| `--neutral-700` | `#334155` | Strong text light |
-| `--neutral-800` | `#1E293B` | Headings light |
-| `--neutral-900` | `#0F172A` | Near black |
-| `--neutral-950` | `#020617` | Deepest dark background |
+| `--foreground` | `#F5F5F5` | Primary text |
+| `--muted-foreground` | `#8A8A8A` | Secondary text (≥4.5:1 on card) |
+| `--faint` | `#5C5C5C` | Disabled, decorative only |
 
-### Semantic
+### Semantic (money)
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--success` | `#10B981` | Positive PnL, success states |
-| `--success-soft` | `#D1FAE5` | Success backgrounds |
-| `--warning` | `#F59E0B` | Warnings, pending |
-| `--warning-soft` | `#FEF3C7` | Warning backgrounds |
-| `--destructive` | `#EF4444` | Negative PnL, errors, stop-loss triggers |
-| `--destructive-soft` | `#FEE2E2` | Error backgrounds |
-| `--info` | `--brand-500` | Information |
+| `--up` / `--accent` | `#16C784` | Gains, buys, success — the only brand accent |
+| `--down` / `--destructive` | `#EA3943` | Losses, stops, errors |
+| `--warning` | `#F7B750` | Pending states |
+| `--up-soft` / `--down-soft` | 10% alpha | Tinted fills behind semantic text |
 
-### Dark mode surfaces
+**Rule:** green and red appear *only* for money semantics. They never decorate non-financial UI.
 
-| Token | Hex | Usage |
-|---|---|---|
-| `--bg-base` | `#05070D` | App background |
-| `--bg-elevated` | `#0B101C` | Cards, sheets |
-| `--bg-sunken` | `#0D1322` | Input backgrounds, deepest wells |
-| `--border-subtle` | `#1A2336` | Borders in dark |
-| `--border-strong` | `#2A3A5C` | Focused borders |
+### Buttons
 
-## Surfaces & effects
-
-- **Hairline borders:** cards use `border-white/[0.07]` over elevated dark surfaces — subtle depth without heavy outlines.
-- **Glass:** `surface-glass` utility for translucent panels (navbar, mobile dock) with 16px backdrop blur.
-- **Glow:** `shadow-glow-brand` for primary buttons and brand-tinted hover states.
-- **Backgrounds:** `bg-grid` (56px grid, masked radially) for hero sections; brand orbs with `blur-[100px+]` and float/pulse animations.
-- **Gradient text:** `gradient-text-brand` for headline emphasis.
-
-## Motion vocabulary
-
-| Utility | Duration | Use |
-|---|---|---|
-| `animate-fade-up` + `delay-{75..600}` | 500ms | Staggered section/card entrances |
-| `animate-fade-in` | 400ms | State swaps (quotes, errors) |
-| `animate-float-slow` | 9s loop | Ambient background orbs |
-| `animate-pulse-glow` | 5s loop | Hero glow breathing |
-| `animate-ticker` | 30s linear | Landing price ticker |
+- Primary: white fill (`#F5F5F5`) with black text. Hover: pure white.
+- Secondary: `#161616` fill, hairline border.
+- Ghost: transparent, hover fill `#161616`.
+- Destructive: `#EA3943` fill, white text.
 
 ## Typography
 
-- **Sans:** Geist (already loaded) — use for UI, headings, body.
-- **Mono:** Geist Mono (already loaded) — use exclusively for numbers, addresses, hashes, code.
-- **Scale:**
-  - `display-xl`: 48/52, tracking-tight, font-semibold
-  - `display-lg`: 36/40, tracking-tight, font-semibold
-  - `display-md`: 28/32, tracking-tight, font-semibold
-  - `heading-lg`: 24/28, font-semibold
-  - `heading-md`: 20/24, font-semibold
-  - `heading-sm`: 16/20, font-semibold
-  - `body-lg`: 16/24
-  - `body`: 14/20
-  - `body-sm`: 13/18
-  - `caption`: 12/16
-  - `label`: 11/12, uppercase, tracking-wide, font-medium
+- **Sans:** Geist — UI, headings, body.
+- **Mono:** Geist Mono — every number, address, hash, ticker. Always `tabular-nums` (`num` utility).
+- **Eyebrow labels:** 11px, uppercase, `letter-spacing: 0.08em`, `#8A8A8A` (`eyebrow` utility). Used to open every section.
+- **Scale:** display 40–56px/tight · h1 28px · h2 20px · h3 16px · body 14px · small 13px · micro 11–12px.
 
-## Spacing
+## Shape
 
-- Page gutter: `px-4 md:px-6 lg:px-8`
-- Max content width: `max-w-md` (mobile-first), `max-w-2xl` for wide screens
-- Section gaps: `gap-6` mobile, `gap-8` desktop
-- Card internal padding: `p-5` mobile, `p-6` desktop
-- Input height: 48 px (`h-12`)
-- Button height: 48 px primary, 40 px secondary
+- Cards/panels: `rounded-xl` (12px)
+- Buttons/inputs: `rounded-lg` (8px)
+- Badges/chips: `rounded-md` or pill
+- No `rounded-3xl`. Sharp reads financial.
 
-## Radius
+## Depth
 
-- Buttons: `rounded-xl` (16 px)
-- Inputs: `rounded-xl`
-- Cards: `rounded-2xl` (20 px)
-- Pills/badges: `rounded-full`
-- Small chips: `rounded-lg`
-
-## Shadows (dark mode)
-
-- `shadow-card`: `0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25)`
-- `shadow-float`: `0 4px 20px rgba(0,0,0,0.4)`
-- `shadow-glow-brand`: `0 0 24px rgba(37,99,255,0.18)`
+No drop shadows on cards. Separation = 1px hairline border + surface tone step. Shadows only for overlays (popover, dropdown): `0 8px 24px rgba(0,0,0,.5)`.
 
 ## Motion
 
-- Micro: 100 ms (hover, focus)
-- Short: 150 ms (tooltips, dropdowns)
-- Medium: 200–250 ms (sheets, dialogs)
-- Long: 300 ms (page transitions)
-- Easing enter: `cubic-bezier(0,0,0.2,1)`
-- Easing exit: `cubic-bezier(0.4,0,1,1)`
-- Easing move: `cubic-bezier(0.4,0,0.2,1)`
-- Respect `prefers-reduced-motion`.
+- Enter: `fade-up` 400ms with 75/100/150/200/300ms stagger delays.
+- State swap: `fade-in` 300ms.
+- Marquee ticker: 40s linear.
+- Everything respects `prefers-reduced-motion`.
 
 ## Voice
 
-- Active voice, specific, no fluff.
-- Say: “Own $10 of NVIDIA in 60 seconds.”
-- Don’t say: “Revolutionary,” “game-changing,” “passive income,” “guaranteed.”
-- Error copy explains what happened and what to do next.
-- Empty states lead with a clear next action.
+- Active, specific, numeric. "Own $10 of NVIDIA in 60 seconds."
+- Never: revolutionary, guaranteed, passive income, tamper-proof.
+- Disclose limits plainly: not audited, non-US only, issuer risk.
 
-## Logo / wordmark
+## Layout
 
-Text-only wordmark: **OneShare** in Geist, semibold, tracking-tight. No icon required for MVP; a simple stacked-square mark may be added later.
-
-## Application
-
-All colors, spacing, radius, and motion values are implemented as CSS custom properties in `app/globals.css` and consumed via Tailwind `@theme inline`. No raw hex values in components except where documented above.
+- App: fixed desktop sidebar (240px) + content column (max 1100px). Mobile: top bar + bottom dock.
+- Landing: single centered column (max 1100px), section rhythm 96–128px, hairline dividers between sections.
+- Tables over card-grids for dense data (positions, activity).
 
 ---
-_Deferred: none. Brand system active as of 2026-11-12._
+_Active as of 2026-11-12. Replaces the previous gradient/blue system entirely._
