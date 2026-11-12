@@ -29,13 +29,15 @@ Not a brokerage, not a custodial exchange, not a staking product, not a memecoin
 
 | Route | What |
 |---|---|
-| `/` | Marketing landing: hero, live ticker, how-it-works, features, position-NFT showcase, stats, CTA |
-| `/dashboard` | Portfolio value, equity chart with range tabs, active positions, recent activity |
-| `/buy` | Quote → deposit → swap → mint flow with fee breakdown and progress |
-| `/positions` | List with summary bar and premium position cards |
-| `/positions/[id]` | PnL, status timeline, custody panel, policy editor, audit log |
+| `/` | Marketing landing: hero with product window, live ticker, numbered how-it-works, feature grid, NFT showcase, stats, CTA |
+| `/dashboard` | App home: portfolio value, equity chart with range tabs, positions, recent activity |
+| `/buy` | Quote → deposit → swap → mint flow with ledger breakdown and progress rail |
+| `/positions` | Positions with summary strip and policy-chip rows |
+| `/positions/[id]` | PnL, custody panel, lifecycle stepper, policy editor, audit log |
 | `/sim` | Deterministic policy backtester on 2025–26 NVDA daily closes |
-| `/explain` | TEE-attested explanation UI with cached fallback |
+| `/explain` | TEE-attested Q&A with cached fallback |
+
+**Design system:** see `brand.md` and `app/globals.css`. Editorial-finance direction — true-gray monochrome surfaces, one money-green accent (`#16C784`) reserved for gains/buys, red (`#EA3943`) for losses/stops, white primary buttons, hairline borders, Geist with tabular numerals, 12px radii.
 
 ## Getting started
 
