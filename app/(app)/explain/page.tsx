@@ -95,9 +95,9 @@ export default function ExplainPage() {
                 Explanation
               </CardTitle>
               {result.cached ? (
-                <Badge variant="secondary">Cached</Badge>
+                <Badge variant="neutral">Cached</Badge>
               ) : (
-                <Badge variant="success" className="flex items-center gap-1">
+                <Badge variant="up" className="flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3" aria-hidden />
                   Attested
                 </Badge>

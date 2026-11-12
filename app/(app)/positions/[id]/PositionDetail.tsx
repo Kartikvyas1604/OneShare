@@ -181,7 +181,7 @@ export function PositionDetail({ id }: { id: number }) {
       {position.state === "active" && (
         <div className="grid grid-cols-2 gap-3">
           <Button variant="secondary">Sell</Button>
-          <Button variant="outline">Withdraw</Button>
+          <Button variant="secondary">Withdraw</Button>
         </div>
       )}
     </div>

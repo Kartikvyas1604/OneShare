@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -19,64 +19,54 @@ export function SimChart({ result }: { result: SimulationResult }) {
   }));
 
   return (
-    <div className="h-72 w-full">
+    <div className="h-64 w-full md:h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-          <defs>
-            <linearGradient id="colorPolicy" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#2563ff" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#2563ff" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorBuyHold" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#64748b" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#64748b" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+        <LineChart data={data} margin={{ top: 8, right: 4, left: -14, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.06)" vertical={false} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#64748b", fontSize: 10 }}
+            tick={{ fill: "#8a8a8a", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
-            minTickGap={32}
+            minTickGap={40}
           />
           <YAxis
-            tick={{ fill: "#64748b", fontSize: 10 }}
+            tick={{ fill: "#8a8a8a", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v.toFixed(0)}`}
           />
           <Tooltip
+            cursor={{ stroke: "rgba(255,255,255,0.15)", strokeWidth: 1 }}
             contentStyle={{
-              background: "#0b1221",
-              border: "1px solid #1e293b",
-              borderRadius: 12,
+              background: "#141414",
+              border: "1px solid #2e2e2e",
+              borderRadius: 8,
               fontSize: 12,
+              padding: "8px 10px",
             }}
-            itemStyle={{ color: "#f8fafc" }}
+            itemStyle={{ color: "#f5f5f5" }}
+            labelStyle={{ color: "#8a8a8a" }}
             formatter={(value, name) => [`$${Number(value).toFixed(2)}`, name]}
-            labelStyle={{ color: "#94a3b8" }}
           />
-          <Area
+          <Line
             type="monotone"
             dataKey="buyHold"
-            stroke="#64748b"
+            stroke="#5c5c5c"
             strokeWidth={1.5}
-            fillOpacity={1}
-            fill="url(#colorBuyHold)"
+            dot={false}
             name="Buy & hold"
           />
-          <Area
+          <Line
             type="monotone"
             dataKey="policy"
-            stroke="#2563ff"
+            stroke="#16c784"
             strokeWidth={2}
-            fillOpacity={1}
-            fill="url(#colorPolicy)"
+            dot={false}
             name="With policy"
           />
-        </AreaChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

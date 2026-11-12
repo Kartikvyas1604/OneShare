@@ -204,7 +204,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="mt-3 flex items-center gap-2">
-                    <Badge variant="success">Stop −9.0%</Badge>
+          <Badge variant="up">Stop −9.0%</Badge>
                     <Badge variant="default">TP +25.0%</Badge>
                   </div>
                 </Link>

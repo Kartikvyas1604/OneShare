@@ -49,7 +49,7 @@ export function Hero() {
             Start with $10
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
-          <Button size="lg" variant="outline" href="#how" className="w-full sm:w-auto">
+          <Button size="lg" variant="secondary" href="#how">
             See how it works
           </Button>
         </div>

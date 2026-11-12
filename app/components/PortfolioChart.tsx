@@ -22,51 +22,51 @@ export function PortfolioChart({ range = "1M" }: { range?: string }) {
           : PORTFOLIO_HISTORY;
 
   return (
-    <div className="h-56 w-full md:h-64">
+    <div className="h-52 w-full md:h-60">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={points} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+        <AreaChart data={points} margin={{ top: 8, right: 4, left: -14, bottom: 0 }}>
           <defs>
-            <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2f6bff" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#2f6bff" stopOpacity={0} />
+            <linearGradient id="fillPortfolio" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#16c784" stopOpacity={0.16} />
+              <stop offset="100%" stopColor="#16c784" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.08)" vertical={false} />
+          <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.06)" vertical={false} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#8fa0bb", fontSize: 10 }}
+            tick={{ fill: "#8a8a8a", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             minTickGap={40}
           />
           <YAxis
-            tick={{ fill: "#8fa0bb", fontSize: 10 }}
+            tick={{ fill: "#8a8a8a", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v.toFixed(0)}`}
           />
           <Tooltip
-            cursor={{ stroke: "rgba(148,163,184,0.25)", strokeWidth: 1 }}
+            cursor={{ stroke: "rgba(255,255,255,0.15)", strokeWidth: 1 }}
             contentStyle={{
-              background: "#101728",
-              border: "1px solid rgba(148,163,184,0.15)",
-              borderRadius: 12,
+              background: "#141414",
+              border: "1px solid #2e2e2e",
+              borderRadius: 8,
               fontSize: 12,
-              boxShadow: "0 12px 32px rgba(2,6,17,0.55)",
+              padding: "8px 10px",
             }}
-            itemStyle={{ color: "#f4f7fb" }}
-            labelStyle={{ color: "#8fa0bb" }}
+            itemStyle={{ color: "#f5f5f5" }}
+            labelStyle={{ color: "#8a8a8a" }}
             formatter={(value) => [`$${Number(value).toFixed(2)}`, "Portfolio"]}
           />
           <Area
             type="monotone"
             dataKey="value"
-            stroke="#4f8cff"
+            stroke="#16c784"
             strokeWidth={2}
             fillOpacity={1}
-            fill="url(#colorPortfolio)"
-            activeDot={{ r: 4, fill: "#4f8cff", stroke: "#05070d", strokeWidth: 2 }}
+            fill="url(#fillPortfolio)"
+            activeDot={{ r: 3, fill: "#16c784", stroke: "#0a0a0a", strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

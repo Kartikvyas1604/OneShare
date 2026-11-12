@@ -1,63 +1,54 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 import { AuditEntry } from "@/app/lib/data";
 import { EXPLORERS } from "@/app/lib/constants";
 import { formatDate, truncateAddress } from "@/app/lib/utils";
 import { ArrowRightLeft, ShieldCheck, TrendingDown, Activity } from "lucide-react";
 
-const actionIcons: Record<string, React.ElementType> = {
-  Bought: ArrowRightLeft,
-  StopExecuted: TrendingDown,
-  TpExecuted: TrendingDown,
-  DcaExecuted: ArrowRightLeft,
-  PriceUpdate: Activity,
-};
-
-const actionLabels: Record<string, string> = {
-  Bought: "Bought NVDAx",
-  StopExecuted: "Stop-loss executed",
-  TpExecuted: "Take-profit partial sell",
-  DcaExecuted: "DCA purchase",
-  PriceUpdate: "Price update",
+const actionMeta: Record<string, { label: string; icon: React.ElementType }> = {
+  Bought: { label: "Bought NVDAx", icon: ArrowRightLeft },
+  StopExecuted: { label: "Stop-loss executed", icon: TrendingDown },
+  TpExecuted: { label: "Take-profit partial sell", icon: TrendingDown },
+  DcaExecuted: { label: "DCA purchase", icon: ArrowRightLeft },
+  PriceUpdate: { label: "Price refresh", icon: Activity },
 };
 
 export function AuditLog({ entries }: { entries: AuditEntry[] }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-brand-400" aria-hidden />
-          Audit log
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+    <section>
+      <div className="mb-3 flex items-center gap-2 px-0.5">
+        <ShieldCheck className="h-3.5 w-3.5 text-faint" aria-hidden />
+        <h3 className="eyebrow">Audit log</h3>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <ul className="divide-y divide-border">
           {entries.map((entry, idx) => {
-            const Icon = actionIcons[entry.action] ?? Activity;
-            const label = actionLabels[entry.action] ?? entry.action;
+            const meta = actionMeta[entry.action] ?? { label: entry.action, icon: Activity };
             return (
-              <div key={idx} className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.04]">
-                  <Icon className="h-4 w-4 text-brand-300" aria-hidden />
-                </div>
+              <li key={idx} className="flex items-center gap-3 px-4 py-3.5">
+                <meta.icon
+                  className={`h-4 w-4 shrink-0 ${
+                    entry.action.includes("Stop") ? "text-down" : "text-faint"
+                  }`}
+                  aria-hidden
+                />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">{label}</p>
-                  <p className="text-xs text-muted-foreground">{formatDate(entry.ts)}</p>
-                  {entry.tx_sig && (
-                    <a
-                      href={`${EXPLORERS.solana.mainnet}/tx/${entry.tx_sig}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-brand-300 hover:text-brand-200"
-                    >
-                      Tx: {truncateAddress(entry.tx_sig, 6)}
-                    </a>
-                  )}
+                  <p className="truncate text-[13px] font-medium text-foreground">{meta.label}</p>
+                  <p className="num text-[11px] text-muted-foreground">{formatDate(entry.ts)} UTC</p>
                 </div>
-              </div>
+                {entry.tx_sig && (
+                  <a
+                    href={`${EXPLORERS.solana.mainnet}/tx/${entry.tx_sig}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="num shrink-0 text-[11px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    {truncateAddress(entry.tx_sig, 4)}
+                  </a>
+                )}
+              </li>
             );
           })}
-        </div>
-      </CardContent>
-    </Card>
+        </ul>
+      </div>
+    </section>
   );
 }

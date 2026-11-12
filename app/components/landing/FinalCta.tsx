@@ -21,7 +21,7 @@ export function FinalCta() {
             Buy NVDAx now
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
-          <Button size="lg" variant="outline" href="/positions">
+          <Button size="lg" variant="secondary" href="/positions">
             View positions
           </Button>
         </div>
