@@ -20,9 +20,9 @@ export function Hero() {
   return (
     <section className="relative border-b border-border">
       <div className="mx-auto max-w-[1100px] px-4 pb-16 pt-16 md:px-6 md:pb-20 md:pt-24">
-        <p className="eyebrow animate-fade-up">
+        <div className="animate-fade-up inline-flex items-center rounded-full border border-border bg-card px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-muted-foreground">
           Self-managing tokenized-equity positions on NEAR
-        </p>
+        </div>
 
         {/* Serif headline — the identity statement */}
         <h1 className="display animate-fade-up delay-75 mt-5 max-w-3xl text-balance text-[44px] leading-[1.02] text-foreground md:text-[72px]">

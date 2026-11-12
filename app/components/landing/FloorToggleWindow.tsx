@@ -25,7 +25,7 @@ export function FloorToggleWindow() {
   const drawdown = arm.medianMaxDrawdownPct;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
+    <div className="overflow-hidden engraved rounded-2xl bg-card shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />

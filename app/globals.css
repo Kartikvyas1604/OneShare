@@ -34,6 +34,10 @@
   /* Wordmark outline */
   --wordmark-stroke: #3a3a41;
 
+  /* Engraved edge */
+  --edge-light: rgba(237, 235, 228, 0.05);
+  --edge-groove: rgba(0, 0, 0, 0.5);
+
   /* Motion */
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
@@ -68,6 +72,8 @@
     --up-soft: rgba(13, 158, 102, 0.09);
     --down-soft: rgba(211, 59, 65, 0.09);
     --wordmark-stroke: #c9c6bc;
+    --edge-light: rgba(0, 0, 0, 0.06);
+    --edge-groove: rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -225,6 +231,14 @@ body {
   display: inline-block;
   line-height: 1.3;
   padding: 0.08em 0.12em 0.16em;
+}
+
+/* Engraved card edge — 1px highlight + offset groove (obligor pattern) */
+@utility engraved {
+  border: 1px solid var(--edge-light);
+  box-shadow:
+    1px -1px 0 var(--edge-groove),
+    -1px 1px 0 var(--edge-groove);
 }
 
 @utility delay-75 {

@@ -56,7 +56,7 @@ export function LossLimitPreview() {
         </Reveal>
 
         <Reveal delay={STAGGER.row} className="mx-auto w-full max-w-md">
-          <div className="rounded-xl border border-border bg-card">
+          <div className="engraved rounded-2xl bg-card">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <span className="eyebrow">Loss-limit calculator</span>
               <span className="num text-[11px] text-muted-foreground">

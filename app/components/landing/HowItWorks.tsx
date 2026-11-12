@@ -146,7 +146,7 @@ export function HowItWorks() {
           {/* Stage */}
           <Reveal delay={0.12}>
             <div
-              className="min-h-[380px] rounded-xl border border-border bg-card"
+              className="engraved min-h-[380px] rounded-2xl bg-card"
               aria-live="polite"
             >
               <AnimatePresence mode="wait" initial={false}>

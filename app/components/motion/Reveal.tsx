@@ -10,24 +10,28 @@ interface RevealProps {
   /** Seconds before this element starts — use i * STAGGER for lists. */
   delay?: number;
   offsetY?: number;
-  once?: boolean;
+  /** Replay on every scroll-past (obligor behavior). Default true. */
+  replay?: boolean;
   /** Render as a list item inside <ol>/<ul> to keep list semantics. */
   as?: "div" | "li";
 }
 
 /**
- * Scroll-reveal: fade-up as the element enters the viewport, brand easing,
- * once by default. Reduced motion renders static (no transform, no fade).
+ * Scroll-reveal: fade-up as the element enters the viewport, brand easing.
+ * Like obligor's RevealSection, the reveal replays in both directions —
+ * it resets once fully out of view and re-runs when scrolled back.
+ * Reduced motion renders static (no transform, no fade).
  */
 export function Reveal({
   children,
   className,
   delay = 0,
   offsetY = 10,
-  once = true,
+  replay = true,
   as = "div",
 }: RevealProps) {
   const reduced = useReducedMotion();
+  const once = !replay;
 
   if (reduced) {
     return as === "li" ? (
@@ -37,13 +41,15 @@ export function Reveal({
     );
   }
 
+  const viewport = { once, amount: 0.2, margin: "0px 0px -10% 0px" } as const;
+
   if (as === "li") {
     return (
       <motion.li
         className={className}
         initial={{ opacity: 0, y: offsetY }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once, margin: "-64px 0px" }}
+        viewport={viewport}
         transition={{ duration: 0.45, ease: EASE_OUT, delay }}
       >
         {children}
@@ -56,7 +62,7 @@ export function Reveal({
       className={className}
       initial={{ opacity: 0, y: offsetY }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, margin: "-64px 0px" }}
+      viewport={viewport}
       transition={{ duration: 0.45, ease: EASE_OUT, delay }}
     >
       {children}
