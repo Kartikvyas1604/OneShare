@@ -154,6 +154,73 @@ export function generateMockQuote(amountUsdc: number): Quote {
   };
 }
 
+export const PORTFOLIO_HISTORY = [
+  { date: "Oct 14", value: 9.12 },
+  { date: "Oct 15", value: 9.03 },
+  { date: "Oct 16", value: 9.21 },
+  { date: "Oct 17", value: 9.48 },
+  { date: "Oct 20", value: 9.36 },
+  { date: "Oct 21", value: 9.72 },
+  { date: "Oct 22", value: 10.05 },
+  { date: "Oct 23", value: 9.98 },
+  { date: "Oct 24", value: 10.31 },
+  { date: "Oct 27", value: 10.62 },
+  { date: "Oct 28", value: 10.44 },
+  { date: "Oct 29", value: 10.87 },
+  { date: "Oct 30", value: 11.12 },
+  { date: "Oct 31", value: 10.95 },
+  { date: "Nov 3", value: 11.31 },
+  { date: "Nov 4", value: 11.58 },
+  { date: "Nov 5", value: 11.4 },
+  { date: "Nov 6", value: 11.74 },
+  { date: "Nov 7", value: 11.52 },
+  { date: "Nov 10", value: 11.89 },
+  { date: "Nov 11", value: 11.76 },
+  { date: "Nov 12", value: 11.84 },
+];
+
+export const NVDA_PRICE_HISTORY = [
+  { date: "Oct 14", price: 12.05 },
+  { date: "Oct 20", price: 12.22 },
+  { date: "Oct 27", price: 12.58 },
+  { date: "Nov 3", price: 12.91 },
+  { date: "Nov 10", price: 13.31 },
+  { date: "Nov 12", price: 13.42 },
+];
+
+export const RECENT_ACTIVITY: AuditEntry[] = [
+  {
+    ts: Date.now() - 1000 * 60 * 12,
+    position_id: 1,
+    action: "PriceUpdate",
+    quote_hash: "k3m4n5o6",
+  },
+  {
+    ts: Date.now() - 1000 * 60 * 60 * 3,
+    position_id: 1,
+    action: "DcaExecuted",
+    quote_hash: "p7q8r9s0",
+    tx_sig: "8HjK...tUv2",
+    signer_request_id: "req-011",
+  },
+  {
+    ts: Date.now() - 1000 * 60 * 60 * 26,
+    position_id: 2,
+    action: "StopExecuted",
+    quote_hash: "t1u2v3w4",
+    tx_sig: "3FmN...qRs7",
+    signer_request_id: "req-009",
+  },
+  {
+    ts: Date.now() - 1000 * 60 * 60 * 49,
+    position_id: 1,
+    action: "Bought",
+    quote_hash: "x5y6z7a8",
+    tx_sig: "5KtL...xYz9",
+    signer_request_id: "req-005",
+  },
+];
+
 export interface SimulationResult {
   dates: string[];
   equity: number[];
