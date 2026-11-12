@@ -9,17 +9,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { PORTFOLIO_HISTORY } from "@/app/lib/data";
+import { NAV_HISTORY } from "@/app/lib/floorline";
 
 export function PortfolioChart({ range = "1M" }: { range?: string }) {
   const points =
     range === "7D"
-      ? PORTFOLIO_HISTORY.slice(-8)
+      ? NAV_HISTORY.slice(-8)
       : range === "1M"
-        ? PORTFOLIO_HISTORY.slice(-14)
+        ? NAV_HISTORY.slice(-14)
         : range === "3M"
-          ? PORTFOLIO_HISTORY.slice(-18)
-          : PORTFOLIO_HISTORY;
+          ? NAV_HISTORY.slice(-18)
+          : NAV_HISTORY;
 
   return (
     <div className="h-52 w-full md:h-60">
@@ -57,7 +57,7 @@ export function PortfolioChart({ range = "1M" }: { range?: string }) {
             }}
             itemStyle={{ color: "#edebe4" }}
             labelStyle={{ color: "#8f8f96" }}
-            formatter={(value) => [`$${Number(value).toFixed(2)}`, "Portfolio"]}
+            formatter={(value) => [`$${Number(value).toFixed(2)}`, "Total NAV"]}
           />
           <Area
             type="monotone"

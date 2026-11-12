@@ -6,15 +6,15 @@ import { PositionCard } from "@/app/components/PositionCard";
 import { EmptyState } from "@/app/components/EmptyState";
 import { ErrorState } from "@/app/components/ErrorState";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
-import { MOCK_POSITIONS, NVDA_TICKER } from "@/app/lib/data";
-import { formatUsd, formatPercent } from "@/app/lib/utils";
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { MOCK_POSITIONS, RISK_PRICE_USDC, navQuote, worstCaseQuote } from "@/app/lib/floorline";
+import { formatUsd } from "@/app/lib/utils";
+import { Layers } from "lucide-react";
 
 export default function PositionsPage() {
   const [loading] = useState(false);
   const [error] = useState<string | null>(null);
   const positions = useMemo(() => MOCK_POSITIONS, []);
-  const currentPrice = NVDA_TICKER.price_usdc;
+  const price = RISK_PRICE_USDC;
 
   if (loading) {
     return (
@@ -28,7 +28,7 @@ export default function PositionsPage() {
   if (error) {
     return (
       <ErrorState
-        title="Couldn’t load positions"
+        title="Couldn't load positions"
         description="This is usually a network hiccup. Try again in a moment."
         onRetry={() => window.location.reload()}
       />
@@ -39,79 +39,73 @@ export default function PositionsPage() {
     return (
       <div className="mx-auto max-w-xl space-y-8">
         <header>
-          <p className="eyebrow">Stocks</p>
+          <p className="eyebrow">Portfolio</p>
           <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
         </header>
         <EmptyState
-          icon={ArrowUpRight}
+          icon={Layers}
           title="No positions yet"
-          description="Your first one takes 60 seconds. Pay with any token, any chain."
-          action={{ label: "Buy your first share", href: "/buy" }}
+          description="Deposit from any chain, pick a loss limit, and own the floor. Your first one takes 60 seconds."
+          action={{ label: "Create your first position", href: "/create" }}
         />
       </div>
     );
   }
 
-  let invested = 0;
-  let value = 0;
+  let deposited = 0;
+  let navTotal = 0;
+  let worstTotal = 0;
   for (const p of positions) {
-    const inv = p.usdc_in / 1e6;
-    invested += inv;
-    if (p.state === "closed") {
-      value += inv;
-    } else {
-      const entryPrice = p.entry_px / 1e6;
-      const shares = p.usdc_in / entryPrice / 1e6;
-      value += shares * currentPrice;
-    }
+    deposited += p.deposit_amount;
+    navTotal += navQuote(p, price);
+    worstTotal += worstCaseQuote(p);
   }
-  const pnl = value - invested;
-  const pnlPct = invested > 0 ? pnl / invested : 0;
-  const isPositive = pnl >= 0;
+  const pnlPct = deposited > 0 ? (navTotal - deposited) / deposited : 0;
+  const isPositive = pnlPct >= 0;
+  const reserveTotal = positions.reduce((sum, p) => sum + p.floor_amount, 0);
+  const live = positions.filter((p) => p.state === "active" || p.state === "open").length;
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <header className="flex items-start justify-between gap-4">
         <div>
-          <p className="eyebrow">Stocks</p>
+          <p className="eyebrow">Portfolio</p>
           <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
         </div>
-        <Button href="/buy">New position</Button>
+        <Button href="/create">New position</Button>
       </header>
 
       {/* Summary */}
       <section className="animate-fade-up grid grid-cols-2 divide-border rounded-xl border border-border bg-card sm:grid-cols-4 sm:divide-x">
-        <Cell label="Total value" value={formatUsd(value)} />
-        <Cell label="Invested" value={formatUsd(invested)} />
+        <Cell label="Total NAV" value={formatUsd(navTotal / 1e6)} />
+        <Cell label="Reserve escrowed" value={formatUsd(reserveTotal / 1e6)} />
+        <Cell
+          label="Worst case"
+          value={<span className="text-foreground">{formatUsd(worstTotal / 1e6)}</span>}
+        />
         <Cell
           label="Total PnL"
           value={
             <span
               className={`num flex items-center justify-end ${isPositive ? "text-up" : "text-down"}`}
             >
-              {isPositive ? (
-                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-              ) : (
-                <ArrowDownRight className="h-3.5 w-3.5" aria-hidden />
-              )}
-              {formatPercent(pnlPct, { sign: true })}
+              {formatUsd((navTotal - deposited) / 1e6)}
             </span>
           }
         />
-        <Cell label="Live" value={String(positions.filter((p) => p.state === "active").length)} />
       </section>
 
       {/* List */}
       <section className="animate-fade-up delay-100 space-y-2.5">
         {positions.map((p) => (
-          <PositionCard key={p.id} position={p} ticker={NVDA_TICKER} currentPrice={currentPrice} />
+          <PositionCard key={p.hex_id} position={p} currentPrice={price} />
         ))}
       </section>
 
       <p className="animate-fade-up delay-200 text-center text-[11px] text-muted-foreground">
-        Each position is a NEP-171 NFT on NEAR. Transfer it and control of the Solana account moves
-        with it.
+        {live} live · each position is a NEP-171 NFT on NEAR. Transfer it and the claim moves with
+        it — settle pays the new owner.
       </p>
     </div>
   );

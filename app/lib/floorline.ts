@@ -200,7 +200,33 @@ export const GOLDEN_VECTOR = {
   targetUnits: 27.932960893854748, // ≈ 27.932960893854748 wNEAR
 } as const;
 
-/* ─── Mock fixtures (demo data; deterministic against MOCK_EPOCH) ─── */
+/* ─── Portfolio fixtures ─── */
+
+/** Total NAV across the demo portfolio, USD, most recent last (dashboard chart). */
+export const NAV_HISTORY = [
+  { date: "Oct 14", value: 912 },
+  { date: "Oct 15", value: 903 },
+  { date: "Oct 16", value: 921 },
+  { date: "Oct 17", value: 948 },
+  { date: "Oct 20", value: 936 },
+  { date: "Oct 21", value: 972 },
+  { date: "Oct 22", value: 1005 },
+  { date: "Oct 23", value: 998 },
+  { date: "Oct 24", value: 1031 },
+  { date: "Oct 27", value: 1062 },
+  { date: "Oct 28", value: 1044 },
+  { date: "Oct 29", value: 1087 },
+  { date: "Oct 30", value: 1112 },
+  { date: "Oct 31", value: 1095 },
+  { date: "Nov 3", value: 1131 },
+  { date: "Nov 4", value: 1158 },
+  { date: "Nov 5", value: 1140 },
+  { date: "Nov 6", value: 1174 },
+  { date: "Nov 7", value: 1152 },
+  { date: "Nov 10", value: 1189 },
+  { date: "Nov 11", value: 1176 },
+  { date: "Nov 12", value: 1184 },
+];
 
 const MINUTE = 60_000;
 const HOUR = 3_600_000;
