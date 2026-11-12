@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/app/components/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { StatusBadge } from "@/app/components/StatusBadge";
 import { StatusTimeline } from "@/app/components/StatusTimeline";
@@ -11,11 +11,18 @@ import { PolicyEditor } from "@/app/components/PolicyEditor";
 import { WhyNearPanel } from "@/app/components/WhyNearPanel";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
 import { ErrorState } from "@/app/components/ErrorState";
+import { CopyButton } from "@/app/components/CopyButton";
 import { MOCK_POSITIONS, NVDA_TICKER, AUDIT_LOG, Policy } from "@/app/lib/data";
 import { EXPLORERS } from "@/app/lib/constants";
 import { formatUsd, formatPercent, formatTokenAmount, truncateAddress } from "@/app/lib/utils";
-import { CopyButton } from "@/app/components/CopyButton";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight, Wallet, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  ArrowDownRight,
+  Wallet,
+  ExternalLink,
+  ShieldCheck,
+} from "lucide-react";
 
 export function PositionDetail({ id }: { id: number }) {
   const [loading] = useState(false);
@@ -68,34 +75,37 @@ export function PositionDetail({ id }: { id: number }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2">
+      {/* Header */}
+      <div className="flex items-center gap-2.5">
         <Link
           href="/positions"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Back to positions"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
         </Link>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          {NVDA_TICKER.symbol}
+          {NVDA_TICKER.symbol} <span className="text-muted-foreground">#{position.id}</span>
         </h1>
         <StatusBadge state={position.state} />
       </div>
 
-      <Card>
-        <CardContent className="pt-5">
+      {/* Value card */}
+      <Card className="relative animate-fade-up overflow-hidden">
+        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-brand-600/15 blur-3xl" aria-hidden />
+        <CardContent className="relative pt-5">
           <div className="flex items-baseline justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Position value
               </p>
-              <p className="mt-1 font-mono text-3xl font-semibold tabular-nums text-foreground">
+              <p className="mt-1 font-mono text-3xl font-semibold tabular-nums text-foreground md:text-4xl">
                 {formatUsd(value)}
               </p>
             </div>
-            <div
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold ${
-                isPositive ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold ${
+                isPositive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
               }`}
             >
               {isPositive ? (
@@ -104,23 +114,29 @@ export function PositionDetail({ id }: { id: number }) {
                 <ArrowDownRight className="h-4 w-4" aria-hidden />
               )}
               {formatPercent(pnlPct, { sign: true })}
-            </div>
+            </span>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Metric label="Invested" value={formatUsd(invested)} />
             <Metric label="Shares" value={formatTokenAmount(shares)} />
-            <Metric label="Entry price" value={formatUsd(entryPrice)} />
+            <Metric label="Entry" value={formatUsd(entryPrice)} />
             <Metric label="Current" value={formatUsd(currentPrice)} />
           </div>
 
-          <div className="mt-5 rounded-xl bg-muted/50 p-4">
-            <div className="flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <span className="text-xs text-muted-foreground">Derived Solana address</span>
+          {/* Custody */}
+          <div className="mt-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-brand-300" aria-hidden />
+                <span className="text-xs font-semibold text-foreground">Custody via Chain Signatures</span>
+              </div>
+              <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                pos-{position.id}
+              </span>
             </div>
-            <div className="mt-1.5 flex items-center gap-2">
-              <code className="font-mono text-xs text-foreground">
+            <div className="mt-2.5 flex items-center gap-2">
+              <code className="font-mono text-xs text-muted-foreground">
                 {truncateAddress(position.derived_sol, 12)}
               </code>
               <CopyButton value={position.derived_sol} label="Copy" />
@@ -128,27 +144,38 @@ export function PositionDetail({ id }: { id: number }) {
                 href={`${EXPLORERS.solana.mainnet}/account/${position.derived_sol}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="View on Solscan"
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-300 hover:text-brand-200"
               >
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                <ExternalLink className="h-3 w-3" aria-hidden />
+                Solscan
               </a>
             </div>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+              No one — including OneShare — holds a key. Signatures are requested by the vault
+              contract via the MPC network.
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Timeline */}
+      <Card className="animate-fade-up delay-100">
         <CardContent className="pt-5">
           <StatusTimeline state={position.state} />
         </CardContent>
       </Card>
 
+      {/* Policy */}
       {position.state === "active" && (
         <PolicyEditor initialPolicy={position.policy} onChange={handlePolicyChange} />
       )}
 
-      {audit.length > 0 && <AuditLog entries={audit} />}
+      {/* Audit */}
+      {audit.length > 0 && (
+        <div className="animate-fade-up delay-200">
+          <AuditLog entries={audit} />
+        </div>
+      )}
 
       <WhyNearPanel />
 
@@ -164,7 +191,7 @@ export function PositionDetail({ id }: { id: number }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-muted/50 p-3">
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>

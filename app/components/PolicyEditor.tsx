@@ -36,7 +36,7 @@ export function PolicyEditor({
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-foreground">Stop loss</label>
             <span className="font-mono text-xs font-semibold text-destructive">
-              -{(policy.stop_loss_bps / 100).toFixed(1)}%
+              −{(policy.stop_loss_bps / 100).toFixed(1)}%
             </span>
           </div>
           <Slider

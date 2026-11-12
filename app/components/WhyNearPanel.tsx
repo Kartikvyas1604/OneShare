@@ -35,9 +35,9 @@ export function WhyNearPanel() {
           {items.map((item) => (
             <div
               key={item.title}
-              className="rounded-xl bg-muted/50 p-4 transition-colors hover:bg-muted"
+              className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors duration-150 hover:bg-white/[0.05]"
             >
-              <item.icon className="h-5 w-5 text-brand-400" aria-hidden />
+              <item.icon className="h-5 w-5 text-brand-300" aria-hidden />
               <p className="mt-2 text-sm font-semibold text-foreground">{item.title}</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 {item.description}

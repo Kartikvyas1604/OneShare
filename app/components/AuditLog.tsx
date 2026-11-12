@@ -36,8 +36,8 @@ export function AuditLog({ entries }: { entries: AuditEntry[] }) {
             const label = actionLabels[entry.action] ?? entry.action;
             return (
               <div key={idx} className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                  <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.04]">
+                  <Icon className="h-4 w-4 text-brand-300" aria-hidden />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground">{label}</p>
@@ -47,7 +47,7 @@ export function AuditLog({ entries }: { entries: AuditEntry[] }) {
                       href={`${EXPLORERS.solana.mainnet}/tx/${entry.tx_sig}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 inline-flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300"
+                      className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] text-brand-300 hover:text-brand-200"
                     >
                       Tx: {truncateAddress(entry.tx_sig, 6)}
                     </a>
