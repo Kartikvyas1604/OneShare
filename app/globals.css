@@ -1,31 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card: #0b1221;
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  --primary: #2563ff;
+  --background: #05070d;
+  --foreground: #f4f7fb;
+  --card: #0b101c;
+  --card-foreground: #f4f7fb;
+  --popover: #101728;
+  --popover-foreground: #f4f7fb;
+  --primary: #2f6bff;
   --primary-foreground: #ffffff;
-  --secondary: #1e293b;
-  --secondary-foreground: #f1f5f9;
-  --muted: #0f172a;
-  --muted-foreground: #94a3b8;
-  --accent: #103ab6;
-  --accent-foreground: #ffffff;
+  --secondary: #131b2e;
+  --secondary-foreground: #e6ecf6;
+  --muted: #101728;
+  --muted-foreground: #8fa0bb;
+  --accent: #0e1834;
+  --accent-foreground: #e6ecf6;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --success: #10b981;
   --success-soft: #d1fae5;
   --warning: #f59e0b;
   --warning-soft: #fef3c7;
-  --border: #1e293b;
-  --border-strong: #334155;
-  --input: #0f172a;
-  --ring: #4f8cff;
-  --radius: 1rem;
+  --border: #1a2336;
+  --border-strong: #2a3a5c;
+  --input: #0d1322;
+  --ring: #6ea8ff;
 
   /* Brand scale */
   --brand-50: #eef4ff;
@@ -33,10 +32,10 @@
   --brand-200: #b6d0ff;
   --brand-300: #84b1ff;
   --brand-400: #4f8cff;
-  --brand-500: #2563ff;
-  --brand-600: #154ae0;
-  --brand-700: #103ab6;
-  --brand-800: #12338f;
+  --brand-500: #2f6bff;
+  --brand-600: #1f52e0;
+  --brand-700: #1741b6;
+  --brand-800: #15378f;
   --brand-900: #142e6e;
   --brand-950: #0f1c3d;
 
@@ -68,16 +67,14 @@
     --card-foreground: #0f172a;
     --popover: #ffffff;
     --popover-foreground: #0f172a;
-    --primary: #2563ff;
+    --primary: #2f6bff;
     --primary-foreground: #ffffff;
     --secondary: #f1f5f9;
     --secondary-foreground: #1e293b;
     --muted: #f1f5f9;
     --muted-foreground: #64748b;
     --accent: #eef4ff;
-    --accent-foreground: #154ae0;
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
+    --accent-foreground: #1f52e0;
     --border: #e2e8f0;
     --border-strong: #cbd5e1;
     --input: #f1f5f9;
@@ -110,14 +107,9 @@
   --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Brand utilities */
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
@@ -130,7 +122,6 @@
   --color-brand-900: var(--brand-900);
   --color-brand-950: var(--brand-950);
 
-  /* Neutral utilities */
   --color-neutral-0: var(--neutral-0);
   --color-neutral-50: var(--neutral-50);
   --color-neutral-100: var(--neutral-100);
@@ -159,6 +150,7 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -172,31 +164,168 @@ body {
   }
 }
 
-/* Custom utilities */
+/* ---------- Keyframes ---------- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0) scale(1.03);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- Utilities ---------- */
 @utility text-balance {
   text-wrap: balance;
 }
 
-@utility tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
 @utility shadow-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(2, 6, 17, 0.55);
 }
 
 @utility shadow-float {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(2, 6, 17, 0.6);
 }
 
 @utility shadow-glow-brand {
-  box-shadow: 0 0 24px rgba(37, 99, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(47, 107, 255, 0.25), 0 8px 40px rgba(47, 107, 255, 0.18);
 }
 
 @utility gradient-brand {
   background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-300) 100%);
 }
 
-@utility gradient-subtle {
-  background: linear-gradient(180deg, rgba(37, 99, 255, 0.08) 0%, transparent 100%);
+@utility gradient-text-brand {
+  background: linear-gradient(100deg, #ffffff 0%, #9db9ff 55%, #4f8cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility gradient-text-muted {
+  background: linear-gradient(100deg, #c7d4ea 0%, #8fa0bb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@utility bg-dots {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@utility surface-glass {
+  background: linear-gradient(180deg, rgba(19, 27, 46, 0.55) 0%, rgba(11, 16, 28, 0.75) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+@utility surface-elevated {
+  background: linear-gradient(180deg, rgba(19, 27, 46, 0.9) 0%, rgba(11, 16, 28, 0.95) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+@utility ring-inset-brand {
+  box-shadow: inset 0 0 0 1px rgba(47, 107, 255, 0.14);
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.5s var(--ease-out) both;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.4s var(--ease-out) both;
+}
+
+@utility animate-float-slow {
+  animation: float-slow 9s var(--ease-in-out) infinite;
+}
+
+@utility animate-pulse-glow {
+  animation: pulse-glow 5s var(--ease-in-out) infinite;
+}
+
+@utility animate-ticker {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+@utility delay-75 {
+  animation-delay: 75ms;
+}
+@utility delay-100 {
+  animation-delay: 100ms;
+}
+@utility delay-150 {
+  animation-delay: 150ms;
+}
+@utility delay-200 {
+  animation-delay: 200ms;
+}
+@utility delay-300 {
+  animation-delay: 300ms;
+}
+@utility delay-400 {
+  animation-delay: 400ms;
+}
+@utility delay-500 {
+  animation-delay: 500ms;
+}
+@utility delay-600 {
+  animation-delay: 600ms;
 }
