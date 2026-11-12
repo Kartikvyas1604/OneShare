@@ -40,7 +40,7 @@ export default function PositionsPage() {
       <div className="mx-auto max-w-xl space-y-8">
         <header>
           <p className="eyebrow">Stocks</p>
-          <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">Positions</h1>
+          <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
         </header>
         <EmptyState
           icon={ArrowUpRight}
@@ -75,21 +75,21 @@ export default function PositionsPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Stocks</p>
-          <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">Positions</h1>
+          <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
         </div>
-        <Button size="md" href="/buy">
-          New position
-        </Button>
+        <Button href="/buy">New position</Button>
       </header>
 
-      {/* Summary strip */}
+      {/* Summary */}
       <section className="animate-fade-up grid grid-cols-2 divide-border rounded-xl border border-border bg-card sm:grid-cols-4 sm:divide-x">
         <Cell label="Total value" value={formatUsd(value)} />
         <Cell label="Invested" value={formatUsd(invested)} />
         <Cell
           label="Total PnL"
           value={
-            <span className={`num flex items-center justify-end ${isPositive ? "text-up" : "text-down"}`}>
+            <span
+              className={`num flex items-center justify-end ${isPositive ? "text-up" : "text-down"}`}
+            >
               {isPositive ? (
                 <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
               ) : (
@@ -110,8 +110,8 @@ export default function PositionsPage() {
       </section>
 
       <p className="animate-fade-up delay-200 text-center text-[11px] text-muted-foreground">
-        Each position is a NEP-171 NFT on NEAR. Transfer it and control of the Solana account
-        moves with it.
+        Each position is a NEP-171 NFT on NEAR. Transfer it and control of the Solana account moves
+        with it.
       </p>
     </div>
   );
