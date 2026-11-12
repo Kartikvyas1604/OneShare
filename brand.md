@@ -2,6 +2,8 @@
 
 > Own $10 of NVIDIA. In 60 seconds.
 
+_Renamed to **Floorline** in the product UI on 12 Nov 2026 (see `docs/DECISIONS.md`); every visual rule below is unchanged._
+
 ## Direction
 
 **Private banking, not crypto casino.** OneShare competes for trust the way Mercury and Stripe do: warm near-black surfaces, ivory text, a serif display face for headlines, monospaced tabular numerals for every figure, and exactly one semantic accent. Wealth products earn confidence through restraint — every element either communicates data, hierarchy, or action. Everything else is removed.
