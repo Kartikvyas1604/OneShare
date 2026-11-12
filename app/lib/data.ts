@@ -168,7 +168,16 @@ export interface SimulationResult {
   };
 }
 
-export function generateSimulation(policy: Policy): SimulationResult {
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+export function generateSimulation(policy: Policy, seed = 42): SimulationResult {
+  const rand = seededRandom(seed);
   const days = 252;
   const dates: string[] = [];
   const equity: number[] = [];
@@ -188,7 +197,7 @@ export function generateSimulation(policy: Policy): SimulationResult {
     const date = new Date(2025, 0, 2 + i);
     dates.push(date.toISOString().split("T")[0]);
 
-    const drift = (Math.random() - 0.48) * 0.04;
+    const drift = (rand() - 0.48) * 0.04;
     price = Math.max(1, price * (1 + drift));
 
     // DCA

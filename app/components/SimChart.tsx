@@ -55,7 +55,7 @@ export function SimChart({ result }: { result: SimulationResult }) {
               fontSize: 12,
             }}
             itemStyle={{ color: "#f8fafc" }}
-            formatter={(value: number, name: string) => [`$${value.toFixed(2)}`, name]}
+            formatter={(value, name) => [`$${Number(value).toFixed(2)}`, name]}
             labelStyle={{ color: "#94a3b8" }}
           />
           <Area
