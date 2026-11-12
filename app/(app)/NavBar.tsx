@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/app/lib/utils";
-import { Home, PieChart, Sparkles, Brain, ArrowLeftRight, Wallet } from "lucide-react";
+import { Home, PieChart, Sparkles, Brain, ArrowLeftRight, ArrowRightLeft, Wallet } from "lucide-react";
 
 const navItems = [
+  { href: "/dashboard", label: "Home", icon: PieChart },
   { href: "/buy", label: "Buy", icon: Home },
-  { href: "/positions", label: "Positions", icon: PieChart },
+  { href: "/positions", label: "Positions", icon: ArrowRightLeft },
   { href: "/sim", label: "Sim", icon: Sparkles },
-  { href: "/explain", label: "Explain", icon: Brain },
+  { href: "/explain", label: "AI", icon: Brain },
 ];
 
 export function NavBar() {
