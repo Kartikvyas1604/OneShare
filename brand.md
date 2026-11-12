@@ -1,86 +1,87 @@
 # Brand — OneShare
 
-> Own $10 of NVIDIA in 60 seconds.
+> Own $10 of NVIDIA. In 60 seconds.
 
 ## Direction
 
-**Editorial finance.** The product competes for trust with brokerages, not with memecoin casinos. Every surface reads like a precise financial instrument: true-gray monochrome, one money-green accent, hairline borders, tabular numbers, restrained motion. If a decoration doesn't communicate state or hierarchy, it doesn't ship.
+**Private banking, not crypto casino.** OneShare competes for trust the way Mercury and Stripe do: warm near-black surfaces, ivory text, a serif display face for headlines, monospaced tabular numerals for every figure, and exactly one semantic accent. Wealth products earn confidence through restraint — every element either communicates data, hierarchy, or action. Everything else is removed.
+
+## Typography — the identity move
+
+The serif / sans / mono triad is what makes this look designed:
+
+| Face | Role | Where |
+|---|---|---|
+| **Instrument Serif** (400) | Display | Hero headlines, section titles, big statements. Never below 24px. |
+| **Geist** | UI | Body, labels, buttons, nav. |
+| **Geist Mono** | Data | Every number, price, address, hash, ticker. Always tabular. |
+
+- Display headlines: `display` utility, tracking −1%, leading ~1.05.
+- Eyebrow labels: 11px uppercase, 0.09em tracking, muted (`eyebrow` utility).
+- Numbers: `num` utility — Geist Mono, tabular-nums, never jitter.
 
 ## Palette
 
-### Canvas & surfaces (dark, true neutral — no blue tint)
+### Surfaces (warm neutral — deliberately not blue-tinted)
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--background` | `#0A0A0A` | App canvas |
-| `--card` | `#101010` | Cards, panels |
-| `--secondary` | `#161616` | Hover fills, secondary surfaces |
-| `--input` | `#0D0D0D` | Inputs, wells |
-| `--border` | `#1F1F1F` | Hairline borders |
-| `--border-strong` | `#2E2E2E` | Hovered/focused borders |
+| `--background` | `#0E0E10` | Canvas |
+| `--card` | `#141416` | Cards, panels |
+| `--secondary` | `#1A1A1D` | Hover fills, secondary surfaces |
+| `--input` | `#131315` | Inputs, wells |
+| `--border` | `#26262A` | Hairline borders |
+| `--border-strong` | `#3A3A41` | Hovered/focused borders |
 
 ### Text
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--foreground` | `#F5F5F5` | Primary text |
-| `--muted-foreground` | `#8A8A8A` | Secondary text (≥4.5:1 on card) |
-| `--faint` | `#5C5C5C` | Disabled, decorative only |
+| `--foreground` | `#EDEBE4` | Primary text (warm ivory) |
+| `--muted-foreground` | `#8F8F96` | Secondary (≥4.5:1 on card) |
+| `--faint` | `#63636A` | Disabled, decorative |
 
-### Semantic (money)
+### Money semantics — the only color
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--up` / `--accent` | `#16C784` | Gains, buys, success — the only brand accent |
-| `--down` / `--destructive` | `#EA3943` | Losses, stops, errors |
-| `--warning` | `#F7B750` | Pending states |
-| `--up-soft` / `--down-soft` | 10% alpha | Tinted fills behind semantic text |
+| `--up` / `--accent` | `#3DDC97` | Gains, buys, success |
+| `--down` / `--destructive` | `#FF6369` | Losses, stops, errors |
+| `--warning` | `#E8B45A` | Pending |
+| `--up-soft` / `--down-soft` | 9% alpha | Tinted fills behind semantic text |
 
-**Rule:** green and red appear *only* for money semantics. They never decorate non-financial UI.
+**Rule:** green and red carry financial meaning only. No gradients, no glow, no color for decoration.
 
-### Buttons
+## Buttons
 
-- Primary: white fill (`#F5F5F5`) with black text. Hover: pure white.
-- Secondary: `#161616` fill, hairline border.
-- Ghost: transparent, hover fill `#161616`.
-- Destructive: `#EA3943` fill, white text.
+- Primary: ivory fill (`#EDEBE4`), near-black text. Hover: pure white.
+- Buy: solid `--up` with dark green text. Sell: solid `--down` with white text.
+- Secondary: `#1A1A1D` fill + hairline border. Ghost: text-only.
+- Radius 8px. Height 40px (sm 32px, lg 48px). Press = 1px translate down.
 
-## Typography
+## Shape & depth
 
-- **Sans:** Geist — UI, headings, body.
-- **Mono:** Geist Mono — every number, address, hash, ticker. Always `tabular-nums` (`num` utility).
-- **Eyebrow labels:** 11px, uppercase, `letter-spacing: 0.08em`, `#8A8A8A` (`eyebrow` utility). Used to open every section.
-- **Scale:** display 40–56px/tight · h1 28px · h2 20px · h3 16px · body 14px · small 13px · micro 11–12px.
-
-## Shape
-
-- Cards/panels: `rounded-xl` (12px)
-- Buttons/inputs: `rounded-lg` (8px)
-- Badges/chips: `rounded-md` or pill
-- No `rounded-3xl`. Sharp reads financial.
-
-## Depth
-
-No drop shadows on cards. Separation = 1px hairline border + surface tone step. Shadows only for overlays (popover, dropdown): `0 8px 24px rgba(0,0,0,.5)`.
+- Cards: `rounded-xl` (12px). Inputs/buttons: `rounded-lg`. Badges: `rounded-md`.
+- Depth = surface tone step + 1px hairline. Shadows only on overlays: `0 8px 24px rgba(0,0,0,.5)`.
+- Hero product window uses a browser-chrome top bar with three dots — makes mockups read as "product", not "screenshot".
 
 ## Motion
 
-- Enter: `fade-up` 400ms with 75/100/150/200/300ms stagger delays.
-- State swap: `fade-in` 300ms.
-- Marquee ticker: 40s linear.
-- Everything respects `prefers-reduced-motion`.
+- Enter: `fade-up` 450ms, stagger 75/100/150/200/300ms.
+- Swap: `fade-in` 300ms. Ticker: 44s marquee.
+- Nothing bounces, floats, pulses, or glows. `prefers-reduced-motion` disables all.
 
 ## Voice
 
-- Active, specific, numeric. "Own $10 of NVIDIA in 60 seconds."
-- Never: revolutionary, guaranteed, passive income, tamper-proof.
-- Disclose limits plainly: not audited, non-US only, issuer risk.
+- Confident, numeric, honest. "Own $10 of NVIDIA. In 60 seconds."
+- Never: revolutionary, guaranteed, passive income, tamper-proof, AI-powered magic.
+- Disclose plainly: not audited, non-US only, issuer risk, oracle staleness.
 
 ## Layout
 
-- App: fixed desktop sidebar (240px) + content column (max 1100px). Mobile: top bar + bottom dock.
-- Landing: single centered column (max 1100px), section rhythm 96–128px, hairline dividers between sections.
-- Tables over card-grids for dense data (positions, activity).
+- Landing: one centered column (max 1100px), section rhythm 96–128px, hairline `border-b` between sections.
+- App: fixed desktop sidebar 240px + content max 1100px; mobile top bar + bottom dock.
+- Data prefers tables/rows over card grids. Summary strips are single hairline cards with divide-x.
 
 ---
-_Active as of 2026-11-12. Replaces the previous gradient/blue system entirely._
+_Active as of 2026-11-12 · third generation · supersedes both earlier systems._
