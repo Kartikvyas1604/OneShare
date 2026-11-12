@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 import { AuditEntry } from "@/app/lib/data";
+import { EXPLORERS } from "@/app/lib/constants";
 import { formatDate, truncateAddress } from "@/app/lib/utils";
 import { ArrowRightLeft, ShieldCheck, TrendingDown, Activity } from "lucide-react";
 
@@ -43,7 +44,7 @@ export function AuditLog({ entries }: { entries: AuditEntry[] }) {
                   <p className="text-xs text-muted-foreground">{formatDate(entry.ts)}</p>
                   {entry.tx_sig && (
                     <a
-                      href={`https://solscan.io/tx/${entry.tx_sig}`}
+                      href={`${EXPLORERS.solana.mainnet}/tx/${entry.tx_sig}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1 inline-flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300"
