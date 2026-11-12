@@ -8,12 +8,12 @@ export function LandingNavbar() {
       <div className="mx-auto flex h-14 max-w-[1100px] items-center justify-between px-4 md:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-sm font-semibold tracking-tight text-foreground focus-visible:outline-none"
+          className="flex items-center gap-2.5 focus-visible:outline-none"
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground text-background">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden />
           </span>
-          OneShare
+          <span className="display text-lg text-foreground">OneShare</span>
         </Link>
         <nav className="hidden items-center gap-6 md:flex" aria-label="Landing">
           {[

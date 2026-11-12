@@ -27,10 +27,7 @@ function Row() {
 
 export function TickerStrip() {
   return (
-    <section
-      className="border-b border-border bg-card"
-      aria-label="Tokenized stock prices (demo data)"
-    >
+    <section className="border-b border-border bg-card" aria-label="Tokenized stock prices (demo data)">
       <div className="relative flex overflow-hidden py-2.5 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
         <div className="animate-marquee flex">
           <Row />
