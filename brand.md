@@ -56,14 +56,14 @@ The serif / sans / mono triad is what makes this look designed:
 
 ## Buttons
 
-- Primary: ivory fill (`#EDEBE4`), near-black text. Hover: pure white.
+- Primary: ivory fill (`#EDEBE4`), near-black text. Hover: pure white. Soft light shadow for lift.
 - Buy: solid `--up` with dark green text. Sell: solid `--down` with white text.
 - Secondary: `#1A1A1D` fill + hairline border. Ghost: text-only.
-- Radius 8px. Height 40px (sm 32px, lg 48px). Press = 1px translate down.
+- Radius: **pill (full)** — aligned to the Obligor reference, 13 Nov 2026. Height 40px (sm 32px, lg 48px). Press = scale 0.97.
 
 ## Shape & depth
 
-- Cards: `rounded-xl` (12px). Inputs/buttons: `rounded-lg`. Badges: `rounded-md`.
+- Cards: `rounded-2xl` with the **engraved edge** (1px `--edge-light` highlight + offset groove shadows) on hero-level panels; hairline `--border` elsewhere. Inputs/buttons: pill. Badges: `rounded-md`.
 - Depth = surface tone step + 1px hairline. Shadows only on overlays: `0 8px 24px rgba(0,0,0,.5)`.
 - Hero product window uses a browser-chrome top bar with three dots — makes mockups read as "product", not "screenshot".
 

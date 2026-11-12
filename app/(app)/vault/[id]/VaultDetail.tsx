@@ -214,7 +214,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
 
       {/* De-risk rule */}
       <section className="animate-fade-up delay-100">
-        <div className="rounded-xl border border-border bg-card">
+        <div className="engraved rounded-2xl bg-card">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3.5">
             <div className="flex items-center gap-2">
               <TrendingDown className="h-4 w-4 text-faint" aria-hidden />
@@ -289,7 +289,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
 
       {/* Keeper & attestation */}
       <section className="animate-fade-up delay-150">
-        <div className="rounded-xl border border-border bg-card">
+        <div className="engraved rounded-2xl bg-card">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3.5">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-faint" aria-hidden />

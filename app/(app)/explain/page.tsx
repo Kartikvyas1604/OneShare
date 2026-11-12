@@ -59,7 +59,7 @@ export default function ExplainPage() {
       )}
 
       {loading && (
-        <section className="animate-fade-in rounded-xl border border-border bg-card px-4 py-12 text-center">
+        <section className="animate-fade-in engraved rounded-2xl bg-card px-4 py-12 text-center">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" aria-hidden />
           <p className="mt-3 text-[13px] font-medium text-foreground">Attesting explanation…</p>
           <p className="mt-1 text-xs text-muted-foreground">Running inside a TEE on NEAR AI Cloud.</p>
@@ -68,7 +68,7 @@ export default function ExplainPage() {
 
       {result && (
         <section className="animate-fade-up space-y-4">
-          <div className="rounded-xl border border-border bg-card">
+          <div className="engraved rounded-2xl bg-card">
             <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5">
               <p className="truncate text-[13px] font-medium text-foreground">{result.question}</p>
               {result.cached ? (

@@ -78,7 +78,7 @@ export default function CrashPage() {
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
         {/* Controls */}
         <aside className="animate-fade-up order-2 lg:order-1">
-          <div className="rounded-xl border border-border bg-card">
+          <div className="engraved rounded-2xl bg-card">
             <div className="border-b border-border px-4 py-3">
               <p className="text-[13px] font-medium text-foreground">Shock</p>
             </div>
@@ -142,7 +142,7 @@ export default function CrashPage() {
                 </p>
               )}
 
-              <div className="rounded-xl border border-border bg-card p-4 md:p-5">
+              <div className="engraved rounded-2xl bg-card p-4 md:p-5">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-[13px] font-medium text-foreground">
                     Median value path · {result.nSteps} steps
@@ -228,7 +228,7 @@ export default function CrashPage() {
           )}
 
           {state === "idle" && (
-            <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <div className="engraved rounded-2xl bg-card p-8 text-center">
               <p className="text-[13px] text-muted-foreground">Preparing the deterministic run…</p>
             </div>
           )}

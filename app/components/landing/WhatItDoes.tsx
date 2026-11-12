@@ -74,7 +74,7 @@ export function WhatItDoes() {
                 </span>
               </div>
               {/* Mini diagram — the money path */}
-              <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-3">
+              <div className="flex items-center gap-2 engraved rounded-2xl bg-card p-3">
                 {s.diagram.map((d, i) => (
                   <div key={d.label} className="flex min-w-0 flex-1 items-center gap-2">
                     {i > 0 && <ArrowRight className="h-3 w-3 shrink-0 text-faint" aria-hidden />}

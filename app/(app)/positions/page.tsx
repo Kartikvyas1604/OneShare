@@ -77,7 +77,7 @@ export default function PositionsPage() {
       </header>
 
       {/* Summary */}
-      <section className="animate-fade-up grid grid-cols-2 divide-border rounded-xl border border-border bg-card sm:grid-cols-4 sm:divide-x">
+      <section className="animate-fade-up grid grid-cols-2 divide-border engraved rounded-2xl bg-card sm:grid-cols-4 sm:divide-x">
         <Cell label="Total NAV" value={formatUsd(navTotal / 1e6)} />
         <Cell label="Reserve escrowed" value={formatUsd(reserveTotal / 1e6)} />
         <Cell

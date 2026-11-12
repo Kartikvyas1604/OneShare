@@ -25,7 +25,7 @@ export function DemoVideo() {
 
         <Reveal delay={0.12} className="mx-auto mt-10 max-w-3xl">
           {failed ? (
-            <div className="rounded-xl border border-border bg-card">
+            <div className="engraved rounded-2xl bg-card">
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
                 <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
@@ -49,7 +49,7 @@ export function DemoVideo() {
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
+            <div className="overflow-hidden engraved rounded-2xl bg-card">
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
                 <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />

@@ -23,7 +23,7 @@ export function PositionCard({ position, currentPrice }: PositionCardProps) {
   return (
     <Link
       href={`/vault/${position.hex_id}`}
-      className="group flex flex-col gap-4 rounded-xl border border-border bg-card p-4 transition-colors duration-150 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center"
+      className="group flex flex-col gap-4 engraved rounded-2xl bg-card p-4 transition-colors duration-150 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center"
     >
       {/* Identity */}
       <div className="flex min-w-0 flex-1 items-center gap-3">

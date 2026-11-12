@@ -151,7 +151,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-xl border border-border bg-card p-4 md:p-5">
+        <div className="mt-6 engraved rounded-2xl bg-card p-4 md:p-5">
           <PortfolioChart range={range} />
         </div>
       </section>
@@ -186,7 +186,7 @@ export default function DashboardPage() {
       {/* Activity */}
       <section className="animate-fade-up delay-200">
         <h2 className="eyebrow mb-3 px-0.5">Vault events</h2>
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden engraved rounded-2xl bg-card">
           <ul className="divide-y divide-border">
             {events.map((entry, idx) => {
               const meta = eventMeta[entry.name] ?? { label: entry.name, icon: Activity };

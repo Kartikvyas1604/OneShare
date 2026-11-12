@@ -31,7 +31,7 @@ export function AuditLog({ entries }: { entries: VaultEvent[] }) {
         <ShieldCheck className="h-3.5 w-3.5 text-faint" aria-hidden />
         <h3 className="eyebrow">Vault events</h3>
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-hidden engraved rounded-2xl bg-card">
         <ul className="divide-y divide-border">
           {entries.map((entry, idx) => {
             const meta = eventMeta[entry.name] ?? { icon: Activity };

@@ -138,7 +138,7 @@ export default function CreatePage() {
       )}
 
       {/* Form card */}
-      <section className="animate-fade-up rounded-xl border border-border bg-card">
+      <section className="animate-fade-up engraved rounded-2xl bg-card">
         <div className="divide-y divide-border">
           {/* Pay with */}
           <div className="space-y-2 p-4">
@@ -409,7 +409,7 @@ export default function CreatePage() {
       </section>
 
       {/* Explainer */}
-      <section className="animate-fade-up delay-100 rounded-xl border border-border bg-card p-4">
+      <section className="animate-fade-up delay-100 engraved rounded-2xl bg-card p-4">
         <p className="eyebrow mb-2.5">What happens to your deposit</p>
         <ol className="list-inside list-decimal space-y-1.5 text-[13px] leading-relaxed text-muted-foreground">
           <li>
