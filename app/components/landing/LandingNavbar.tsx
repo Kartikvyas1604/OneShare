@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Landmark } from "lucide-react";
+import { ArrowUpRight, Landmark } from "lucide-react";
 import { Button } from "@/app/components/Button";
 
 export function LandingNavbar() {
@@ -38,6 +38,7 @@ export function LandingNavbar() {
           </Button>
           <Button size="sm" href="/create">
             Create
+            <ArrowUpRight className="h-3 w-3" aria-hidden />
           </Button>
         </div>
       </div>
