@@ -22,38 +22,38 @@ export function SimChart({ result }: { result: SimulationResult }) {
     <div className="h-64 w-full md:h-72">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 4, left: -14, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <CartesianGrid strokeDasharray="2 4" stroke="rgba(237,235,228,0.06)" vertical={false} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#8a8a8a", fontSize: 10 }}
+            tick={{ fill: "#8f8f96", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             minTickGap={40}
           />
           <YAxis
-            tick={{ fill: "#8a8a8a", fontSize: 10 }}
+            tick={{ fill: "#8f8f96", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v.toFixed(0)}`}
           />
           <Tooltip
-            cursor={{ stroke: "rgba(255,255,255,0.15)", strokeWidth: 1 }}
+            cursor={{ stroke: "rgba(237,235,228,0.15)", strokeWidth: 1 }}
             contentStyle={{
-              background: "#141414",
-              border: "1px solid #2e2e2e",
+              background: "#1a1a1d",
+              border: "1px solid #3a3a41",
               borderRadius: 8,
               fontSize: 12,
               padding: "8px 10px",
             }}
-            itemStyle={{ color: "#f5f5f5" }}
-            labelStyle={{ color: "#8a8a8a" }}
+            itemStyle={{ color: "#edebe4" }}
+            labelStyle={{ color: "#8f8f96" }}
             formatter={(value, name) => [`$${Number(value).toFixed(2)}`, name]}
           />
           <Line
             type="monotone"
             dataKey="buyHold"
-            stroke="#5c5c5c"
+            stroke="#63636a"
             strokeWidth={1.5}
             dot={false}
             name="Buy & hold"
@@ -61,7 +61,7 @@ export function SimChart({ result }: { result: SimulationResult }) {
           <Line
             type="monotone"
             dataKey="policy"
-            stroke="#16c784"
+            stroke="#3ddc97"
             strokeWidth={2}
             dot={false}
             name="With policy"

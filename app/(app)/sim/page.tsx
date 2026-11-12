@@ -15,9 +15,7 @@ export default function SimPage() {
       {/* Header */}
       <header>
         <p className="eyebrow">Simulator</p>
-        <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">
-          Policy backtester
-        </h1>
+        <h1 className="display mt-1.5 text-3xl text-foreground">Policy backtester</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
           Real 2025–26 NVDA daily closes · fixed-point math · deterministic output
         </p>
@@ -25,7 +23,7 @@ export default function SimPage() {
 
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
         {/* Controls */}
-        <aside className="animate-fade-up order-2 space-y-6 lg:order-1">
+        <aside className="animate-fade-up order-2 lg:order-1">
           <div className="rounded-xl border border-border bg-card">
             <div className="border-b border-border px-4 py-3">
               <p className="text-[13px] font-medium text-foreground">Your policy</p>
@@ -85,7 +83,7 @@ export default function SimPage() {
           </div>
         </aside>
 
-        {/* Chart + metrics */}
+        {/* Results */}
         <div className="animate-fade-up delay-100 order-1 space-y-4 lg:order-2">
           <div className="rounded-xl border border-border bg-card p-4 md:p-5">
             <div className="mb-2 flex items-center justify-between">
@@ -96,7 +94,7 @@ export default function SimPage() {
                   With policy
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="h-0.5 w-3 rounded bg-[#5c5c5c]" aria-hidden />
+                  <span className="h-0.5 w-3 rounded bg-[#63636a]" aria-hidden />
                   Buy &amp; hold
                 </span>
               </div>

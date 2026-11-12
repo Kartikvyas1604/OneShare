@@ -32,9 +32,7 @@ export default function ExplainPage() {
       {/* Header */}
       <header>
         <p className="eyebrow">Explain</p>
-        <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">
-          Ask about your position
-        </h1>
+        <h1 className="display mt-1.5 text-3xl text-foreground">Ask about your position</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
           Answered by a TEE-hosted model on NEAR AI Cloud, with a verifiable attestation quote.
         </p>
@@ -51,7 +49,7 @@ export default function ExplainPage() {
               key={q.text}
               type="button"
               onClick={() => ask(q.text)}
-              className="flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5 text-left text-[13px] font-medium text-foreground transition-colors duration-100 hover:border-border-strong focus-visible:outline-none"
+              className="flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5 text-left text-[13px] font-medium text-foreground transition-colors duration-100 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <q.icon className="h-4 w-4 shrink-0 text-faint" aria-hidden />
               {q.text}
