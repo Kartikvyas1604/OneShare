@@ -34,3 +34,25 @@ export function CardDescription({
     <p className={cn("text-xs leading-relaxed text-muted-foreground", className)}>{children}</p>
   );
 }
+
+/** Section container inside a Card. Padding is owned by the card consumer. */
+export function CardHeader({
+  className,
+  children,
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("flex items-start justify-between gap-3", className)}>{children}</div>;
+}
+
+export function CardContent({
+  className,
+  children,
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("", className)}>{children}</div>;
+}
+
+export function CardFooter({
+  className,
+  children,
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn("mt-4 flex items-center gap-3", className)}>{children}</div>;
+}
