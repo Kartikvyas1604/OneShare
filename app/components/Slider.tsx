@@ -10,6 +10,8 @@ interface SliderProps {
   onValueChange: (value: number[]) => void;
   className?: string;
   accent?: "up" | "down" | "neutral";
+  /** Accessible name — every slider must pass one. */
+  ariaLabel?: string;
 }
 
 export function Slider({
@@ -20,6 +22,7 @@ export function Slider({
   onValueChange,
   className,
   accent = "neutral",
+  ariaLabel = "Slider",
 }: SliderProps) {
   const current = value[0] ?? min;
   const percent = ((current - min) / (max - min)) * 100;
@@ -42,7 +45,7 @@ export function Slider({
         value={current}
         onChange={(e) => onValueChange([Number(e.target.value)])}
         className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent focus-visible:outline-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-background [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:shadow-sm [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-background [&::-moz-range-thumb]:bg-foreground"
-        aria-label="Slider"
+        aria-label={ariaLabel}
       />
     </div>
   );
