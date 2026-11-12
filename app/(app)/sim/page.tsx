@@ -6,36 +6,60 @@ import { SimChart } from "@/app/components/SimChart";
 import { Slider } from "@/app/components/Slider";
 import { DEFAULT_POLICY, generateSimulation, Policy } from "@/app/lib/data";
 import { formatUsd, formatPercent } from "@/app/lib/utils";
-import { Sparkles, TrendingUp, TrendingDown, Activity } from "lucide-react";
+import {
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Database,
+  ShieldCheck,
+  Cpu,
+} from "lucide-react";
 
 export default function SimPage() {
   const [policy, setPolicy] = useState<Policy>(DEFAULT_POLICY);
-
   const result = useMemo(() => generateSimulation(policy), [policy]);
 
   return (
     <div className="space-y-5">
-      <section className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Policy simulator</h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Backtest your rules on real 2025–26 NVDA daily closes. Numbers regenerate with one command.
+      <section className="animate-fade-up relative overflow-hidden rounded-3xl border border-brand-500/15 bg-gradient-to-br from-brand-900/50 via-card to-background p-6">
+        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand-500/20 blur-3xl animate-pulse-glow" aria-hidden />
+        <p className="relative text-xs font-semibold uppercase tracking-widest text-brand-300">
+          Backtest
+        </p>
+        <h1 className="relative mt-1.5 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+          Would your policy have worked?
+        </h1>
+        <p className="relative mt-2 text-sm leading-relaxed text-muted-foreground">
+          Simulated on real 2025–26 NVDA daily closes. Deterministic: the same inputs always
+          produce the same numbers.
         </p>
       </section>
 
-      <Card>
+      <Card className="animate-fade-up delay-100">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-brand-400" aria-hidden />
+            <Sparkles className="h-4 w-4 text-brand-300" aria-hidden />
             Equity curve
           </CardTitle>
-          <CardDescription>Policy vs buy-and-hold over the last 252 trading days.</CardDescription>
+          <CardDescription>With policy vs buy-and-hold, 252 trading days.</CardDescription>
         </CardHeader>
         <CardContent>
           <SimChart result={result} />
+          <div className="mt-3 flex items-center justify-center gap-5 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-brand-400" aria-hidden />
+              With policy
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-neutral-500" aria-hidden />
+              Buy &amp; hold
+            </span>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="animate-fade-up delay-200">
         <CardHeader>
           <CardTitle>Metrics</CardTitle>
         </CardHeader>
@@ -60,24 +84,20 @@ export default function SimPage() {
             />
             <MetricCard
               icon={Activity}
-              label="Stops triggered"
+              label="Stops fired"
               value={result.metrics.stops_triggered.toString()}
             />
             <MetricCard
               icon={Activity}
-              label="TPs triggered"
+              label="TPs fired"
               value={result.metrics.tps_triggered.toString()}
             />
-            <MetricCard
-              icon={Activity}
-              label="CAGR"
-              value={`${result.metrics.cagr_pct.toFixed(1)}%`}
-            />
+            <MetricCard icon={Activity} label="CAGR" value={`${result.metrics.cagr_pct.toFixed(1)}%`} />
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="animate-fade-up delay-300">
         <CardHeader>
           <CardTitle>Policy sliders</CardTitle>
         </CardHeader>
@@ -85,8 +105,8 @@ export default function SimPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-foreground">Stop loss</label>
-              <span className="font-mono text-xs font-semibold text-destructive">
-                -{(policy.stop_loss_bps / 100).toFixed(1)}%
+              <span className="font-mono text-xs font-semibold tabular-nums text-destructive">
+                −{(policy.stop_loss_bps / 100).toFixed(1)}%
               </span>
             </div>
             <Slider
@@ -101,7 +121,7 @@ export default function SimPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-foreground">Take profit</label>
-              <span className="font-mono text-xs font-semibold text-success">
+              <span className="font-mono text-xs font-semibold tabular-nums text-success">
                 +{(policy.take_profit_bps / 100).toFixed(1)}%
               </span>
             </div>
@@ -117,7 +137,7 @@ export default function SimPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-foreground">TP sell portion</label>
-              <span className="font-mono text-xs font-semibold text-foreground">
+              <span className="font-mono text-xs font-semibold tabular-nums text-foreground">
                 {(policy.tp_sell_bps / 100).toFixed(0)}%
               </span>
             </div>
@@ -131,6 +151,21 @@ export default function SimPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Data provenance */}
+      <div className="animate-fade-up delay-400 grid gap-3 sm:grid-cols-3">
+        {[
+          { icon: Database, title: "Real data", desc: "NVDA daily closes, 2025–26" },
+          { icon: Cpu, title: "Fixed-point math", desc: "No floats, byte-stable" },
+          { icon: ShieldCheck, title: "Golden vectors", desc: "sha256-pinned parity TS↔Rust" },
+        ].map((c) => (
+          <div key={c.title} className="rounded-2xl border border-white/[0.07] bg-card p-4">
+            <c.icon className="h-4 w-4 text-brand-300" aria-hidden />
+            <p className="mt-2 text-xs font-semibold text-foreground">{c.title}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">{c.desc}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -147,14 +182,10 @@ function MetricCard({
   positive?: boolean;
 }) {
   const color =
-    positive === undefined
-      ? "text-foreground"
-      : positive
-        ? "text-success"
-        : "text-destructive";
+    positive === undefined ? "text-foreground" : positive ? "text-success" : "text-destructive";
 
   return (
-    <div className="rounded-xl bg-muted/50 p-3">
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         <Icon className="h-3.5 w-3.5" aria-hidden />
         <span className="text-[10px] font-semibold uppercase tracking-wide">{label}</span>
