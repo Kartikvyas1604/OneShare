@@ -83,8 +83,9 @@ export function PositionDetail({ id }: { id: number }) {
             <span className="num text-sm font-semibold text-foreground">N</span>
           </div>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-foreground">
-              {NVDA_TICKER.symbol} <span className="font-normal text-muted-foreground">#{position.id}</span>
+            <h1 className="display text-3xl text-foreground">
+              {NVDA_TICKER.symbol}{" "}
+              <span className="text-muted-foreground">#{position.id}</span>
             </h1>
             <div className="mt-1 flex items-center gap-2">
               <StatusBadge state={position.state} />

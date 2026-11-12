@@ -34,9 +34,7 @@ export function WhyNearPanel() {
           <div key={item.title} className="rounded-xl border border-border bg-card p-4">
             <item.icon className="h-4 w-4 text-faint" aria-hidden />
             <p className="mt-2.5 text-[13px] font-medium text-foreground">{item.title}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {item.description}
-            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
           </div>
         ))}
       </div>
