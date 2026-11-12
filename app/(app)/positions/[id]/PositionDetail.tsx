@@ -13,6 +13,7 @@ import { SkeletonCard } from "@/app/components/SkeletonCard";
 import { ErrorState } from "@/app/components/ErrorState";
 import { MOCK_POSITIONS, NVDA_TICKER, AUDIT_LOG, Policy } from "@/app/lib/data";
 import { formatUsd, formatPercent, formatTokenAmount, truncateAddress } from "@/app/lib/utils";
+import { CopyButton } from "@/app/components/CopyButton";
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Wallet, ExternalLink } from "lucide-react";
 
 export function PositionDetail({ id }: { id: number }) {
@@ -121,6 +122,7 @@ export function PositionDetail({ id }: { id: number }) {
               <code className="font-mono text-xs text-foreground">
                 {truncateAddress(position.derived_sol, 12)}
               </code>
+              <CopyButton value={position.derived_sol} label="Copy" />
               <a
                 href={`https://solscan.io/account/${position.derived_sol}`}
                 target="_blank"

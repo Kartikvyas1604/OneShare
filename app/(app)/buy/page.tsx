@@ -8,11 +8,11 @@ import { Badge } from "@/app/components/Badge";
 import { ChainBadge } from "@/app/components/ChainBadge";
 import { NVDA_TICKER, generateMockQuote, Quote } from "@/app/lib/data";
 import { formatUsd, formatTokenAmount, formatBps, sleep, truncateAddress } from "@/app/lib/utils";
+import { CopyButton } from "@/app/components/CopyButton";
 import {
   ArrowRightLeft,
   ChevronDown,
   Clock,
-  Copy,
   Info,
   Wallet,
   CheckCircle2,
@@ -145,14 +145,7 @@ export default function BuyPage() {
                 <p className="text-xs text-muted-foreground">Send {formatUsd(Number(amount))} USDC on Base to</p>
                 <div className="mt-2 flex items-center justify-center gap-2">
                   <code className="font-mono text-sm text-foreground">{truncateAddress(depositAddress, 10)}</code>
-                  <button
-                    type="button"
-                    onClick={() => navigator.clipboard.writeText(depositAddress)}
-                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="Copy deposit address"
-                  >
-                    <Copy className="h-3.5 w-3.5" aria-hidden />
-                  </button>
+                  <CopyButton value={depositAddress} label="Copy address" />
                 </div>
               </div>
               <Button className="w-full" variant="secondary" onClick={simulateDeposit}>
