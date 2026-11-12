@@ -4,19 +4,11 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/app/components/Card";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
-import { Badge } from "@/app/components/Badge";
 import { ChainBadge } from "@/app/components/ChainBadge";
 import { NVDA_TICKER, generateMockQuote, Quote } from "@/app/lib/data";
 import { formatUsd, formatTokenAmount, formatBps, sleep, truncateAddress } from "@/app/lib/utils";
 import { CopyButton } from "@/app/components/CopyButton";
-import {
-  ArrowRightLeft,
-  ChevronDown,
-  Clock,
-  Info,
-  Wallet,
-  CheckCircle2,
-} from "lucide-react";
+import { ChevronDown, Clock, Info, Wallet, CheckCircle2 } from "lucide-react";
 
 type BuyState = "idle" | "quoting" | "quoted" | "funding" | "buying" | "done" | "error";
 

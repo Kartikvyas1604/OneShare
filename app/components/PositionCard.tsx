@@ -24,7 +24,6 @@ const stateLabels: Record<Position["state"], string> = {
 
 function pnlFor(position: Position, currentPrice: number) {
   const usdcInTotal = position.usdc_in / 1e6;
-  const valueNow = (position.nvdax_amount / 10 ** position.entry_px.toString().length) * currentPrice;
   // Simplified PnL calculation for display
   const entryPrice = position.entry_px / 1e6;
   const shares = position.usdc_in / entryPrice / 1e6;
