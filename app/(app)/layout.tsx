@@ -6,7 +6,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-full md:pl-60">
       <Suspense
-        fallback={<aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-border bg-background md:block" />}
+        fallback={
+          <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-border bg-background md:block" />
+        }
       >
         <AppSidebar />
       </Suspense>
