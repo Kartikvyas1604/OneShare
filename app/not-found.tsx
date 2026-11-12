@@ -7,7 +7,7 @@ export default function NotFound() {
     <div className="flex min-h-full flex-col items-center justify-center px-4 py-20">
       <Card className="w-full max-w-sm text-center">
         <CardContent className="pt-8 pb-8">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.04]">
             <Compass className="h-8 w-8 text-muted-foreground" aria-hidden />
           </div>
           <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">Page not found</h1>

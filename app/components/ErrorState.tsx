@@ -13,7 +13,7 @@ export function ErrorState({ title, description, onRetry, className }: ErrorStat
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-5",
+        "flex flex-col gap-3 rounded-2xl border border-destructive/25 bg-destructive/[0.07] p-5",
         className
       )}
     >
