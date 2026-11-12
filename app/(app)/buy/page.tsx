@@ -58,11 +58,12 @@ export default function BuyPage() {
 
   return (
     <div className="space-y-5">
-      <section className="space-y-2">
-        <h1 className="text-balance text-[28px] font-semibold leading-tight tracking-tight text-foreground">
+      <section className="relative space-y-2 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900/40 via-background to-background p-6 ring-1 ring-inset ring-brand-500/10">
+        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-500/20 blur-3xl" aria-hidden />
+        <h1 className="relative text-balance text-[28px] font-semibold leading-tight tracking-tight text-foreground md:text-4xl">
           Own $10 of NVIDIA in 60 seconds
         </h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="relative text-sm leading-relaxed text-muted-foreground">
           Pay with any token, any chain. Receive a self-managing position NFT on NEAR.
         </p>
       </section>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/app/lib/utils";
-import { Home, PieChart, Sparkles, Brain, ArrowLeftRight } from "lucide-react";
+import { Home, PieChart, Sparkles, Brain, ArrowLeftRight, Wallet } from "lucide-react";
 
 const navItems = [
   { href: "/buy", label: "Buy", icon: Home },
@@ -30,8 +30,9 @@ export function NavBar() {
           </Link>
           <button
             type="button"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
+            <Wallet className="h-3.5 w-3.5" aria-hidden />
             Connect
           </button>
         </div>
