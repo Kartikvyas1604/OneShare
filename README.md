@@ -1,8 +1,8 @@
 # OneShare
 
-> One tap, any chain, $10 of NVIDIA — a stock that manages itself.
+> Own $10 of NVIDIA. In 60 seconds.
 
-OneShare lets anyone buy a real tokenized US equity (e.g. NVDAx, a 1:1 custodied xStock on Solana) in under 60 seconds by paying with any token on any chain, and receive it as a NEAR NEP-171 "position NFT" that carries its own risk policy: stop-loss, take-profit and DCA rules enforced onchain, custody via NEAR Chain Signatures, and a collateralizable object.
+OneShare lets anyone buy a real tokenized US equity (NVDAx, a 1:1 custodied xStock on Solana) in under 60 seconds by paying with any token on any chain, and receive it as a NEAR NEP-171 "position NFT" that carries its own risk policy: stop-loss, take-profit, and DCA rules enforced onchain, custody via NEAR Chain Signatures, and a collateralizable object.
 
 Built for the NEAR Hackathon 2026.
 
@@ -20,7 +20,7 @@ Not a brokerage, not a custodial exchange, not a staking product, not a memecoin
 ## Tech stack
 
 - **Frontend:** Next.js 16 App Router, React 19, Tailwind CSS 4, TypeScript
-- **Fonts:** Geist + Geist Mono via `next/font`
+- **Fonts:** Instrument Serif (display) + Geist (UI) + Geist Mono (data) via `next/font`
 - **Charts:** Recharts (portfolio + simulator)
 - **Icons:** Lucide React
 - **Chain side:** NEAR (`near-sdk-rs`), Solana (`@solana/web3.js`), Jupiter, 1Click API
@@ -29,7 +29,7 @@ Not a brokerage, not a custodial exchange, not a staking product, not a memecoin
 
 | Route | What |
 |---|---|
-| `/` | Marketing landing: hero with product window, live ticker, numbered how-it-works, feature grid, NFT showcase, stats, CTA |
+| `/` | Marketing landing: serif hero with product window, live ticker, numbered how-it-works, feature grid, NFT showcase, stats, CTA |
 | `/dashboard` | App home: portfolio value, equity chart with range tabs, positions, recent activity |
 | `/buy` | Quote → deposit → swap → mint flow with ledger breakdown and progress rail |
 | `/positions` | Positions with summary strip and policy-chip rows |
@@ -37,7 +37,7 @@ Not a brokerage, not a custodial exchange, not a staking product, not a memecoin
 | `/sim` | Deterministic policy backtester on 2025–26 NVDA daily closes |
 | `/explain` | TEE-attested Q&A with cached fallback |
 
-**Design system:** see `brand.md` and `app/globals.css`. Editorial-finance direction — true-gray monochrome surfaces, one money-green accent (`#16C784`) reserved for gains/buys, red (`#EA3943`) for losses/stops, white primary buttons, hairline borders, Geist with tabular numerals, 12px radii.
+**Design system:** see `brand.md` and `app/globals.css`. Private-banking direction — warm near-black surfaces, ivory text, Instrument Serif display headlines, monospaced tabular numerals, emerald (`#3DDC97`) reserved for gains/buys and coral (`#FF6369`) for losses/stops, hairline borders, no decorative gradients.
 
 ## Getting started
 
@@ -46,7 +46,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The app redirects to `/buy`.
+Open [http://localhost:3000](http://localhost:3000) — the landing page links into every app screen.
 
 ## Build
 
@@ -58,14 +58,16 @@ npm run build
 
 ```
 app/
-  (app)/          # Authenticated app shell
-    buy/page.tsx
-    positions/
-    sim/page.tsx
-    explain/page.tsx
-  components/     # Reusable UI kit + domain components
-  lib/            # Types, fixtures, formatting utilities
-brand.md          # Visual identity source of truth
+  (marketing)/        # Landing shell + page
+  (app)/              # App shell: sidebar, dock, header
+    dashboard/        # Portfolio overview
+    buy/              # Purchase flow
+    positions/        # List + [id] detail
+    sim/              # Policy backtester
+    explain/          # TEE-attested Q&A
+  components/         # UI kit, domain components, landing sections
+  lib/                # Types, deterministic fixtures, formatting utils
+brand.md              # Visual identity source of truth
 ```
 
 ## Limitations
