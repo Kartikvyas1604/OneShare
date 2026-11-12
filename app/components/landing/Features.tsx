@@ -44,12 +44,12 @@ export function Features() {
     <section id="features" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-6 md:py-24">
         <p className="eyebrow animate-fade-up">Features</p>
-        <h2 className="animate-fade-up delay-75 mt-2 max-w-xl text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+        <h2 className="display animate-fade-up delay-75 mt-2 max-w-xl text-4xl text-foreground md:text-5xl">
           Rails a brokerage can’t ship.
         </h2>
-        <p className="animate-fade-up delay-150 mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-          Three things a brokerage can’t do: fund from any chain without a bank, hold the asset
-          with keys no one else has, and make the position itself portable.
+        <p className="animate-fade-up delay-150 mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+          Three things a brokerage can’t do: fund from any chain without a bank, hold the asset with
+          keys no one else has, and make the position itself portable.
         </p>
 
         <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">

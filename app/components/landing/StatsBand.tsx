@@ -11,9 +11,7 @@ export function StatsBand() {
       <dl className="mx-auto grid max-w-[1100px] grid-cols-2 divide-border md:grid-cols-4 md:divide-x">
         {stats.map((s) => (
           <div key={s.label} className="px-6 py-10 text-center">
-            <dd className="num text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
-              {s.value}
-            </dd>
+            <dd className="display text-4xl text-foreground md:text-5xl">{s.value}</dd>
             <dt className="mt-1.5 text-xs text-muted-foreground">{s.label}</dt>
           </div>
         ))}

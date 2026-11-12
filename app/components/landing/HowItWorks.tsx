@@ -29,7 +29,7 @@ export function HowItWorks() {
     <section id="how" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-6 md:py-24">
         <p className="eyebrow animate-fade-up">How it works</p>
-        <h2 className="animate-fade-up delay-75 mt-2 max-w-xl text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+        <h2 className="display animate-fade-up delay-75 mt-2 max-w-xl text-4xl text-foreground md:text-5xl">
           Three steps. No brokerage account.
         </h2>
 
@@ -37,7 +37,7 @@ export function HowItWorks() {
           {steps.map((s, idx) => (
             <li
               key={s.num}
-              className={`animate-fade-up delay-${(idx + 1) * 100} grid gap-4 py-8 md:grid-cols-[80px_220px_1fr] md:items-baseline md:gap-8`}
+              className={`animate-fade-up delay-${(idx + 1) * 100} grid gap-4 py-8 md:grid-cols-[80px_240px_1fr] md:items-baseline md:gap-8`}
             >
               <span className="num text-sm text-faint">{s.num}</span>
               <div className="flex items-center gap-3 md:block">

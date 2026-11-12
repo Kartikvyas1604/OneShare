@@ -38,10 +38,10 @@ export function LandingFooter() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground text-background">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden />
               </span>
-              <span className="text-sm font-semibold tracking-tight text-foreground">OneShare</span>
+              <span className="display text-lg text-foreground">OneShare</span>
             </div>
             <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
               Own $10 of NVIDIA in 60 seconds — any token, any chain, a position that manages

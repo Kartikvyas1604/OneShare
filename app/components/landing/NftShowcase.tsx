@@ -11,10 +11,9 @@ export function NftShowcase() {
   return (
     <section id="nft" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto grid max-w-[1100px] items-center gap-10 px-4 py-16 md:px-6 md:py-24 lg:grid-cols-2 lg:gap-16">
-        {/* Copy */}
         <div className="animate-fade-up">
           <p className="eyebrow">Position NFT</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+          <h2 className="display mt-2 max-w-md text-4xl text-foreground md:text-5xl">
             The position is the product.
           </h2>
           <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
