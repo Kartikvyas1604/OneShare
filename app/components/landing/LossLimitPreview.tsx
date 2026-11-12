@@ -64,6 +64,7 @@ export function LossLimitPreview() {
                 min={VAULT_CONFIG.floorRatioMinBps}
                 max={VAULT_CONFIG.floorRatioMaxBps}
                 step={VAULT_CONFIG.floorRatioStepBps}
+                id="preview-loss-limit"
                 ariaLabel="Loss limit — share of the deposit held as reserve"
                 onValueChange={(v) => setFloorBps(v[0])}
               />

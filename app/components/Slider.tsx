@@ -12,6 +12,8 @@ interface SliderProps {
   accent?: "up" | "down" | "neutral";
   /** Accessible name — every slider must pass one. */
   ariaLabel?: string;
+  /** Id for an external <label htmlFor> association. */
+  id?: string;
 }
 
 export function Slider({
@@ -23,6 +25,7 @@ export function Slider({
   className,
   accent = "neutral",
   ariaLabel = "Slider",
+  id,
 }: SliderProps) {
   const current = value[0] ?? min;
   const percent = ((current - min) / (max - min)) * 100;
@@ -39,6 +42,7 @@ export function Slider({
       </div>
       <input
         type="range"
+        id={id}
         min={min}
         max={max}
         step={step}

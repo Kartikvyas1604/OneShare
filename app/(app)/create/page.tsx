@@ -235,7 +235,7 @@ export default function CreatePage() {
                     setAmount(v);
                     setAmountTouched(true);
                   }}
-                  className={`num h-8 rounded-lg border text-xs font-medium transition-colors duration-100 focus-visible:outline-none ${
+                  className={`num h-10 rounded-lg border text-xs font-medium transition-colors duration-100 focus-visible:outline-none ${
                     amount === v
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-transparent text-muted-foreground hover:border-border-strong hover:text-foreground"
@@ -262,6 +262,7 @@ export default function CreatePage() {
               min={VAULT_CONFIG.floorRatioMinBps}
               max={VAULT_CONFIG.floorRatioMaxBps}
               step={VAULT_CONFIG.floorRatioStepBps}
+              id="loss-limit"
               ariaLabel="Loss limit — share of the deposit held as reserve"
               onValueChange={(v) => setFloorBps(v[0])}
             />
@@ -283,7 +284,7 @@ export default function CreatePage() {
                   type="button"
                   aria-pressed={termSeconds === t.seconds}
                   onClick={() => setTermSeconds(t.seconds)}
-                  className={`num h-9 rounded-lg border text-xs font-medium transition-colors duration-100 focus-visible:outline-none ${
+                  className={`num h-10 rounded-lg border text-xs font-medium transition-colors duration-100 focus-visible:outline-none ${
                     termSeconds === t.seconds
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-transparent text-muted-foreground hover:border-border-strong hover:text-foreground"
