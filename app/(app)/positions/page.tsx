@@ -1,14 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/app/components/Button";
 import { PositionCard } from "@/app/components/PositionCard";
 import { EmptyState } from "@/app/components/EmptyState";
 import { ErrorState } from "@/app/components/ErrorState";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
-import { Button } from "@/app/components/Button";
 import { MOCK_POSITIONS, NVDA_TICKER } from "@/app/lib/data";
 import { formatUsd, formatPercent } from "@/app/lib/utils";
-import { PieChart, Plus, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 export default function PositionsPage() {
   const [loading] = useState(false);
@@ -37,80 +38,91 @@ export default function PositionsPage() {
 
   if (positions.length === 0) {
     return (
-      <EmptyState
-        icon={PieChart}
-        title="No positions yet"
-        description="Your first one takes 60 seconds. Pay with any token, any chain."
-        action={{ label: "Buy your first share", href: "/buy" }}
-      />
+      <div className="mx-auto max-w-xl space-y-8">
+        <header>
+          <p className="eyebrow">Stocks</p>
+          <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">Positions</h1>
+        </header>
+        <EmptyState
+          icon={ArrowUpRight}
+          title="No positions yet"
+          description="Your first one takes 60 seconds. Pay with any token, any chain."
+          action={{ label: "Buy your first share", href: "/buy" }}
+        />
+      </div>
     );
   }
 
-  const invested = positions.reduce((s, p) => s + p.usdc_in / 1e6, 0);
-  const value = positions.reduce((s, p) => {
-    const entryPrice = p.entry_px / 1e6;
-    const shares = p.usdc_in / entryPrice / 1e6;
-    return s + (p.state === "closed" ? p.usdc_in / 1e6 : shares * currentPrice);
-  }, 0);
+  let invested = 0;
+  let value = 0;
+  for (const p of positions) {
+    const inv = p.usdc_in / 1e6;
+    invested += inv;
+    if (p.state === "closed") {
+      value += inv;
+    } else {
+      const entryPrice = p.entry_px / 1e6;
+      const shares = p.usdc_in / entryPrice / 1e6;
+      value += shares * currentPrice;
+    }
+  }
   const pnl = value - invested;
   const pnlPct = invested > 0 ? pnl / invested : 0;
   const isPositive = pnl >= 0;
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      {/* Header */}
+      <header className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs text-muted-foreground">Positions</p>
-          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-foreground">
-            Your stocks
-          </h1>
+          <p className="eyebrow">Stocks</p>
+          <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">Positions</h1>
         </div>
-        <Button size="sm" href="/buy">
-          <Plus className="h-4 w-4" aria-hidden />
-          New
+        <Button size="md" href="/buy">
+          New position
         </Button>
-      </div>
+      </header>
 
-      {/* Summary bar */}
-      <div className="animate-fade-up flex items-center justify-between rounded-2xl border border-white/[0.07] bg-card px-4 py-3.5 shadow-card">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Total value
-          </p>
-          <p className="mt-0.5 font-mono text-lg font-semibold tabular-nums text-foreground">
-            {formatUsd(value)}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {formatUsd(invested)} invested
-          </p>
-          <p
-            className={`mt-1 inline-flex items-center gap-1 font-mono text-sm font-semibold tabular-nums ${
-              isPositive ? "text-success" : "text-destructive"
-            }`}
-          >
-            {isPositive ? (
-              <TrendingUp className="h-3.5 w-3.5" aria-hidden />
-            ) : (
-              <TrendingDown className="h-3.5 w-3.5" aria-hidden />
-            )}
-            {formatPercent(pnlPct, { sign: true })}
-          </p>
-        </div>
-      </div>
+      {/* Summary strip */}
+      <section className="animate-fade-up grid grid-cols-2 divide-border rounded-xl border border-border bg-card sm:grid-cols-4 sm:divide-x">
+        <Cell label="Total value" value={formatUsd(value)} />
+        <Cell label="Invested" value={formatUsd(invested)} />
+        <Cell
+          label="Total PnL"
+          value={
+            <span className={`num flex items-center justify-end ${isPositive ? "text-up" : "text-down"}`}>
+              {isPositive ? (
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <ArrowDownRight className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {formatPercent(pnlPct, { sign: true })}
+            </span>
+          }
+        />
+        <Cell label="Live" value={String(positions.filter((p) => p.state === "active").length)} />
+      </section>
 
-      <div className="space-y-3">
-        {positions.map((position, idx) => (
-          <div key={position.id} className={`animate-fade-up delay-${Math.min((idx + 1) * 100, 400)}`}>
-            <PositionCard
-              position={position}
-              ticker={NVDA_TICKER}
-              currentPrice={currentPrice}
-            />
-          </div>
+      {/* List */}
+      <section className="animate-fade-up delay-100 space-y-2.5">
+        {positions.map((p) => (
+          <PositionCard key={p.id} position={p} ticker={NVDA_TICKER} currentPrice={currentPrice} />
         ))}
-      </div>
+      </section>
+
+      <p className="animate-fade-up delay-200 text-center text-[11px] text-muted-foreground">
+        Each position is a NEP-171 NFT on NEAR. Transfer it and control of the Solana account
+        moves with it.
+      </p>
+    </div>
+  );
+}
+
+function Cell({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="p-4">
+      <p className="eyebrow">{label}</p>
+      <p className="num mt-1 text-right text-[15px] font-semibold text-foreground">{value}</p>
     </div>
   );
 }
