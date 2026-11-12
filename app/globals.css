@@ -236,9 +236,7 @@ body {
 /* Engraved card edge — 1px highlight + offset groove (obligor pattern) */
 @utility engraved {
   border: 1px solid var(--edge-light);
-  box-shadow:
-    1px -1px 0 var(--edge-groove),
-    -1px 1px 0 var(--edge-groove);
+  box-shadow: 1px -1px 0 var(--edge-groove), -1px 1px 0 var(--edge-groove);
 }
 
 @utility delay-75 {
