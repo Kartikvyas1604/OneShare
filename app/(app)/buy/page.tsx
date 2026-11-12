@@ -57,16 +57,17 @@ export default function BuyPage() {
       {/* Header */}
       <header>
         <p className="eyebrow">Buy</p>
-        <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">
-          Buy {ticker.symbol}
-        </h1>
+        <h1 className="display mt-1.5 text-3xl text-foreground">Buy {ticker.symbol}</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          One tap, any chain. {formatUsd(ticker.price_usdc)} per {ticker.symbol} ·{" "}
-          <span className="num text-up">+2.34%</span> today
+          One tap, any chain.{" "}
+          <span className="num">
+            {formatUsd(ticker.price_usdc)} per {ticker.symbol}
+          </span>{" "}
+          · <span className="num text-up">+2.34%</span> today
         </p>
       </header>
 
-      {/* Progress (visible during execution) */}
+      {/* Progress */}
       {hasQuote && (
         <ol className="flex items-center gap-2" aria-label="Progress">
           {STEPS.map((step, idx) => {
@@ -86,10 +87,7 @@ export default function BuyPage() {
                   {step.label}
                 </span>
                 {idx < STEPS.length - 1 && (
-                  <span
-                    className={`h-px flex-1 ${reached ? "bg-up/40" : "bg-border"}`}
-                    aria-hidden
-                  />
+                  <span className={`h-px flex-1 ${reached ? "bg-up/40" : "bg-border"}`} aria-hidden />
                 )}
               </li>
             );
@@ -146,7 +144,7 @@ export default function BuyPage() {
             </div>
           </div>
 
-          {/* Receive / breakdown */}
+          {/* Breakdown */}
           <div className="space-y-2.5 p-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground">You receive</span>
@@ -154,7 +152,12 @@ export default function BuyPage() {
                 {hasQuote ? `${formatTokenAmount(estimatedShares)} ${ticker.symbol}` : "—"}
               </span>
             </div>
-            <Row label="Rate" value={hasQuote ? `${formatUsd(ticker.price_usdc)} / ${ticker.symbol}` : "—"} />
+            <Row
+              label="Rate"
+              value={
+                hasQuote ? `${formatUsd(ticker.price_usdc)} / ${ticker.symbol}` : "—"
+              }
+            />
             <Row label="1Click fee" value={quote ? formatUsd(feeUsdc) : "—"} />
             <Row label="Price impact" value={quote ? formatBps(quote.price_impact_bps) : "—"} />
             <Row label="Net invested" value={quote ? formatUsd(netUsdc) : "—"} strong />
@@ -186,7 +189,8 @@ export default function BuyPage() {
               <div className="animate-fade-in space-y-3">
                 <div className="rounded-lg border border-dashed border-border-strong bg-input p-3.5">
                   <p className="text-xs text-muted-foreground">
-                    Send <span className="num font-medium text-foreground">{formatUsd(parsedAmount)}</span>{" "}
+                    Send{" "}
+                    <span className="num font-medium text-foreground">{formatUsd(parsedAmount)}</span>{" "}
                     USDC on Base to
                   </p>
                   <div className="mt-1.5 flex items-center justify-between gap-2">
@@ -239,7 +243,7 @@ export default function BuyPage() {
         </div>
       </section>
 
-      {/* Assurances */}
+      {/* Explainer */}
       <section className="animate-fade-up delay-100 rounded-xl border border-border bg-card p-4">
         <p className="eyebrow mb-2.5">How custody works</p>
         <ol className="list-inside list-decimal space-y-1.5 text-[13px] leading-relaxed text-muted-foreground">
@@ -252,15 +256,7 @@ export default function BuyPage() {
   );
 }
 
-function Row({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[13px] text-muted-foreground">{label}</span>
