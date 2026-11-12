@@ -40,8 +40,9 @@ export function Tabs({
 export function TabsList({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      role="tablist"
       className={cn(
-        "inline-flex h-11 w-full items-center rounded-xl border border-border bg-muted p-1",
+        "inline-flex h-9 items-center gap-1 rounded-lg border border-border bg-input p-1",
         className
       )}
     >
@@ -69,9 +70,9 @@ export function TabsTrigger({
       aria-selected={active}
       onClick={() => ctx.onValueChange(value)}
       className={cn(
-        "inline-flex flex-1 items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "inline-flex items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         active
-          ? "bg-card text-foreground shadow-sm"
+          ? "bg-secondary text-foreground"
           : "text-muted-foreground hover:text-foreground",
         className
       )}
@@ -93,5 +94,9 @@ export function TabsContent({
   const ctx = useContext(TabsContext);
   if (!ctx) throw new Error("TabsContent must be inside Tabs");
   if (ctx.value !== value) return null;
-  return <div role="tabpanel" className={cn("animate-in fade-in duration-200", className)}>{children}</div>;
+  return (
+    <div role="tabpanel" className={cn("animate-fade-in", className)}>
+      {children}
+    </div>
+  );
 }

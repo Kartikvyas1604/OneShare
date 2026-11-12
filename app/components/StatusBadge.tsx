@@ -12,20 +12,25 @@ const labels: Record<PositionState, string> = {
   refunding: "Refunding",
 };
 
-const variants: Record<
-  PositionState,
-  "default" | "secondary" | "outline" | "success" | "warning" | "destructive" | "brand"
-> = {
-  created: "secondary",
-  funding: "warning",
-  buying: "warning",
-  active: "success",
-  selling: "warning",
-  closed: "secondary",
-  withdrawn: "secondary",
-  refunding: "destructive",
+const variants: Record<PositionState, "default" | "up" | "down" | "warn" | "neutral"> = {
+  created: "neutral",
+  funding: "warn",
+  buying: "warn",
+  active: "up",
+  selling: "warn",
+  closed: "neutral",
+  withdrawn: "neutral",
+  refunding: "down",
 };
 
 export function StatusBadge({ state }: { state: PositionState }) {
-  return <Badge variant={variants[state]}>{labels[state]}</Badge>;
+  return (
+    <Badge variant={variants[state]}>
+      <span
+        className="h-1.5 w-1.5 rounded-full bg-current"
+        aria-hidden
+      />
+      {labels[state]}
+    </Badge>
+  );
 }

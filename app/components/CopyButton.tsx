@@ -10,7 +10,7 @@ interface CopyButtonProps {
   label?: string;
 }
 
-export function CopyButton({ value, className, label = "Copy" }: CopyButtonProps) {
+export function CopyButton({ value, className, label }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -24,25 +24,18 @@ export function CopyButton({ value, className, label = "Copy" }: CopyButtonProps
       type="button"
       onClick={handleCopy}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        copied
-          ? "bg-success/15 text-success"
-          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+        "inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        copied && "text-up",
         className
       )}
-      aria-label={copied ? "Copied" : label}
+      aria-label={copied ? "Copied" : "Copy"}
     >
       {copied ? (
-        <>
-          <Check className="h-3.5 w-3.5" aria-hidden />
-          Copied
-        </>
+        <Check className="h-3.5 w-3.5" aria-hidden />
       ) : (
-        <>
-          <Copy className="h-3.5 w-3.5" aria-hidden />
-          {label}
-        </>
+        <Copy className="h-3.5 w-3.5" aria-hidden />
       )}
+      {label && <span>{copied ? "Copied" : label}</span>}
     </button>
   );
 }

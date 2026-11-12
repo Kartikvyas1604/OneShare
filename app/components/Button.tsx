@@ -2,8 +2,8 @@ import { cn } from "@/app/lib/utils";
 import { Loader2 } from "lucide-react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
-  size?: "default" | "sm" | "lg" | "icon";
+  variant?: "primary" | "secondary" | "ghost" | "destructive" | "buy" | "sell";
+  size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
   href?: string;
 }
@@ -11,7 +11,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export function Button({
   className,
   variant = "primary",
-  size = "default",
+  size = "md",
   isLoading,
   children,
   disabled,
@@ -19,27 +19,28 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
+    // White fill, black text — the single most trusted CTA in dark UI
     primary:
-      "bg-gradient-to-b from-brand-400 to-brand-600 text-white shadow-glow-brand hover:from-brand-300 hover:to-brand-500 active:scale-[0.98] active:translate-y-px",
+      "bg-primary text-primary-foreground hover:bg-white active:translate-y-px disabled:opacity-40",
     secondary:
-      "border border-white/[0.08] bg-white/[0.05] text-foreground hover:bg-white/[0.09] active:scale-[0.98] active:translate-y-px",
-    outline:
-      "border border-white/[0.1] bg-transparent text-foreground hover:border-white/[0.2] hover:bg-white/[0.04] active:scale-[0.98] active:translate-y-px",
+      "border border-border bg-secondary text-secondary-foreground hover:border-border-strong hover:bg-[#1a1a1a] active:translate-y-px disabled:opacity-40",
     ghost:
-      "bg-transparent text-foreground hover:bg-white/[0.06] active:scale-[0.98] active:translate-y-px",
+      "text-muted-foreground hover:text-foreground hover:bg-secondary active:translate-y-px disabled:opacity-40",
     destructive:
-      "bg-gradient-to-b from-red-500 to-red-600 text-white hover:brightness-110 active:scale-[0.98] active:translate-y-px",
+      "bg-destructive text-destructive-foreground hover:brightness-110 active:translate-y-px disabled:opacity-40",
+    buy: "bg-up text-[#06251a] font-semibold hover:brightness-105 active:translate-y-px disabled:opacity-40",
+    sell: "bg-down text-white font-semibold hover:brightness-110 active:translate-y-px disabled:opacity-40",
   };
 
   const sizes = {
-    default: "h-12 px-5 text-sm font-semibold",
-    sm: "h-9 px-3 text-xs font-medium",
-    lg: "h-14 px-6 text-base font-semibold",
-    icon: "h-11 w-11",
+    sm: "h-8 px-3 text-xs",
+    md: "h-10 px-4 text-[13px]",
+    lg: "h-12 px-5 text-sm",
+    icon: "h-10 w-10",
   };
 
   const classes = cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl transition-all duration-100 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-[background-color,border-color,color,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none",
     variants[variant],
     sizes[size],
     className

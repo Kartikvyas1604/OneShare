@@ -13,19 +13,23 @@ export function ErrorState({ title, description, onRetry, className }: ErrorStat
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-2xl border border-destructive/25 bg-destructive/[0.07] p-5",
+        "flex flex-col gap-3 rounded-xl border border-down/25 bg-down-soft p-4",
         className
       )}
     >
-      <div className="flex items-center gap-2 text-destructive">
+      <div className="flex items-center gap-2 text-down">
         <AlertCircle className="h-4 w-4" aria-hidden />
-        <p className="text-sm font-semibold">{title}</p>
+        <p className="text-[13px] font-medium">{title}</p>
       </div>
-      {description && <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>}
+      {description && (
+        <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+      )}
       {onRetry && (
-        <Button variant="secondary" size="sm" onClick={onRetry}>
-          Try again
-        </Button>
+        <div>
+          <Button variant="secondary" size="sm" onClick={onRetry}>
+            Try again
+          </Button>
+        </div>
       )}
     </div>
   );
