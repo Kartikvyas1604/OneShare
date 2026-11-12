@@ -27,7 +27,6 @@ export function StatusTimeline({ state }: { state: PositionState }) {
 
         return (
           <li key={step.key} className="relative flex-1">
-            {/* Connector */}
             {idx > 0 && (
               <div
                 className={cn(

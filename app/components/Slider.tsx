@@ -12,11 +12,18 @@ interface SliderProps {
   accent?: "up" | "down" | "neutral";
 }
 
-export function Slider({ value, min, max, step, onValueChange, className, accent = "neutral" }: SliderProps) {
+export function Slider({
+  value,
+  min,
+  max,
+  step,
+  onValueChange,
+  className,
+  accent = "neutral",
+}: SliderProps) {
   const current = value[0] ?? min;
   const percent = ((current - min) / (max - min)) * 100;
-  const fill =
-    accent === "up" ? "bg-up" : accent === "down" ? "bg-down" : "bg-foreground";
+  const fill = accent === "up" ? "bg-up" : accent === "down" ? "bg-down" : "bg-foreground";
 
   return (
     <div className={cn("relative flex w-full touch-none select-none items-center", className)}>

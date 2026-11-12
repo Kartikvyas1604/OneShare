@@ -21,9 +21,7 @@ export function ErrorState({ title, description, onRetry, className }: ErrorStat
         <AlertCircle className="h-4 w-4" aria-hidden />
         <p className="text-[13px] font-medium">{title}</p>
       </div>
-      {description && (
-        <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
-      )}
+      {description && <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>}
       {onRetry && (
         <div>
           <Button variant="secondary" size="sm" onClick={onRetry}>

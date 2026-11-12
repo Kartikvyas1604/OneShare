@@ -2,9 +2,9 @@ import { cn } from "@/app/lib/utils";
 
 const dotColor: Record<string, string> = {
   solana: "bg-[#9945FF]",
-  near: "bg-[#16C784]",
+  near: "bg-[#3DDC97]",
   base: "bg-[#0052FF]",
-  ethereum: "bg-[#8A8A8A]",
+  ethereum: "bg-[#8F8F96]",
 };
 
 export function ChainBadge({ chain, className }: { chain: string; className?: string }) {
@@ -16,10 +16,7 @@ export function ChainBadge({ chain, className }: { chain: string; className?: st
         className
       )}
     >
-      <span
-        className={cn("h-1.5 w-1.5 rounded-full", dotColor[key] ?? "bg-faint")}
-        aria-hidden
-      />
+      <span className={cn("h-1.5 w-1.5 rounded-full", dotColor[key] ?? "bg-faint")} aria-hidden />
       {chain}
     </span>
   );

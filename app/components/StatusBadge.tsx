@@ -26,10 +26,7 @@ const variants: Record<PositionState, "default" | "up" | "down" | "warn" | "neut
 export function StatusBadge({ state }: { state: PositionState }) {
   return (
     <Badge variant={variants[state]}>
-      <span
-        className="h-1.5 w-1.5 rounded-full bg-current"
-        aria-hidden
-      />
+      <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
       {labels[state]}
     </Badge>
   );

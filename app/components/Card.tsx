@@ -1,10 +1,6 @@
 import { cn } from "@/app/lib/utils";
 
-export function Card({
-  className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn("rounded-xl border border-border bg-card", className)}
@@ -15,10 +11,7 @@ export function Card({
   );
 }
 
-export function CardTitle({
-  className,
-  children,
-}: React.HTMLAttributes<HTMLHeadingElement>) {
+export function CardTitle({ className, children }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3 className={cn("text-sm font-semibold tracking-tight text-foreground", className)}>
       {children}
@@ -26,33 +19,19 @@ export function CardTitle({
   );
 }
 
-export function CardDescription({
-  className,
-  children,
-}: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p className={cn("text-xs leading-relaxed text-muted-foreground", className)}>{children}</p>
-  );
+export function CardDescription({ className, children }: React.HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={cn("text-xs leading-relaxed text-muted-foreground", className)}>{children}</p>;
 }
 
-/** Section container inside a Card. Padding is owned by the card consumer. */
-export function CardHeader({
-  className,
-  children,
-}: React.HTMLAttributes<HTMLDivElement>) {
+/** Divided inner section; padding owned by consumer. */
+export function CardHeader({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("flex items-start justify-between gap-3", className)}>{children}</div>;
 }
 
-export function CardContent({
-  className,
-  children,
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function CardContent({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("", className)}>{children}</div>;
 }
 
-export function CardFooter({
-  className,
-  children,
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function CardFooter({ className, children }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("mt-4 flex items-center gap-3", className)}>{children}</div>;
 }

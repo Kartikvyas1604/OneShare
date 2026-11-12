@@ -26,12 +26,7 @@ export function Tabs({
   const [internal, setInternal] = useState(defaultValue ?? "");
   const active = value ?? internal;
   return (
-    <TabsContext.Provider
-      value={{
-        value: active,
-        onValueChange: onValueChange ?? setInternal,
-      }}
-    >
+    <TabsContext.Provider value={{ value: active, onValueChange: onValueChange ?? setInternal }}>
       <div className={cn("space-y-4", className)}>{children}</div>
     </TabsContext.Provider>
   );
@@ -41,10 +36,7 @@ export function TabsList({ className, children }: React.HTMLAttributes<HTMLDivEl
   return (
     <div
       role="tablist"
-      className={cn(
-        "inline-flex h-9 items-center gap-1 rounded-lg border border-border bg-input p-1",
-        className
-      )}
+      className={cn("inline-flex h-9 items-center gap-1 rounded-lg border border-border bg-input p-1", className)}
     >
       {children}
     </div>
@@ -71,9 +63,7 @@ export function TabsTrigger({
       onClick={() => ctx.onValueChange(value)}
       className={cn(
         "inline-flex items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        active
-          ? "bg-secondary text-foreground"
-          : "text-muted-foreground hover:text-foreground",
+        active ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground",
         className
       )}
     >

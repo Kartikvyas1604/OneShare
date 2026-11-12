@@ -24,13 +24,13 @@ export function EmptyState({ icon: Icon, title, description, action, className }
     >
       <Icon className="h-6 w-6 text-faint" aria-hidden />
       <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="display text-xl text-foreground">{title}</p>
         <p className="mx-auto max-w-xs text-[13px] leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>
       {action && (
-        <Button variant="primary" size="sm" href={action.href} onClick={action.onClick}>
+        <Button size="sm" href={action.href} onClick={action.onClick}>
           {action.label}
         </Button>
       )}
