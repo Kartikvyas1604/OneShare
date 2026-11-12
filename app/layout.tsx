@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,12 +14,19 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "OneShare — Own $10 of NVIDIA in 60 seconds",
   description:
     "Buy tokenized US equities with any token on any chain. Receive a NEAR position NFT that manages itself with stop-loss, take-profit, and DCA rules enforced onchain.",
   keywords: ["NEAR", "Solana", "tokenized stocks", "xStocks", "intents", "chain signatures"],
-  authors: [{ name: "OneShare" }],
   openGraph: {
     title: "OneShare — Own $10 of NVIDIA in 60 seconds",
     description:
@@ -38,7 +45,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#020617",
+  themeColor: "#0e0e10",
 };
 
 export default function RootLayout({
@@ -49,12 +56,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
     </html>
   );
 }
