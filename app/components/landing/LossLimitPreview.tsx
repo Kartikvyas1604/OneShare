@@ -5,15 +5,24 @@ import { Button } from "@/app/components/Button";
 import { Slider } from "@/app/components/Slider";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { STAGGER } from "@/app/components/motion/timing";
-import { VAULT_CONFIG, splitDeposit } from "@/app/lib/floorline";
-import { formatUsd } from "@/app/lib/utils";
+import { VAULT_CONFIG, splitDeposit, targetUnits, RISK_PRICE_USDC } from "@/app/lib/floorline";
+import { formatUsd, formatTokenAmount } from "@/app/lib/utils";
 
-const DEMO_DEPOSIT = 1_000;
+const DEMO_DEPOSIT_MIN = 10;
+const DEMO_DEPOSIT_MAX = 10_000;
 
-/** Interactive loss-limit preview — the spec's "/" screen carries one (§6.5). */
+const PRESETS = [
+  { amount: 100, label: "$100 · Starter" },
+  { amount: 1_000, label: "$1,000 · Standard" },
+  { amount: 10_000, label: "$10,000 · Desk" },
+] as const;
+
+/** Interactive loss-limit calculator — the spec's "/" screen carries one (§6.5). */
 export function LossLimitPreview() {
+  const [deposit, setDeposit] = useState(1_000);
   const [floorBps, setFloorBps] = useState<number>(VAULT_CONFIG.floorRatioBps);
-  const { floorAmount, riskBudget } = splitDeposit(DEMO_DEPOSIT * 1e6, floorBps);
+  const { floorAmount, riskBudget } = splitDeposit(deposit * 1e6, floorBps);
+  const units = targetUnits(riskBudget, RISK_PRICE_USDC);
 
   return (
     <section id="limits" className="scroll-mt-20 border-b border-border">
@@ -46,32 +55,75 @@ export function LossLimitPreview() {
           </div>
         </Reveal>
 
-        <Reveal delay={STAGGER.row} className="mx-auto w-full max-w-sm">
+        <Reveal delay={STAGGER.row} className="mx-auto w-full max-w-md">
           <div className="rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <span className="eyebrow">Live preview</span>
+              <span className="eyebrow">Loss-limit calculator</span>
               <span className="num text-[11px] text-muted-foreground">
-                ${DEMO_DEPOSIT.toLocaleString("en-US")} deposit
+                {formatUsd(deposit)} deposit
               </span>
             </div>
-            <div className="space-y-4 px-4 py-5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="preview-loss-limit" className="eyebrow">
-                  Loss limit
-                </label>
-                <span className="num text-[13px] font-medium text-foreground">
-                  {(floorBps / 100).toFixed(0)}% kept
-                </span>
+            <div className="space-y-5 px-4 py-5">
+              {/* Deposit */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="preview-deposit" className="eyebrow">
+                    Deposit (USDC)
+                  </label>
+                  <span className="num text-[13px] font-medium text-foreground">
+                    {formatUsd(deposit)}
+                  </span>
+                </div>
+                <Slider
+                  value={[deposit]}
+                  min={DEMO_DEPOSIT_MIN}
+                  max={DEMO_DEPOSIT_MAX}
+                  step={10}
+                  id="preview-deposit"
+                  ariaLabel="Deposit size in USDC"
+                  onValueChange={(v) => setDeposit(v[0])}
+                />
+                <div className="grid grid-cols-3 gap-2">
+                  {PRESETS.map((p) => (
+                    <button
+                      key={p.amount}
+                      type="button"
+                      aria-pressed={deposit === p.amount}
+                      onClick={() => setDeposit(p.amount)}
+                      className={`num h-8 rounded-lg border text-[11px] font-medium transition-colors duration-100 focus-visible:outline-none ${
+                        deposit === p.amount
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-transparent text-muted-foreground hover:border-border-strong hover:text-foreground"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <Slider
-                value={[floorBps]}
-                min={VAULT_CONFIG.floorRatioMinBps}
-                max={VAULT_CONFIG.floorRatioMaxBps}
-                step={VAULT_CONFIG.floorRatioStepBps}
-                id="preview-loss-limit"
-                ariaLabel="Loss limit — share of the deposit held as reserve"
-                onValueChange={(v) => setFloorBps(v[0])}
-              />
+
+              {/* Loss limit */}
+              <div className="space-y-2.5 border-t border-border pt-4">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="preview-loss-limit" className="eyebrow">
+                    Loss limit
+                  </label>
+                  <span className="num text-[13px] font-medium text-foreground">
+                    {(floorBps / 100).toFixed(0)}% kept
+                  </span>
+                </div>
+                <Slider
+                  value={[floorBps]}
+                  min={VAULT_CONFIG.floorRatioMinBps}
+                  max={VAULT_CONFIG.floorRatioMaxBps}
+                  step={VAULT_CONFIG.floorRatioStepBps}
+                  id="preview-loss-limit"
+                  ariaLabel="Loss limit — share of the deposit held as reserve"
+                  onValueChange={(v) => setFloorBps(v[0])}
+                />
+              </div>
+
+              {/* Outputs */}
               <dl className="space-y-2 border-t border-border pt-4 text-[13px]">
                 <div className="flex items-center justify-between">
                   <dt className="text-muted-foreground">Reserve escrowed</dt>
@@ -80,6 +132,12 @@ export function LossLimitPreview() {
                 <div className="flex items-center justify-between">
                   <dt className="text-muted-foreground">Risk budget</dt>
                   <dd className="num font-medium text-foreground">{formatUsd(riskBudget / 1e6)}</dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-muted-foreground">Est. wNEAR @ ${RISK_PRICE_USDC.toFixed(2)}</dt>
+                  <dd className="num font-medium text-foreground">
+                    {riskBudget > 0 ? formatTokenAmount(units, 3) : "0"}
+                  </dd>
                 </div>
                 <div className="flex items-baseline justify-between border-t border-border pt-3">
                   <dt className="eyebrow">Worst case</dt>
