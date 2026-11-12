@@ -27,46 +27,46 @@ export function PortfolioChart({ range = "1M" }: { range?: string }) {
         <AreaChart data={points} margin={{ top: 8, right: 4, left: -14, bottom: 0 }}>
           <defs>
             <linearGradient id="fillPortfolio" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#16c784" stopOpacity={0.16} />
-              <stop offset="100%" stopColor="#16c784" stopOpacity={0} />
+              <stop offset="0%" stopColor="#3ddc97" stopOpacity={0.14} />
+              <stop offset="100%" stopColor="#3ddc97" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <CartesianGrid strokeDasharray="2 4" stroke="rgba(237,235,228,0.06)" vertical={false} />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#8a8a8a", fontSize: 10 }}
+            tick={{ fill: "#8f8f96", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             minTickGap={40}
           />
           <YAxis
-            tick={{ fill: "#8a8a8a", fontSize: 10 }}
+            tick={{ fill: "#8f8f96", fontSize: 10 }}
             tickLine={false}
             axisLine={false}
             domain={["auto", "auto"]}
             tickFormatter={(v) => `$${v.toFixed(0)}`}
           />
           <Tooltip
-            cursor={{ stroke: "rgba(255,255,255,0.15)", strokeWidth: 1 }}
+            cursor={{ stroke: "rgba(237,235,228,0.15)", strokeWidth: 1 }}
             contentStyle={{
-              background: "#141414",
-              border: "1px solid #2e2e2e",
+              background: "#1a1a1d",
+              border: "1px solid #3a3a41",
               borderRadius: 8,
               fontSize: 12,
               padding: "8px 10px",
             }}
-            itemStyle={{ color: "#f5f5f5" }}
-            labelStyle={{ color: "#8a8a8a" }}
+            itemStyle={{ color: "#edebe4" }}
+            labelStyle={{ color: "#8f8f96" }}
             formatter={(value) => [`$${Number(value).toFixed(2)}`, "Portfolio"]}
           />
           <Area
             type="monotone"
             dataKey="value"
-            stroke="#16c784"
+            stroke="#3ddc97"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#fillPortfolio)"
-            activeDot={{ r: 3, fill: "#16c784", stroke: "#0a0a0a", strokeWidth: 2 }}
+            activeDot={{ r: 3, fill: "#3ddc97", stroke: "#0e0e10", strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

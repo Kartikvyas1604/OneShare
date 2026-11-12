@@ -51,14 +51,13 @@ export default function DashboardPage() {
     );
   }
 
-  // Portfolio math over all positions
   let invested = 0;
   let value = 0;
   for (const p of positions) {
     const inv = p.usdc_in / 1e6;
     invested += inv;
     if (p.state === "closed") {
-      value += inv; // proceeds returned; demo shows flat round-trip
+      value += inv;
     } else {
       const entryPrice = p.entry_px / 1e6;
       const shares = p.usdc_in / entryPrice / 1e6;
@@ -72,20 +71,16 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-10">
-      {/* Page header */}
+      {/* Header */}
       <header className="flex items-start justify-between gap-4">
         <div>
           <p className="eyebrow">Overview</p>
-          <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">
-            Portfolio
-          </h1>
+          <h1 className="display mt-1.5 text-3xl text-foreground">Portfolio</h1>
         </div>
-        <Button size="md" href="/buy">
-          New position
-        </Button>
+        <Button href="/buy">New position</Button>
       </header>
 
-      {/* Portfolio value */}
+      {/* Value */}
       <section className="animate-fade-up">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -113,7 +108,6 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Range switch */}
           <div
             role="tablist"
             aria-label="Chart range"
@@ -169,7 +163,7 @@ export default function DashboardPage() {
         )}
       </section>
 
-      {/* Recent activity */}
+      {/* Activity */}
       <section className="animate-fade-up delay-200">
         <h2 className="eyebrow mb-3 px-0.5">Recent activity</h2>
         <div className="overflow-hidden rounded-xl border border-border bg-card">
