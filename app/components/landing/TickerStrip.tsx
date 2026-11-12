@@ -1,3 +1,5 @@
+import { Marquee } from "@/app/components/Marquee";
+
 const facts = [
   { label: "Reserve", value: "escrowed in a separate contract" },
   { label: "De-risk", value: "−50% from cost, single-shot" },
@@ -10,25 +12,28 @@ const facts = [
 
 function Row() {
   return (
-    <div className="flex shrink-0 items-center">
-      {[...facts, ...facts].map((f, i) => (
-        <div key={i} className="flex items-center gap-2.5 whitespace-nowrap px-5">
+    <>
+      {facts.map((f) => (
+        <span key={f.label} className="flex items-center gap-8 whitespace-nowrap">
           <span className="eyebrow">{f.label}</span>
           <span className="num text-xs text-foreground">{f.value}</span>
-        </div>
+          <span className="h-1 w-1 rounded-full bg-border" aria-hidden />
+        </span>
       ))}
-    </div>
+    </>
   );
 }
 
 export function TickerStrip() {
   return (
-    <section className="border-b border-border bg-card" aria-label="Mechanism facts (demo data)">
-      <div className="relative flex overflow-hidden py-2.5 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
-        <div className="animate-marquee flex">
+    <section
+      className="border-b border-border bg-card py-2.5"
+      aria-label="Mechanism facts (demo data)"
+    >
+      <div className="[mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
+        <Marquee duration={30} gap="2rem">
           <Row />
-          <Row />
-        </div>
+        </Marquee>
       </div>
     </section>
   );

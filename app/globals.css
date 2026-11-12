@@ -31,6 +31,9 @@
   --up-soft: rgba(61, 220, 151, 0.09);
   --down-soft: rgba(255, 99, 105, 0.09);
 
+  /* Wordmark outline */
+  --wordmark-stroke: #3a3a41;
+
   /* Motion */
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
@@ -64,6 +67,7 @@
     --down: #d33b41;
     --up-soft: rgba(13, 158, 102, 0.09);
     --down-soft: rgba(211, 59, 65, 0.09);
+    --wordmark-stroke: #c9c6bc;
   }
 }
 
@@ -156,12 +160,25 @@ body {
     opacity: 1;
   }
 }
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
+
+/* ─── Seamless marquee — two min-w-full tracks (obligor pattern) ─── */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  gap: var(--marquee-gap, 1rem);
+  user-select: none;
+}
+.marquee-track {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--marquee-gap, 1rem);
+  min-width: 100%;
+  animation: marquee-loop var(--marquee-duration, 40s) linear infinite;
+}
+@keyframes marquee-loop {
   to {
-    transform: translateX(-50%);
+    transform: translateX(calc(-100% - var(--marquee-gap, 1rem)));
   }
 }
 
@@ -199,8 +216,15 @@ body {
 @utility animate-fade-in {
   animation: fade-in 0.3s var(--ease-out) both;
 }
-@utility animate-marquee {
-  animation: marquee 44s linear infinite;
+
+/* Hollow wordmark — transparent fill, stroked glyphs (obligor pattern) */
+@utility wordmark-stroke {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--wordmark-stroke);
+  /* Full-glyph headroom: strokes + descenders never clip. */
+  display: inline-block;
+  line-height: 1.3;
+  padding: 0.08em 0.12em 0.16em;
 }
 
 @utility delay-75 {

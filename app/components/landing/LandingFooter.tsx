@@ -59,29 +59,6 @@ export function LandingFooter() {
           <p className="num">Not audited · Non-US only · Fees off for the hackathon</p>
         </div>
       </div>
-
-      {/* Wordmark marquee — the closer */}
-      <div className="overflow-hidden pb-4 select-none" aria-hidden>
-        <div className="animate-marquee flex">
-          <WordmarkRow />
-          <WordmarkRow />
-        </div>
-      </div>
     </footer>
-  );
-}
-
-function WordmarkRow() {
-  return (
-    <div className="flex shrink-0 items-center gap-14 pr-14">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <span
-          key={i}
-          className="display text-[96px] leading-[0.95] text-foreground/[0.08] md:text-[140px]"
-        >
-          Floorline
-        </span>
-      ))}
-    </div>
   );
 }

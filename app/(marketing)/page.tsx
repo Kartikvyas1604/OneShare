@@ -8,6 +8,8 @@ import { StatsBand } from "@/app/components/landing/StatsBand";
 import { DemoVideo } from "@/app/components/landing/DemoVideo";
 import { Faq } from "@/app/components/landing/Faq";
 import { FinalCta } from "@/app/components/landing/FinalCta";
+import { WordmarkMarquee } from "@/app/components/landing/WordmarkMarquee";
+import { LandingFooter } from "@/app/components/landing/LandingFooter";
 
 export default function LandingPage() {
   return (
@@ -22,6 +24,8 @@ export default function LandingPage() {
       <DemoVideo />
       <Faq />
       <FinalCta />
+      <WordmarkMarquee />
+      <LandingFooter />
     </>
   );
 }
