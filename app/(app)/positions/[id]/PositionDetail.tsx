@@ -73,7 +73,7 @@ export function PositionDetail({ id }: { id: number }) {
           Stocks
         </Link>
         <ChevronRight className="h-3 w-3 text-faint" aria-hidden />
-        <span className="num text-foreground">#{position.id}</span>
+        <span className="text-foreground">Position</span>
       </nav>
 
       {/* Title + actions */}
@@ -83,10 +83,7 @@ export function PositionDetail({ id }: { id: number }) {
             <span className="num text-sm font-semibold text-foreground">N</span>
           </div>
           <div>
-            <h1 className="display text-3xl text-foreground">
-              {NVDA_TICKER.symbol}{" "}
-              <span className="text-muted-foreground">#{position.id}</span>
-            </h1>
+            <h1 className="display text-3xl text-foreground">{NVDA_TICKER.symbol}</h1>
             <div className="mt-1 flex items-center gap-2">
               <StatusBadge state={position.state} />
               <span className="text-xs text-muted-foreground">{NVDA_TICKER.name}</span>
@@ -144,7 +141,7 @@ export function PositionDetail({ id }: { id: number }) {
               </p>
             </div>
             <span className="rounded-md border border-border bg-secondary px-2 py-1 text-[11px] font-medium text-muted-foreground">
-              NEP-171 · pos-{position.id}
+              NEP-171 NFT
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5">

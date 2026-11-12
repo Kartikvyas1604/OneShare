@@ -36,6 +36,8 @@ export const DEFAULT_POLICY: Policy = {
 
 export interface Position {
   id: number;
+  /** Hex identifier shown in URLs and UI, e.g. 0x2b9e…8e3b. */
+  hex_id: string;
   owner: string;
   nft_token_id: string;
   sol_path: string;
@@ -81,6 +83,7 @@ export const NVDA_TICKER: Ticker = {
 export const MOCK_POSITIONS: Position[] = [
   {
     id: 1,
+    hex_id: "0x8f3a1c42e7b8d05a6c1f24b8e3d9f0a7",
     owner: "priya.near",
     nft_token_id: "pos-1",
     sol_path: "pos-1",
@@ -95,6 +98,7 @@ export const MOCK_POSITIONS: Position[] = [
   },
   {
     id: 2,
+    hex_id: "0x2b9e6f41d3c78a5f0e4b2c9d7a1f8e3b",
     owner: "priya.near",
     nft_token_id: "pos-2",
     sol_path: "pos-2",

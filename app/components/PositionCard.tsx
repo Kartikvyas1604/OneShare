@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Position, Ticker } from "@/app/lib/data";
-import { formatUsd, formatPercent, formatTokenAmount, truncateAddress } from "@/app/lib/utils";
+import { formatUsd, formatPercent, formatTokenAmount } from "@/app/lib/utils";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 
@@ -27,7 +27,7 @@ export function PositionCard({ position, ticker, currentPrice }: PositionCardPro
 
   return (
     <Link
-      href={`/positions/${position.id}`}
+      href={`/positions/${position.hex_id}`}
       className="group flex flex-col gap-4 rounded-xl border border-border bg-card p-4 transition-colors duration-150 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-row sm:items-center"
     >
       {/* Identity */}
@@ -36,12 +36,7 @@ export function PositionCard({ position, ticker, currentPrice }: PositionCardPro
           <span className="num text-xs font-semibold text-foreground">N</span>
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[13px] font-semibold text-foreground">
-            {ticker.symbol} <span className="font-normal text-muted-foreground">#{position.id}</span>
-          </p>
-          <p className="num truncate text-[11px] text-muted-foreground">
-            {truncateAddress(position.derived_sol, 4)}
-          </p>
+          <p className="truncate text-[13px] font-semibold text-foreground">{ticker.symbol}</p>
         </div>
       </div>
 
