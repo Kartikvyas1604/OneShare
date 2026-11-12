@@ -1,26 +1,33 @@
-import { Coins, ArrowRightLeft, Cuboid } from "lucide-react";
+import { Coins, Landmark, TrendingDown, CheckCircle2 } from "lucide-react";
 
 const steps = [
   {
     icon: Coins,
     num: "01",
-    title: "Fund from any chain",
+    title: "Deposit from any chain",
     description:
-      "Send USDC on Base — or any token a NEAR Intent supports. No bridging UI, no CEX hop, no waiting room. Refunds always route back to you.",
+      "USDC from any of 30+ chains through NEAR Intents. The quote, the split, and the worst case are all in dollars before you send a sat.",
   },
   {
-    icon: ArrowRightLeft,
+    icon: Landmark,
     num: "02",
-    title: "Solvers settle on Solana",
+    title: "The contract splits it",
     description:
-      "1Click delivers USDC to a Solana address derived from your NEAR account by the MPC network. We never hold a key — there is no key to hold.",
+      "floorline-demo.near moves the reserve — 90% by default — to a separate escrow contract. Only the vault's settle path can ever release it.",
   },
   {
-    icon: Cuboid,
+    icon: TrendingDown,
     num: "03",
-    title: "Receive a position NFT",
+    title: "Buy, then de-risk on the rule",
     description:
-      "The position mints as a NEP-171 NFT on NEAR, carrying your stop-loss, take-profit, and DCA policy — enforced by the vault contract, not a promise.",
+      "The keeper swaps the risk budget through the verified route. If the bucket falls 50% below what it cost, it sells — once, automated, no discretion.",
+  },
+  {
+    icon: CheckCircle2,
+    num: "04",
+    title: "Mature, settle, or transfer",
+    description:
+      "Payout at maturity equals NAV: the reserve plus whatever the risk bucket kept. Settle it, exit early for a 1% fee, or transfer the NFT — the claim moves with it.",
   },
 ];
 
@@ -30,7 +37,7 @@ export function HowItWorks() {
       <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-6 md:py-24">
         <p className="eyebrow animate-fade-up">How it works</p>
         <h2 className="display animate-fade-up delay-75 mt-2 max-w-xl text-4xl text-foreground md:text-5xl">
-          Three steps. No brokerage account.
+          One deposit. The contract does the rest.
         </h2>
 
         <ol className="mt-12 divide-y divide-border border-y border-border">

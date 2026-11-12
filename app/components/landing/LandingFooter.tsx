@@ -1,13 +1,14 @@
-import { ArrowLeftRight } from "lucide-react";
+import { Landmark } from "lucide-react";
+
+const REPO_URL = "https://github.com/Kartikvyas1604/OneShare";
 
 const columns = [
   {
     title: "Product",
     links: [
-      { label: "Buy NVDAx", href: "/buy" },
-      { label: "Dashboard", href: "/dashboard" },
-      { label: "Stocks", href: "/positions" },
-      { label: "Simulator", href: "/sim" },
+      { label: "Create a position", href: "/create" },
+      { label: "Positions", href: "/positions" },
+      { label: "Crash test", href: "/crash" },
       { label: "Explain", href: "/explain" },
     ],
   },
@@ -16,17 +17,16 @@ const columns = [
     links: [
       { label: "NEAR Intents", href: "https://docs.near-intents.org" },
       { label: "Chain Signatures", href: "https://docs.near.org/chain-abstraction/chain-signatures" },
-      { label: "xStocks", href: "https://xstocks.com" },
-      { label: "NEAR AI Cloud", href: "https://cloud-api.near.ai" },
+      { label: "NEAR AI Cloud", href: "https://docs.near.ai" },
+      { label: "1Click API", href: "https://docs.near-intents.org/integration/distribution-channels/1click-api/quickstart" },
     ],
   },
   {
-    title: "Legal",
+    title: "Source",
     links: [
-      { label: "Not a brokerage", href: "#" },
-      { label: "Non-US only", href: "#" },
-      { label: "Not audited", href: "#" },
-      { label: "No investment advice", href: "#" },
+      { label: "GitHub repo", href: REPO_URL },
+      { label: "Decision log", href: `${REPO_URL}/blob/main/docs/DECISIONS.md` },
+      { label: "MIT licence", href: `${REPO_URL}/blob/main/LICENSE` },
     ],
   },
 ];
@@ -39,13 +39,13 @@ export function LandingFooter() {
           <div>
             <div className="flex items-center gap-2.5">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden />
+                <Landmark className="h-3.5 w-3.5" aria-hidden />
               </span>
-              <span className="display text-lg text-foreground">OneShare</span>
+              <span className="display text-lg text-foreground">Floorline</span>
             </div>
             <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
-              Own $10 of NVIDIA in 60 seconds — any token, any chain, a position that manages
-              itself.
+              Deposit USDC from any chain, pick a loss limit, and own a self-managing slice of
+              NVIDIA as a NEAR NFT.
             </p>
           </div>
           {columns.map((col) => (
@@ -68,11 +68,15 @@ export function LandingFooter() {
         </div>
         <div className="mt-12 border-t border-border pt-6">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            OneShare is not a brokerage, exchange, or investment advisor. Tokenized equities carry
+            Floorline is not a brokerage, exchange, or investment advisor. Tokenized equities carry
             issuer, custody, oracle, and smart-contract risks. Available to non-US persons only.
-            Not audited. We do not promise returns; we publish the simulation and the rules.
+            Not audited. We do not promise returns; we publish the simulation and the rules. The
+            demo runs a verified fallback asset — the equity route is gated and disclosed, not
+            implied.
           </p>
-          <p className="mt-3 text-[11px] text-faint">© 2026 OneShare · Built at NEAR Hackathon 2026</p>
+          <p className="mt-3 text-[11px] text-faint">
+            © 2026 Floorline · Built at NEAR Hackathon 2026
+          </p>
         </div>
       </div>
     </footer>

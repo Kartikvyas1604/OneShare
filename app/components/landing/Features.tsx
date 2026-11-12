@@ -1,41 +1,41 @@
-import { Zap, KeyRound, Cuboid, Shield, BrainCircuit, RefreshCcw } from "lucide-react";
+import { Lock, TrendingDown, Zap, Cuboid, BrainCircuit, ShieldCheck } from "lucide-react";
 
 const features = [
   {
-    icon: Zap,
-    title: "NEAR Intents funding",
+    icon: Lock,
+    title: "Escrowed reserve",
     description:
-      "Fund from any token on any supported chain through 1Click solvers. The vault never holds your funds outside execution, and refunds go to you.",
+      "The reserve sits in a separate contract whose only door is the vault's settle path. A 20,000-sequence invariant suite fails if any other path can move it.",
   },
   {
-    icon: KeyRound,
-    title: "MPC custody, zero keys",
+    icon: TrendingDown,
+    title: "Automated de-risk",
     description:
-      "Your Solana address is derived from your NEAR account via Chain Signatures. No key transfer, no custodian, no single point of compromise.",
+      "Sell the risk bucket at −50% from cost — once, with no keeper discretion. The effect is backtested over 10,000 simulated paths, seed 20261112.",
+  },
+  {
+    icon: Zap,
+    title: "Any-chain funding",
+    description:
+      "USDC from 30+ chains through NEAR Intents. Quotes run dry first, slippage is bounded in the contract, refunds route back to your wallet.",
   },
   {
     icon: Cuboid,
-    title: "Position = NFT",
+    title: "Transferable position",
     description:
-      "The position is a NEP-171 NFT. Transfer it and control of the Solana account moves with it — sell it, gift it, or pledge it as collateral.",
-  },
-  {
-    icon: Shield,
-    title: "Policy-bounded keeper",
-    description:
-      "The keeper holds a FunctionCall key limited to three methods. It can only act inside your stop-loss, take-profit, and slippage bounds — with a 5 NEAR bond at stake.",
+      "The position is an NEP-171 NFT. Transfer it and the claim moves with it — whoever holds it settles, and settle pays the holder.",
   },
   {
     icon: BrainCircuit,
-    title: "TEE-attested explain",
+    title: "TEE attestation",
     description:
-      "Explanations run inside a TEE on NEAR AI Cloud and return a verifiable attestation quote. If the service is down, you get a clearly-marked cache.",
+      "The de-risk decision runs in NEAR AI Cloud inside a TEE, and the attestation hash lands on the position. Until that flow verifies, a local rule runs and the badge says pending.",
   },
   {
-    icon: RefreshCcw,
-    title: "Deterministic simulator",
+    icon: ShieldCheck,
+    title: "No leverage, no liquidation",
     description:
-      "Backtest on real 2025–26 NVDA daily closes. Fixed-point integers, golden vectors, byte-identical output across TypeScript and Rust.",
+      "v1 borrows nothing, so nothing can be liquidated. The worst case is the risk budget you set — a number you chose before you deposited.",
   },
 ];
 
@@ -45,11 +45,11 @@ export function Features() {
       <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-6 md:py-24">
         <p className="eyebrow animate-fade-up">Features</p>
         <h2 className="display animate-fade-up delay-75 mt-2 max-w-xl text-4xl text-foreground md:text-5xl">
-          Rails a brokerage can’t ship.
+          A loss limit enforced by custody.
         </h2>
         <p className="animate-fade-up delay-150 mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-          Three things a brokerage can’t do: fund from any chain without a bank, hold the asset with
-          keys no one else has, and make the position itself portable.
+          Not a stop-loss on thin liquidity. Not a multiplier knob. Custody, automation, and a cap
+          you set — with the tests to back each claim.
         </p>
 
         <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">

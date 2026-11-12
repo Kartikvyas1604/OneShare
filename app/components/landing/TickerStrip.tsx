@@ -1,24 +1,20 @@
-const stocks = [
-  { symbol: "NVDAx", price: "$13.42", change: "+2.34%", up: true },
-  { symbol: "AAPLx", price: "$189.11", change: "+0.87%", up: true },
-  { symbol: "TSLAx", price: "$242.65", change: "−1.12%", up: false },
-  { symbol: "MSFTx", price: "$415.28", change: "+0.44%", up: true },
-  { symbol: "AMZNx", price: "$178.42", change: "+1.02%", up: true },
-  { symbol: "GOOGLx", price: "$164.19", change: "−0.31%", up: false },
-  { symbol: "MSTRx", price: "$131.77", change: "+3.10%", up: true },
-  { symbol: "SPYx", price: "$578.90", change: "+0.22%", up: true },
+const facts = [
+  { label: "Reserve", value: "escrowed in a separate contract" },
+  { label: "De-risk", value: "−50% from cost, single-shot" },
+  { label: "Backtest", value: "10,000 paths · seed 20261112" },
+  { label: "Funding", value: "30+ chains via NEAR Intents" },
+  { label: "Fees", value: "0% for the hackathon" },
+  { label: "Worst case", value: "in dollars, before you deposit" },
+  { label: "Leverage", value: "zero · no liquidation" },
 ];
 
 function Row() {
   return (
     <div className="flex shrink-0 items-center">
-      {[...stocks, ...stocks].map((s, i) => (
+      {[...facts, ...facts].map((f, i) => (
         <div key={i} className="flex items-center gap-2.5 whitespace-nowrap px-5">
-          <span className="num text-xs font-semibold text-foreground">{s.symbol}</span>
-          <span className="num text-xs text-muted-foreground">{s.price}</span>
-          <span className={`num text-xs font-medium ${s.up ? "text-up" : "text-down"}`}>
-            {s.change}
-          </span>
+          <span className="eyebrow">{f.label}</span>
+          <span className="num text-xs text-foreground">{f.value}</span>
         </div>
       ))}
     </div>
@@ -27,7 +23,7 @@ function Row() {
 
 export function TickerStrip() {
   return (
-    <section className="border-b border-border bg-card" aria-label="Tokenized stock prices (demo data)">
+    <section className="border-b border-border bg-card" aria-label="Mechanism facts (demo data)">
       <div className="relative flex overflow-hidden py-2.5 [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
         <div className="animate-marquee flex">
           <Row />

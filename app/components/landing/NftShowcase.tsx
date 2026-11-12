@@ -2,9 +2,9 @@ import { Button } from "@/app/components/Button";
 import { ArrowRight, Check } from "lucide-react";
 
 const facts = [
-  "Transfer the NFT — control of the Solana account moves with it",
-  "No admin withdraw, no upgrade key over your funds",
-  "Open source with a small attack surface — and plainly not audited",
+  "Transfer the NFT — settle pays whoever holds it",
+  "The reserve and risk budget ride with the token",
+  "Open source, plainly not audited",
 ];
 
 export function NftShowcase() {
@@ -17,9 +17,9 @@ export function NftShowcase() {
             The position is the product.
           </h2>
           <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
-            Your NVDAx position lives as a NEP-171 NFT on NEAR. Whoever holds the NFT controls the
-            underlying Solana account — so the position itself can be moved, gifted, or pledged as
-            collateral without unwinding a single token.
+            The position mints as an NEP-171 NFT on NEAR. Whoever holds the NFT owns the floor, the
+            risk budget, and the de-risk rule — so it can be moved, gifted, or sold without
+            unwinding a single position.
           </p>
           <ul className="mt-6 space-y-2.5">
             {facts.map((f) => (
@@ -32,7 +32,7 @@ export function NftShowcase() {
             ))}
           </ul>
           <div className="mt-8">
-            <Button href="/buy">
+            <Button href="/create">
               Mint your first position
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
@@ -45,29 +45,31 @@ export function NftShowcase() {
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <span className="eyebrow">NEP-171</span>
               <span className="num rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
-                pos-7
+                token #1
               </span>
             </div>
             <div className="px-4 py-5">
-              <p className="eyebrow text-center">OneShare position</p>
+              <p className="eyebrow text-center">Floorline position</p>
               <p className="mt-2 text-center">
-                <span className="num text-3xl font-semibold text-foreground">0.745</span>{" "}
-                <span className="num text-sm text-muted-foreground">NVDAx</span>
+                <span className="num text-3xl font-semibold text-foreground">$1,007.54</span>{" "}
+                <span className="num text-sm text-muted-foreground">NAV</span>
               </p>
               <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border">
                 <div className="bg-card px-3 py-2.5">
-                  <p className="eyebrow">Stop-loss</p>
-                  <p className="num mt-1 text-[13px] font-semibold text-down">−9.0%</p>
+                  <p className="eyebrow">Reserve</p>
+                  <p className="num mt-1 text-[13px] font-semibold text-foreground">$900.00</p>
                 </div>
                 <div className="bg-card px-3 py-2.5">
-                  <p className="eyebrow">Take-profit</p>
-                  <p className="num mt-1 text-[13px] font-semibold text-up">+25.0%</p>
+                  <p className="eyebrow">De-risk</p>
+                  <p className="num mt-1 text-[13px] font-semibold text-down">−50% armed</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-border px-4 py-3">
-              <span className="num text-[11px] text-muted-foreground">7xKX…kLm · Solana</span>
-              <span className="text-[11px] font-medium text-muted-foreground">Derived custody</span>
+              <span className="num text-[11px] text-muted-foreground">floorline-demo.near</span>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                Reserve at the escrow contract
+              </span>
             </div>
           </div>
         </div>

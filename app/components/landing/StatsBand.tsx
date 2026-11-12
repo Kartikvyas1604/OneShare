@@ -1,8 +1,8 @@
 const stats = [
-  { value: "$10", label: "Minimum position" },
-  { value: "60s", label: "From stablecoin to stock" },
-  { value: "0", label: "Keys held by the team" },
-  { value: "25bps", label: "1Click unkeyed fee" },
+  { value: "$10", label: "Minimum deposit" },
+  { value: "30+", label: "Funding chains via 1Click" },
+  { value: "10k", label: "Backtest paths · seed 20261112" },
+  { value: "0%", label: "Fees for the hackathon" },
 ];
 
 export function StatsBand() {

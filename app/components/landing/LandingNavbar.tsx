@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeftRight } from "lucide-react";
+import { Landmark } from "lucide-react";
 import { Button } from "@/app/components/Button";
 
 export function LandingNavbar() {
@@ -11,15 +11,16 @@ export function LandingNavbar() {
           className="flex items-center gap-2.5 focus-visible:outline-none"
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden />
+            <Landmark className="h-3.5 w-3.5" aria-hidden />
           </span>
-          <span className="display text-lg text-foreground">OneShare</span>
+          <span className="display text-lg text-foreground">Floorline</span>
         </Link>
         <nav className="hidden items-center gap-6 md:flex" aria-label="Landing">
           {[
+            { href: "#limits", label: "Loss limit" },
             { href: "#how", label: "How it works" },
             { href: "#features", label: "Features" },
-            { href: "#nft", label: "Position NFT" },
+            { href: "#demo", label: "Demo" },
           ].map((item) => (
             <a
               key={item.href}
@@ -34,8 +35,8 @@ export function LandingNavbar() {
           <Button variant="ghost" size="sm" href="/dashboard" className="hidden sm:inline-flex">
             Open app
           </Button>
-          <Button size="sm" href="/buy">
-            Buy NVDAx
+          <Button size="sm" href="/create">
+            Create
           </Button>
         </div>
       </div>
