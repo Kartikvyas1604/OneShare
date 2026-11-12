@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/app/components/Button";
 import { Badge } from "@/app/components/Badge";
-import { Brain, ShieldCheck, Loader2, RefreshCw, KeyRound, TrendingDown, Cuboid } from "lucide-react";
+import { Brain, ShieldCheck, Loader2, RefreshCw, Lock, TrendingDown, Cuboid } from "lucide-react";
 
 export default function ExplainPage() {
   const [loading, setLoading] = useState(false);
@@ -20,8 +20,8 @@ export default function ExplainPage() {
     setResult({
       question,
       text:
-        "Your position is an NFT on NEAR. The underlying NVDAx tokens sit at a Solana address derived by NEAR Chain Signatures — no one, including OneShare, holds the private key. Your stop-loss rule is enforced by a keeper that can only act inside the bounds you set, with a 5 NEAR bond at stake. Every action it takes is written to the onchain audit log.",
-      attestation: "0x8f3a…b921",
+        "The reserve sits in a separate escrow contract whose only door is the vault's settle path — a de-risk sale or an early exit cannot touch it. The risk budget is the only bucket the market can move, and the de-risk rule sells it in full if it falls 50% below what it cost, once, with no keeper discretion. Every keeper decision runs on NEAR AI Cloud inside a TEE; until that attestation verifies end-to-end the local rule executes and the badge stays pending.",
+      attestation: "ed25519:3kQ4…mV2r",
       cached: false,
     });
     setLoading(false);
@@ -41,8 +41,8 @@ export default function ExplainPage() {
       {!result && !loading && (
         <section className="animate-fade-up space-y-2">
           {[
-            { icon: KeyRound, text: "How is my position secured?" },
-            { icon: TrendingDown, text: "Why would my stop-loss fire?" },
+            { icon: Lock, text: "How is the reserve protected?" },
+            { icon: TrendingDown, text: "When does the de-risk rule fire?" },
             { icon: Cuboid, text: "What does the position NFT control?" },
           ].map((q) => (
             <button
@@ -101,7 +101,7 @@ export default function ExplainPage() {
       <p className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
         <Brain className="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" aria-hidden />
         If the attestation service is unavailable, a cached answer is served and clearly marked.
-        OneShare never fakes a badge.
+        Floorline never fakes a badge.
       </p>
     </div>
   );
