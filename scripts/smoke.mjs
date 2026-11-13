@@ -17,6 +17,19 @@ function check(name, ok, detail) {
   }
 }
 
+/** Fetch with one bounded retry on 429 (honours Retry-After, capped at 15s) —
+ * lets the suite run repeatedly against the same server without tripping the
+ * buckets it is validating. */
+async function smartFetch(url, init) {
+  let res = await fetch(url, init);
+  if (res.status === 429) {
+    const wait = Math.min(15, Number(res.headers.get("retry-after") ?? 15));
+    await new Promise((r) => setTimeout(r, wait * 1000));
+    res = await fetch(url, init);
+  }
+  return res;
+}
+
 async function main() {
   console.log(`Smoke testing ${BASE}\n`);
 
@@ -31,7 +44,7 @@ async function main() {
   check("prices 200 + real wNEAR price", r.status === 200 && (j.prices ?? []).some((p) => p.assetId === "nep141:wrap.near" && typeof p.price === "number" && p.price > 0), JSON.stringify(j).slice(0, 120));
 
   // 3. Quote — real 1Click rate for a $100 dry quote.
-  r = await fetch(`${BASE}/api/quote`, {
+  r = await smartFetch(`${BASE}/api/quote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amountMicro: 100_000_000, destinationAsset: "nep141:wrap.near" }),
@@ -40,7 +53,7 @@ async function main() {
   check("quote 200 + real minAmountOut", r.status === 200 && typeof j.quote?.minAmountOut === "string" && BigInt(j.quote.minAmountOut) > 0n, JSON.stringify(j).slice(0, 140));
 
   // 4. Quote validation — an invalid amount is rejected, not passed through.
-  r = await fetch(`${BASE}/api/quote`, {
+  r = await smartFetch(`${BASE}/api/quote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amountMicro: -5 }),
@@ -49,7 +62,7 @@ async function main() {
 
   // 5. Deposit address — without the partner key: real rejection + remediation,
   //    never a fabricated address.
-  r = await fetch(`${BASE}/api/deposit`, {
+  r = await smartFetch(`${BASE}/api/deposit`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amountMicro: 100_000_000, ownerAccountId: "floorline-demo.near" }),
@@ -59,16 +72,16 @@ async function main() {
 
   // 6. Crash sim — deterministic: same request twice, byte-identical payload.
   const body = JSON.stringify({ shock_pct: -45 });
-  r = await fetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+  r = await smartFetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
   const a = await r.json();
-  r = await fetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+  r = await smartFetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
   const b = await r.json();
   check("crash-sim 200 + deterministic (NF-03)", r.status === 200 && JSON.stringify(a) === JSON.stringify(b));
   check("crash-sim shape per keeper spec", typeof a.floorline_loss_pct === "number" && typeof a.naive_loss_pct === "number" && Array.isArray(a.path));
   check("crash-sim demo-script invariant: -45% shock ~ -45% naive", a.naive_loss_pct > -46 && a.naive_loss_pct < -44, String(a.naive_loss_pct));
 
   // 7. Crash sim validation.
-  r = await fetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shock_pct: 500 }) });
+  r = await smartFetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shock_pct: 500 }) });
   check("crash-sim rejects shock > 90 with 400", r.status === 400);
 
   // 8. Attestation — honest pending, never a fabricated quote.
