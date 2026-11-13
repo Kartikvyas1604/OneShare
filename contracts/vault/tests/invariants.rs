@@ -263,6 +263,12 @@ fn invariants_hold_under_random_sequences() {
                 tv.set_env(USER2);
                 tv.vault.nft_transfer(USER.parse().unwrap(), U64(pid), None, None);
                 assert_eq!(tv.vault.get_position(U64(pid)).unwrap().owner.to_string(), USER);
+                // Both owners' position vectors must be intact after the swap
+                // (the shared-prefix bug corrupted exactly this).
+                assert!(tv.vault.positions_of(USER2.parse().unwrap()).is_empty(),
+                    "USER2's vector must not hold the transferred position");
+                assert!(tv.vault.positions_of(USER.parse().unwrap()).iter().any(|p| p.position_id == pid),
+                    "USER's vector must still list the position");
                 ops += 1;
             }
 

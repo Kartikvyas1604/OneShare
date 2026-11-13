@@ -54,6 +54,15 @@ impl Default for Vault {
     }
 }
 
+/// Per-owner storage prefix for the position-id vectors. Two owners sharing
+/// one prefix would collide in storage (near-sdk collections key on the
+/// prefix) — the transfer-to-new-owner sweep caught exactly that.
+fn owner_positions_prefix(account: &AccountId) -> Vec<u8> {
+    let mut p = b"owner_positions_v1:".to_vec();
+    p.extend_from_slice(account.as_bytes());
+    p
+}
+
 #[near(contract_state)]
 pub struct Vault {
     config: VaultConfig,
@@ -177,7 +186,7 @@ impl Vault {
         let mut ids = self
             .owner_positions
             .get(&sender_id)
-            .unwrap_or_else(|| Vector::new(b"owner_positions_v1".to_vec()));
+            .unwrap_or_else(|| Vector::new(owner_positions_prefix(&sender_id)));
         ids.push(&U64(position_id));
         self.owner_positions.insert(&sender_id, &ids);
         self.total_floor_locked += floor_amount;
@@ -755,7 +764,7 @@ impl Vault {
         let mut ids = self
             .owner_positions
             .get(&receiver_id)
-            .unwrap_or_else(|| Vector::new(b"owner_positions_v1".to_vec()));
+            .unwrap_or_else(|| Vector::new(owner_positions_prefix(&receiver_id)));
         ids.push(&token_id);
         self.owner_positions.insert(&receiver_id, &ids);
     }
