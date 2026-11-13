@@ -35,7 +35,7 @@ Old routes redirect: `/buy → /create`, `/sim → /crash`, `/positions/[id] →
 
 - **Equity route gated (G-2).** Tokenized equities were **not present** on 1Click's 230-token list (verified 12 Nov 2026). The demo runs the verified fallback asset (`nep141:wrap.near`) with the identical mechanism; the equity wedge stays a documented roadmap item.
 - **TEE attestation pending (R3).** Until the NEAR AI Cloud attestation flow verifies end-to-end, the local rule (formula 6 only) executes and every badge says pending. Badges are never faked.
-- **Web demo fixtures.** Positions, prices, and events in this repo are mock fixtures against a fixed epoch; contract math is specified in `agent/Agent.md` §4 with a golden vector identical across Rust and TypeScript.
+- **No fixtures, no simulated data.** The frontend reads only real sources: live prices, quotes, and deposit addresses from the 1Click API (verified 12–13 Nov 2026); on-chain positions via NEAR JSON-RPC view calls (`positions_of`, `get_position` per §6.2) against `VAULT_CONTRACT_ID`; transaction history from the nearblocks indexer. Until the vault contract is deployed, pages show the chain's real error state ("account does not exist on NEAR mainnet yet") and real empty states. Crash-simulator numbers are computed at runtime by the deterministic engine (seed 20261112) — not stored results.
 - **Not audited.** The escrow invariant and its deliberately broken build (`--features break_escrow`) are the production answer; see the spec's threat model (T-01).
 
 ## Decision log
