@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { getDeposit, updateDepositStatus } from "@/app/lib/deposit-store";
+import { fetchOneClickStatus } from "@/app/lib/oneclick-status";
 import { log, requestIdOf } from "@/app/lib/log";
 
 /**
@@ -17,12 +18,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing or invalid ?address" }, { status: 400 });
   }
   try {
-    const res = await fetch(
-      `https://1click.chaindefuser.com/v0/status?depositAddress=${encodeURIComponent(address)}`,
-      { cache: "no-store" },
-    );
-    const raw = (await res.json()) as { status?: string };
-    const status = raw.status ?? `HTTP ${res.status}`;
+    const { status, raw } = await fetchOneClickStatus(address);
     // Durable record only exists for deposits created through this app.
     const record = await getDeposit(address);
     if (record) await updateDepositStatus(address, status);

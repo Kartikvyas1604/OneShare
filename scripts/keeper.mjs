@@ -215,6 +215,19 @@ const accounts = accountsArg
 const log = (m) => console.log(`[keeper ${new Date().toISOString()}] ${m}`);
 
 log(`keeper start: vault=${VAULT} signer=${SIGNER} accounts=${accounts.join(",")}`);
+
+// §6.3: reconcile every unsettled deposit row against /v0/status at boot.
+try {
+  const res = await fetch(
+    `${process.env.APP_BASE_URL || "http://localhost:3000"}/api/v1/deposits/reconcile`,
+    { method: "POST" }
+  );
+  const r = await res.json();
+  log(`reconcile: checked=${r.checked} updated=${r.updated} pending=${r.stillPending?.length ?? 0} failures=${r.failures?.length ?? 0}`);
+} catch (e) {
+  log(`! reconcile skipped: ${String(e).slice(0, 120)}`);
+}
+
 if (once) {
   const actions = await tick(accounts, log);
   log(once ? `done: ${actions.length} action(s)` : "tick complete");

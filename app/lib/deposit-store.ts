@@ -72,3 +72,17 @@ export async function updateDepositStatus(
   rec.lastCheckedAt = Date.now();
   await writeAll(store);
 }
+
+/** All deposit records (for the keeper's reconcile-on-restart sweep). */
+export async function allDeposits(): Promise<DepositRecord[]> {
+  const store = await readAll();
+  return Object.values(store);
+}
+
+/** Terminal 1Click statuses — a reconciled row stops being polled. */
+export const TERMINAL_STATUSES = new Set([
+  "SUCCESS",
+  "REFUNDED",
+  "FAILED",
+  "INCOMPLETE_DEPOSIT",
+]);
