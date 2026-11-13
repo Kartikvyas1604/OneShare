@@ -8,6 +8,7 @@ import { CopyButton } from "@/app/components/CopyButton";
 import { ErrorState } from "@/app/components/ErrorState";
 import { AuditLog, type ChainTxn } from "@/app/components/AuditLog";
 import { StateBadge } from "@/app/components/vault/StateBadge";
+import { ChainSigAddress } from "@/app/components/vault/ChainSigAddress";
 import { AttestationBadge } from "@/app/components/vault/AttestationBadge";
 import { useWallet } from "@/app/components/wallet/WalletProvider";
 import { useLivePrices } from "@/app/lib/prices";
@@ -212,6 +213,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
                 <CopyButton value={position.owner} label={position.owner} />
               )}
             </div>
+            <ChainSigAddress positionId={position.id} />
           </div>
         </div>
 

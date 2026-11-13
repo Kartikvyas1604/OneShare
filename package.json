@@ -36,6 +36,7 @@
     "bs58": "^6.0.0",
     "eslint": "^9",
     "eslint-config-next": "^16.4.6",
+    "js-sha3": "^0.14.0",
     "tailwindcss": "4.3.3",
     "tweetnacl": "^1.0.3",
     "typescript": "^5",
