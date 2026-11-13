@@ -108,8 +108,7 @@ export default function DashboardPage() {
         <EmptyState
           icon={ArrowRightLeft}
           title="Connect a NEAR wallet"
-          description="The overview reads your positions straight from the vault contract — connect an injected NEAR wallet to load the real portfolio."
-          action={{ label: "Open a wallet in this browser", href: "/dashboard" }}
+          description="The overview reads your positions straight from the vault contract. Open this app inside a browser with an injected NEAR wallet (Wallet Selector-compatible) to load the real portfolio — no account is simulated while you are not connected."
         />
       </div>
     );
