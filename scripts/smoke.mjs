@@ -60,15 +60,18 @@ async function main() {
   });
   check("quote rejects invalid amount with 400", r.status === 400);
 
-  // 5. Deposit address — without the partner key: real rejection + remediation,
-  //    never a fabricated address.
+  // 5. Deposit address — with the partner key configured: 200 + REAL address
+  //    set. Without it: 502 + real rejection + remediation, never a
+  //    fabricated address. Both are honest outcomes.
   r = await smartFetch(`${BASE}/api/deposit`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amountMicro: 100_000_000, ownerAccountId: "floorline-demo.near" }),
   });
   j = await r.json();
-  check("deposit without key: 502 + real error + remediation, no fake address", r.status === 502 && typeof j.error === "string" && typeof j.remediation === "string" && !j.depositAddress);
+  const credOk = r.status === 200 && typeof j.depositAddress === "string" && j.depositAddress.length >= 20;
+  const credGate = r.status === 502 && typeof j.error === "string" && typeof j.remediation === "string" && !j.depositAddress;
+  check("deposit: real address (credentials live) or honest gate (502 + remediation)", credOk || credGate, JSON.stringify(j).slice(0, 140));
 
   // 6. Crash sim — deterministic: same request twice, byte-identical payload.
   const body = JSON.stringify({ shock_pct: -45 });
