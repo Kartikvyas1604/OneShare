@@ -23,7 +23,7 @@ _Date: 13 Nov 2026 · Verdict: **the web product is launch-ready as a real-data 
 
 | Item | Why deferred | Owner |
 |---|---|---|
-| **Vault + escrow contract deployment on mainnet** | External to this repository — the Rust contracts are the other half of the build. The web layer is complete against the §6.2 interface and flips from "not deployed yet" to real data the moment it deploys. | Team (Rust) |
+| **Vault + escrow contract deployment on mainnet** | Contracts are **written, compiled (escrow 136KB, vault 208KB wasm) and unit-tested (4/4 golden suite)**. Deployment needs a funded NEAR mainnet account — one command: `./scripts/deploy-contracts.sh mainnet <vault-account> <escrow-account>`, then set `VAULT_CONTRACT_ID` in env. | **User — needs a funded NEAR account** |
 | **1Click partner `X-API-Key` (G-4)** | Manual registration at partners.near-intents.org. The deposit-address flow is fully implemented and activates on env set. | Team |
 | **TEE attestation wiring (R3)** | Requires `NEAR_AI_API_KEY` + the verifier flow; the API shape is live and honestly pending. | Team |
 | **Wallet Selector modal UI** | ✅ **Resolved** — the official Wallet Selector v10 is integrated: real connect modal, connected-account header state, and vault actions signing real `functionCall` transactions through the connected wallet | Done |
