@@ -40,11 +40,11 @@ const STEPS = [
     title: "The risk budget buys in, the rule arms",
     description:
       "The keeper swaps the risk budget through the verified route inside your slippage bound, then arms the de-risk rule at −50% from cost.",
-    outcome: "The rule executes with no discretion; the TEE attests the decision when verified.",
+    outcome: "The rule executes with no discretion — the contract enforces the trigger and the single-shot latch.",
     nodes: [
       { label: "Buy", value: "27.932 wNEAR", sub: "$100.00 @ $3.58 · slippage bounded" },
       { label: "Rule", value: "−50% from cost", sub: "single-shot (I6) · armed" },
-      { label: "Attestation", value: "TEE · pending", sub: "local rule meanwhile" },
+      { label: "Enforcement", value: "on-chain rule", sub: "formula 6 · no discretion" },
     ],
   },
   {

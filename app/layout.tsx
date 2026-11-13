@@ -25,7 +25,7 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Floorline — deposit USDC from any chain, pick a loss limit",
   description:
-    "Deposit USDC from any of 30+ chains, pick a loss limit, and own a self-managing slice of NVIDIA as a NEAR NFT. The reserve sits in a separate escrow contract; the de-risk rule is automated and backtested.",
+    "Deposit USDC from any of 30+ chains, pick a loss limit, and own a self-managing tokenized position as a NEAR NFT. The reserve sits in a separate escrow contract; the de-risk rule is automated and backtested.",
   keywords: ["NEAR", "intents", "chain signatures", "NEP-171", "loss limit", "tokenized stocks"],
   openGraph: {
     title: "Floorline — deposit USDC from any chain, pick a loss limit",

@@ -6,7 +6,7 @@ const RAILS = [
   { name: "1Click funding", status: "live", note: "30+ chains" },
   { name: "Chain Signatures", status: "live", note: "derived accounts" },
   { name: "NEP-171 positions", status: "live", note: "transferable" },
-  { name: "TEE attestation", status: "pending", note: "local rule meanwhile" },
+  { name: "Deterministic de-risk", status: "live", note: "formula 6, single-shot" },
   { name: "Equity route", status: "gated", note: "G-2 · verified fallback" },
 ] as const;
 
@@ -32,7 +32,7 @@ export function Hero() {
 
         <p className="animate-fade-up delay-150 mt-6 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
           Deposit USDC from any of 30+ chains, pick a loss limit, and own a self-managing slice of
-          NVIDIA as a NEAR NFT. The reserve leaves your trade path at deposit — the worst case is a
+          a tokenized position as a NEAR NFT. The reserve leaves your trade path at deposit — the worst case is a
           number you set, not one the market sets.
         </p>
 

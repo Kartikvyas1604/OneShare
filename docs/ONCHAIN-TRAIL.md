@@ -16,7 +16,7 @@ Contracts: `vault3.floorline-escrow.testnet` (quote `wrap.testnet`, risk
 ## What the numbers say
 
 - Naive: 1.5 wNEAR fully in NVDA at the crash = **0.675 wNEAR (−55%)**.
-- Floorline: floor 1.35 wNEAR guaranteed (I1), de-risk captured 0.0675 of the
+- Floorline: floor 1.35 wNEAR held in escrow (I1), de-risk captured 0.0675 of the
   0.15 bucket, paid **1.4033 wNEAR (−6.4%)** after the 1% early-exit fee.
 
 ## Bugs this trail surfaced and fixed (all in this commit)

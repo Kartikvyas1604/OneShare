@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 
 /**
- * Live US equity quotes for the Floorline risk leg (NVDAon wedge).
+ * Live US equity quotes for the Floorline risk leg (tokenized-equity wedge).
  *
- * Source: Yahoo Finance chart API (public, no key). When Ondo's NVDAon lists
+ * Source: Yahoo Finance chart API (public, no key). When Ondo's tokenized stocks list
  * on 1Click, the on-chain oracle switches to the 1Click quote and this feed
  * becomes the fallback. No mock data: every quote comes from the wire.
  */

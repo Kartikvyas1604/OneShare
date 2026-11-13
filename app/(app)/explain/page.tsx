@@ -20,7 +20,7 @@ export default function ExplainPage() {
     setResult({
       question,
       text:
-        "The reserve sits in a separate escrow contract whose only door is the vault's settle path — a de-risk sale or an early exit cannot touch it. The risk budget is the only bucket the market can move, and the de-risk rule sells it in full if it falls 50% below what it cost, once, with no keeper discretion. Every keeper decision runs on NEAR AI Cloud inside a TEE; until that attestation verifies end-to-end the local rule executes and the badge stays pending.",
+        "The reserve sits in a separate escrow contract whose only door is the vault's settle path — a de-risk sale or an early exit cannot touch it. The risk budget is the only bucket the market can move, and the de-risk rule sells it in full if it falls 50% below what it cost, once, with no keeper discretion. The de-risk rule is deterministic on-chain: the contract enforces the trigger and the single-shot latch, so no keeper discretion is possible.",
       attestation: "ed25519:3kQ4…mV2r",
       cached: false,
     });
@@ -34,7 +34,7 @@ export default function ExplainPage() {
         <p className="eyebrow">Explain</p>
         <h1 className="display mt-1.5 text-3xl text-foreground">Ask about your position</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          Answered by a TEE-hosted model on NEAR AI Cloud, with a verifiable attestation quote.
+          Answered by the deterministic rule the contract enforces — formula 6, single-shot (I6).
         </p>
       </header>
 
@@ -62,7 +62,7 @@ export default function ExplainPage() {
         <section className="animate-fade-in engraved rounded-2xl bg-card px-4 py-12 text-center">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" aria-hidden />
           <p className="mt-3 text-[13px] font-medium text-foreground">Attesting explanation…</p>
-          <p className="mt-1 text-xs text-muted-foreground">Running inside a TEE on NEAR AI Cloud.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Enforced on-chain by the vault contract.</p>
         </section>
       )}
 

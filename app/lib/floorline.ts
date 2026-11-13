@@ -66,8 +66,8 @@ export const RISK_ASSETS: RiskAsset[] = [
   },
   {
     assetId: "nep141:nvdaon.omft.near",
-    symbol: "NVDAon",
-    name: "NVIDIA (Ondo on NEAR)",
+    symbol: "ONDO",
+    name: "Ondo tokenized stock (NEAR)",
     decimals: 6,
     venue: "1click-rwa",
     verified: false,
@@ -76,7 +76,7 @@ export const RISK_ASSETS: RiskAsset[] = [
   {
     assetId: "nvda-xstock-sol",
     symbol: "NVDAx",
-    name: "NVIDIA xStock (Solana)",
+    name: "xStock tokenized stock (Solana)",
     decimals: 6,
     venue: "solana-dex",
     verified: false,

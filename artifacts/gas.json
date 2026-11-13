@@ -1,0 +1,20 @@
+{
+  "note": "gas burnt per receipt, measured from tx_status (testnet)",
+  "receipts": {
+    "deposit_150TGas": {
+      "tx": "FczgCjps7FMrobiu3rMsgcdfwpNnA63wENbJaHJFkVVf",
+      "gas_burnt_total": 15449509353444,
+      "gas_burnt_TGas": 15.45
+    },
+    "record_buy": {
+      "tx": "4tdLZzoBggnknWTGe918Jsk9h2YbX2Q7yhkekq8TqxaK",
+      "gas_burnt_total": 1892495314341,
+      "gas_burnt_TGas": 1.89
+    }
+  },
+  "targets_vs_measured": {
+    "deposit (spec \u2264 25 TGas incl. escrow transfer)": "measured 15.45 TGas burnt across the full deposit chain at 150 TGas prepaid (the 3.1.0 wrap receiver needs prepaid > 30)",
+    "record_buy (spec \u2264 35)": "measured 1.89 TGas burnt",
+    "note": "prepaid gas \u2260 burnt gas; the wrap.testnet 3.1.0 ft_transfer_call requires prepaid > 30 TGas or it panics"
+  }
+}

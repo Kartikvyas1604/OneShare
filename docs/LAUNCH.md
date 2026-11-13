@@ -35,4 +35,4 @@ _Date: 13 Nov 2026 · Verdict: **the web product is launch-ready as a real-data 
 
 1. **Regulatory (T-08, largest open risk):** tokenized-equity distribution needs a licensed distributor in production. The UI discloses non-US-only and the gating everywhere it appears.
 2. **Contract audit (T-01):** the escrow invariant suite is the current answer; a formal third-party audit is the production answer before the contract holds real value.
-3. **Oracle manipulation (T-02):** dual-oracle bound (3% disagreement, 60s staleness) is specified in the contract; the web layer consumes the bounded feed.
+3. **Oracle manipulation (T-02):** 60s price staleness and on-chain ed25519 quote-signature verification are enforced by the contract (verified live); the multi-oracle disagreement bound is a keeper-layer check pending an on-chain second source.

@@ -401,7 +401,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
             <AttestationBadge status="pending" />
           </div>
           <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">
-            The de-risk decision runs on NEAR AI Cloud inside a TEE. The attestation comes from the
+            The de-risk decision is deterministic on-chain (formula 6). Attestation status comes from the
             keeper&apos;s <span className="num">/v1/attestation/:id</span> endpoint once that flow
             verifies end-to-end; until then the local rule (formula 6) executes and the badge stays
             pending — it is never faked with a placeholder hash.

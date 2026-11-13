@@ -222,7 +222,7 @@ export default function CreatePage() {
             />
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               Any of the 231 live assets — BTC, ETH, SOL, gold-backed tokens. The keeper swaps the
-              risk budget into your pick through 1Click. Tokenized equities (NVDAon…) list here
+              risk budget into your pick through 1Click. Tokenized equities list here
               automatically the moment they appear on 1Click — the gate is live-checked, never hardcoded.
             </p>
             {nvdaQuote && (

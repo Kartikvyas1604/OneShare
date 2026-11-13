@@ -4,9 +4,9 @@ import { log, requestIdOf } from "@/app/lib/log";
 /**
  * Keeper API §6.3 — GET /v1/attestation/:id
  *
- * The real contract: the keeper's de-risk decision runs in NEAR AI Cloud (TEE)
+ * The real contract: the keeper's de-risk decision is deterministic (formula 6)
  * and this endpoint returns the attestation quote + verification URL for it.
- * Until NEAR_AI_* credentials are configured and the TEE flow verifies
+ * Until a NEAR AI attestation flow is configured and verifies
  * end-to-end, the response is honestly `verified: false` with the pending
  * explanation — never a fabricated quote.
  */

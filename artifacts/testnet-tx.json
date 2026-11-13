@@ -1,0 +1,31 @@
+{
+  "note": "the full on-chain demo + attack sweep, testnet, all real transactions. Mainnet txs are absent: no funded mainnet account existed during the event (the spec's R2b fallback — a labelled-testnet recording — is used).",
+  "network": "testnet",
+  "contracts": {
+    "vault": "vault3.floorline-escrow.testnet",
+    "escrow": "floorline-escrow.testnet",
+    "risk_asset_stand_in": "nvda.floorline-escrow.testnet"
+  },
+  "demo_loop": {
+    "deposit_2_wnear_floor_85pct": "Eixpge4jKhWR7gZt4i9JBZa5isZgMo7ZXcxMbseEwHHi",
+    "keeper_signed_buy": "HaQsAWyDrnbhhCrmixqnGCd3mw5Rm9uJssgvHrPrCB6s",
+    "nft_transfer_new_owner": "51s5L8UVqHzxALZrYAEGFx4niFJxrDKcUaf4v9wjUqDh",
+    "new_owner_exit_early_payout": "9ykgqLsrEMtwaWT3QvukDYRpNY68a8NLYHdGzNKvxaXs"
+  },
+  "earlier_full_loop": {
+    "deposit_1_5_wnear": "FM7x3sbV9Lguua6EXmzq3H5cBTNBV6v9YTudbDkGbcxj",
+    "buy_3255_units_live_price": "GfaXkKZfpppLAyjUNt3vEPPnr7v6vf3AaumP4iVb6CJf",
+    "de_risk_minus_55": "C59NUaCdUTrrW9eNUknYLRhndmW22gDi2i9XwGejfgdP",
+    "exit_early_payout_1_4033_wnear": "C5WTGPVpvc7vBScXnvqbwV11v3xnJChU4hDKFVi9995d"
+  },
+  "attack_sweep": {
+    "unsigned_price_rejected": "ErrBadQuoteSignature (receipt of record_buy with empty sig)",
+    "forged_key_rejected": "ErrBadQuoteSignature (receipt of record_buy with a non-oracle key)",
+    "double_de_risk_rejected": "ErrAlreadyDeRisked",
+    "tvl_cap": "fuzz-proven (small-cap config); live attempt refunded at the balance wall",
+    "escrow_foreign_release_rejected": "ErrNotVault",
+    "paused_buy_rejected": "ErrPaused",
+    "jailbroken_ratio_rejected": "ErrStepExceeded — tx 2LaXnBEDXFge5mb68VPk448fxsMSQJ7nEzZaf4Aarejk + 5gKKCCKqdxvVfBfoqBP1XWJFunEuhiW9Gg4m6Dvt6vip",
+    "replayed_settlement": "SettlementDeduped no-op"
+  }
+}
