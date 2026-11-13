@@ -2,11 +2,12 @@
 //! source of truth); every field maps to the on-chain storage layout.
 
 use near_sdk::{near, AccountId, Timestamp};
+use schemars::JsonSchema;
 
 /// Position lifecycle (§4.4). Serialized as these exact strings so the web
 /// app, the indexer, and the escrow state check agree.
 #[near(serializers = [borsh()])]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize, JsonSchema)]
 #[serde(crate = "near_sdk::serde")]
 pub enum PositionState {
     Open,
@@ -34,6 +35,7 @@ impl PositionState {
 /// One position per deposit — the NEP-171 token (token_id == position_id).
 #[near(serializers = [borsh()])]
 #[derive(Clone, Debug)]
+#[derive(JsonSchema)]
 pub struct Position {
     pub owner: AccountId,
     pub deposit_amount: u128,
@@ -57,9 +59,17 @@ pub struct Position {
     pub nav_quote: u128,
 }
 
+impl Position {
+    fn settled_before(&self) -> bool {
+        self.state == PositionState::Settled
+    }
+}
+
 /// Immutable vault configuration (§4.1) — set at `new()` and never mutated.
+/// u128 fields use near_sdk::json_types::U128 (string serde) for the call args.
+/// JsonSchema derives via schemars for the contract ABI.
 #[near(serializers = [borsh()])]
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(crate = "near_sdk::serde")]
 pub struct VaultConfig {
     /// Quote asset: USDC on NEAR (6 decimals). NEP-141 asset id (contains ':').
@@ -71,9 +81,9 @@ pub struct VaultConfig {
     /// De-risk trigger: sell the bucket at this drawdown from cost basis.
     pub de_risk_trigger_bps: u16,
     /// Deposits below this revert.
-    pub min_deposit: u128,
+    pub min_deposit: near_sdk::json_types::U128,
     /// Total deposits capped (ErrTvlCap).
-    pub max_tvl: u128,
+    pub max_tvl: near_sdk::json_types::U128,
     /// Price quotes older than this are rejected (ErrPriceStale).
     pub price_max_age_sec: u64,
     /// Early exit fee: NAV × (10⁴ − fee) / 10⁴.
@@ -95,14 +105,27 @@ impl Default for VaultConfig {
             risk_asset_id: "nep141:wrap.near".to_string(),
             floor_ratio_bps: 9_000,
             de_risk_trigger_bps: 5_000,
-            min_deposit: 10_000_000,          // 10 USDC
-            max_tvl: 100_000_000_000,         // 100,000 USDC
+            min_deposit: near_sdk::json_types::U128(10_000_000), // 10 USDC
+            max_tvl: near_sdk::json_types::U128(100_000_000_000), // 100,000 USDC
             price_max_age_sec: 60,
             early_exit_fee_bps: 100,          // 1%
             settlement_timeout_sec: 1_200,    // 20 min
             term_seconds: 2_592_000,          // 30 days
             mgmt_fee_bps: 0,
             perf_fee_bps: 0,
+        }
+    }
+}
+
+/// Testnet variant: quote = wNEAR (directly obtainable on testnet), risk =
+/// USDC.fakes (the Ref-Finance testnet token with real supply).
+impl VaultConfig {
+    pub fn testnet() -> Self {
+        Self {
+            quote_asset_id: "wrap.testnet".to_string(),
+            risk_asset_id: "usdc.fakes.testnet".to_string(),
+            min_deposit: near_sdk::json_types::U128(1_000_000_000_000_000_000_000_000), // 1 wNEAR (24 dec)
+            ..Default::default()
         }
     }
 }

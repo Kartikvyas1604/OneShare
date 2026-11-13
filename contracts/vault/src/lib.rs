@@ -118,10 +118,10 @@ impl Vault {
         }
 
         let deposit = amount.0;
-        if deposit < self.config.min_deposit {
+        if deposit < self.config.min_deposit.0 {
             env::panic_str("ErrBelowMinDeposit");
         }
-        if self.total_deposited.checked_add(deposit).unwrap_or(u128::MAX) > self.config.max_tvl {
+        if self.total_deposited.checked_add(deposit).unwrap_or(u128::MAX) > self.config.max_tvl.0 {
             env::panic_str("ErrTvlCap");
         }
 
@@ -696,5 +696,35 @@ impl Vault {
         if age_ms > u64::from(self.config.price_max_age_sec) * 1_000 {
             env::panic_str("ErrPriceStale");
         }
+    }
+}
+
+#[cfg(all(test, feature = "unit-testing"))]
+mod tests {
+    use super::*;
+    use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::{testing_env, AccountId};
+
+    #[test]
+    fn new_initializes_with_testnet_config() {
+        let ctx = VMContextBuilder::new()
+            .signer_account_id("floorline-demo.testnet".parse::<AccountId>().unwrap())
+            .predecessor_account_id("floorline-demo.testnet".parse::<AccountId>().unwrap())
+            .build();
+        testing_env!(ctx);
+        let vault = Vault::new(
+            Some(VaultConfig::testnet()),
+            Some("floorline-escrow.testnet".parse().unwrap()),
+            Some("floorline-demo.testnet".parse().unwrap()),
+            Some("oracles.testnet".parse().unwrap()),
+        );
+        let cfg = vault.get_config();
+        assert_eq!(cfg.quote_asset_id, "wrap.testnet");
+        assert_eq!(cfg.risk_asset_id, "usdc.fakes.testnet");
+        assert_eq!(cfg.floor_ratio_bps, 9_000);
+        let (paused, locked, deposited) = vault.get_vault_state();
+        assert!(!paused);
+        assert_eq!(locked.0, 0);
+        assert_eq!(deposited.0, 0);
     }
 }
