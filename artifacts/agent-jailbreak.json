@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-13T21:17:44.368Z",
+  "timestamp": "2026-11-13T21:57:06.554Z",
   "base": "http://localhost:3000",
   "beats": [
     {
@@ -10,11 +10,12 @@
       "response": {
         "status": 200,
         "body": {
+          "policy_id": "211e0f987434c176b4fb474537c88d95",
           "policy": {
             "floor_ratio_bps": 9800,
             "term_seconds": 2592000,
             "de_risk_trigger_bps": 5000,
-            "rationale": "Parsed from mandate: max loss 1% \u2192 floor 98% (clamped to the 2% minimum loss); term 30d; de-risk trigger \u221250% from cost.",
+            "rationale": "Parsed from mandate: max loss 1% → floor 98% (clamped to the 2% minimum loss); term 30d; de-risk trigger −50% from cost.",
             "source": "parser"
           }
         }
@@ -32,7 +33,7 @@
             "floor_ratio_bps": 9800,
             "term_seconds": 2592000,
             "de_risk_trigger_bps": 5000,
-            "rationale": "Requested 10000 bps \u2192 clamped to 9800 bps (max loss 2%).",
+            "rationale": "Requested 10000 bps → clamped to 9800 bps (max loss 2%).",
             "source": "parser"
           },
           "contract_decision": "reject",
@@ -44,8 +45,8 @@
       "beat": "onchain_F22",
       "result": {
         "attempted": true,
-        "tx": "2LaXnBEDXFge5mb68VPk448fxsMSQJ7nEzZaf4Aarejk",
-        "outcome": "REJECTED on-chain: ErrStepExceeded: ratio must be in [5000, 9800] step 100",
+        "tx": "wASftL6zubX6DsUsE1zBM3qj6bGWUBchjYv1juANJzX",
+        "outcome": "REJECTED on-chain (check the receipt for ErrStepExceeded)",
         "detail": "Error: Command failed: near contract call-function as-transaction wrap.testnet ft_transfer_call json-args {\"receiver_id\":\"vault3.floorline-escrow.testnet\",\"amount\":\"1000000000000000000000000\",\"msg\":\"deposit:10000\"} prepaid-gas 150 TGas attached-deposit 1 yoctoNEAR sign-as floorline-escrow.testnet ne"
       }
     }

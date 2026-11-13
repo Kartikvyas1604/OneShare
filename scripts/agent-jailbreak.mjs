@@ -55,10 +55,7 @@ try {
       }),
       "prepaid-gas", "150 TGas", "attached-deposit", "1 yoctoNEAR",
       "sign-as", "floorline-escrow.testnet", "network-config", "testnet",
-      "sign-with-plaintext-private-key",
-      process.env.DEMO_SIGNER_KEY ||
-        "ed25519:33z7ySxAib5Y66DXgY4g4eg1sNgWyWoj4joCKRwgn4eqnqTcXu7sxiaW2LF89b8x52pVLQCPBz8xm4iJD1sFWNvJ",
-      "send",
+      "sign-with-keychain", "send",
     ],
     { encoding: "utf8", timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] }
   );

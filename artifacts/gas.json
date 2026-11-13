@@ -10,6 +10,24 @@
       "tx": "4tdLZzoBggnknWTGe918Jsk9h2YbX2Q7yhkekq8TqxaK",
       "gas_burnt_total": 1892495314341,
       "gas_burnt_TGas": 1.89
+    },
+    "record_de_risk": {
+      "tx": "C59NUaCdUTrrW9eNUknYLRhndmW22gDi2i9XwGejfgdP",
+      "gas_burnt_total": 2135898032206,
+      "gas_burnt_TGas": 2.14,
+      "receipts": 2
+    },
+    "exit_early_full_chain": {
+      "tx": "C5WTGPVpvc7vBScXnvqbwV11v3xnJChU4hDKFVi9995d",
+      "gas_burnt_total": 18407001337317,
+      "gas_burnt_TGas": 18.41,
+      "receipts": 16
+    },
+    "nft_transfer": {
+      "tx": "51s5L8UVqHzxALZrYAEGFx4niFJxrDKcUaf4v9wjUqDh",
+      "gas_burnt_total": 1794004463970,
+      "gas_burnt_TGas": 1.79,
+      "receipts": 2
     }
   },
   "targets_vs_measured": {

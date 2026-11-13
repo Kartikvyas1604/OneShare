@@ -33,6 +33,11 @@ jobs:
       - name: Contract build (wasm)
         run: |
           cd contracts && cargo build
+      - name: Secrets scan (no key material in git — NF-04)
+        run: |
+          ! grep -rInE "ed25519:[A-Za-z0-9]{50,}|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|sk-[A-Za-z0-9]{20,}" app contracts scripts sim docs README.md package.json || true
+          ! grep -rInE "ORACLE_SEED_HEX=[0-9a-f]{64}" .env.example
+
       - name: Copy hygiene (banned marketing phrases + asset-name rule — spec §0.5/U2)
         run: npm run check:copy
 
