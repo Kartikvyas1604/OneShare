@@ -43,6 +43,33 @@ export default function CreatePage() {
   const [payToken, setPayToken] = useState<LiveToken | null>(null);
   const [riskToken, setRiskToken] = useState<LiveToken | null>(null);
 
+  // Live NVDA quote for the equity wedge (real feed, not mocked).
+  const [nvdaQuote, setNvdaQuote] = useState<{
+    price: number;
+    changePct: number | null;
+    source: string;
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/v1/equity-price");
+        if (!res.ok) return;
+        const q = (await res.json()) as {
+          price: number;
+          changePct: number | null;
+          source: string;
+        };
+        if (!cancelled && Number.isFinite(q.price)) setNvdaQuote(q);
+      } catch {
+        /* the wedge strip is decorative — absence is fine */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Live token list — the pay-with picker's data.
   useEffect(() => {
     let cancelled = false;
@@ -198,6 +225,23 @@ export default function CreatePage() {
               risk budget into your pick through 1Click. Tokenized equities (NVDAon…) list here
               automatically the moment they appear on 1Click — the gate is live-checked, never hardcoded.
             </p>
+            {nvdaQuote && (
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                <span className="num font-medium text-foreground">
+                  NVDA ${nvdaQuote.price.toFixed(2)}
+                  {nvdaQuote.changePct !== null && (
+                    <span className={nvdaQuote.changePct < 0 ? " text-red-600" : " text-emerald-600"}>
+                      {" "}
+                      ({nvdaQuote.changePct > 0 ? "+" : ""}
+                      {nvdaQuote.changePct.toFixed(2)}%)
+                    </span>
+                  )}
+                </span>{" "}
+                live from {nvdaQuote.source} — the equity feed the keeper quotes from. On testnet the
+                NVDA leg already runs end-to-end against the stand-in token
+                ({`nvda.floorline-escrow.testnet`}); see docs/ONCHAIN-TRAIL.md.
+              </p>
+            )}
           </fieldset>
 
           {/* Amount */}
