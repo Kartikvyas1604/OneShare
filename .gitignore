@@ -42,3 +42,4 @@ next-env.d.ts
 
 # agent workspace
 agent/
+contracts/target/

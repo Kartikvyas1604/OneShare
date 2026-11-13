@@ -1,0 +1,22 @@
+[package]
+name = "floorline-vault"
+version = "1.0.0"
+edition = "2021"
+description = "Floorline vault — deposits split into an escrowed reserve + risk budget, automated de-risk, maturity settlement. Positions are NEP-171 tokens."
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = { workspace = true, features = ["legacy"] }
+borsh = { version = "1", features = ["derive"] }
+primitive-types = { version = "0.13", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+near-sdk = { workspace = true, features = ["unit-testing"] }
+
+[features]
+default = []
+break_escrow = []
