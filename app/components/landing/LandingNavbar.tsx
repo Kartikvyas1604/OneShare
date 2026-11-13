@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/positions", label: "Positions" },
   { href: "/crash", label: "Crash test" },
   { href: "/explain", label: "Explain" },
+  { href: "/legal", label: "Legal" },
 ] as const;
 
 export function LandingNavbar() {
@@ -35,7 +36,6 @@ export function LandingNavbar() {
             </Link>
           ))}
         </nav>
-
         <div className="flex items-center gap-2">
           <Button size="sm" href="/create">
             Create
