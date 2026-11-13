@@ -9,7 +9,7 @@ const banned =
   /revolutionary|game.changing|disrupting|seamless(ly)? |world.class|next.gen|guaranteed|risk.free|principal protected|passive income|to the moon|safe returns|you cannot lose/i;
 
 // Asset names may appear ONLY inside the roadmap paragraph (U2).
-const assetAllowedFiles = [/docs\/DECISIONS\.md/, /docs\/AGENT_POLICY\.md/, /docs\/ONCHAIN-TRAIL\.md/, /docs\/AUDIT\.md/, /docs\/THREAT_MODEL\.md/, /artifacts\//];
+const assetAllowedFiles = [/docs\/DECISIONS\.md/, /docs\/AGENT_POLICY\.md/, /docs\/ONCHAIN-TRAIL\.md/, /docs\/AUDIT\.md/, /docs\/THREAT_MODEL\.md/, /docs\/TESTNET_SUBSTITUTES\.md/, /artifacts\//];
 
 function grep(pattern, args) {
   try {
