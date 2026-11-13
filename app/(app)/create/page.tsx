@@ -17,6 +17,7 @@ import {
   riskAsset,
 } from "@/app/lib/floorline";
 import { useLivePrices } from "@/app/lib/prices";
+import { useNearAccount } from "@/app/lib/wallet";
 import { formatUsd, formatTokenAmount } from "@/app/lib/utils";
 
 type CreateState = "config" | "quoting" | "quoted" | "submitting" | "funding" | "settled";
@@ -40,6 +41,7 @@ interface RealQuote {
 }
 
 export default function CreatePage() {
+  const { accountId } = useNearAccount();
   const { prices } = useLivePrices();
   const [state, setState] = useState<CreateState>("config");
   const [amount, setAmount] = useState("100");
@@ -51,7 +53,11 @@ export default function CreatePage() {
 
   const [quote, setQuote] = useState<RealQuote | null>(null);
   const [depositAddress, setDepositAddress] = useState<string | null>(null);
+  const [chainAddresses, setChainAddresses] = useState<
+    Array<{ blockchain?: string; depositAddress?: string; memo?: string }>
+  >([]);
   const [status, setStatus] = useState<string | null>(null);
+  const [remediation, setRemediation] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const asset = riskAsset(assetId);
@@ -105,19 +111,30 @@ export default function CreatePage() {
   const confirmDeposit = async () => {
     setState("submitting");
     setError(null);
+    setRemediation(null);
     try {
       const res = await fetch("/api/deposit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amountMicro: depositMicro,
-          destinationAsset: assetId,
-          deadlineIso: new Date(Date.now() + 30 * 60_000).toISOString(),
+          ownerAccountId: accountId ?? VAULT_CONFIG.vaultAccount,
         }),
       });
-      const body = (await res.json()) as { depositAddress?: string; error?: string };
-      if (!res.ok || !body.depositAddress) throw new Error(body.error ?? "Deposit submit rejected");
+      const body = (await res.json()) as {
+        depositAddress?: string;
+        chainDepositAddresses?: Array<{ blockchain?: string; depositAddress?: string; memo?: string }>;
+        error?: string;
+        remediation?: string;
+      };
+      if (!res.ok || !body.depositAddress) {
+        setError(body.error ?? "Deposit address request rejected");
+        setRemediation(body.remediation ?? null);
+        setState("quoted");
+        return;
+      }
       setDepositAddress(body.depositAddress);
+      setChainAddresses(body.chainDepositAddresses ?? []);
       setState("funding");
       // Poll the real 1Click status endpoint until a terminal state.
       pollRef.current = setInterval(async () => {
@@ -136,7 +153,7 @@ export default function CreatePage() {
         }
       }, 5_000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Deposit submit failed");
+      setError(err instanceof Error ? err.message : "Deposit address request failed");
       setState("quoted");
     }
   };
@@ -414,6 +431,18 @@ export default function CreatePage() {
               </Button>
             )}
 
+            {(state === "config" || state === "quoting" || state === "quoted") && error && (
+              <ErrorState
+                title={state === "quoted" ? "Deposit address unavailable" : "Quote failed"}
+                description={error}
+                className="mb-3"
+              />
+            )}
+            {state === "quoted" && remediation && (
+              <p className="mb-3 rounded-lg border border-warning/25 bg-warning/10 px-3.5 py-2.5 text-[11px] leading-relaxed text-foreground">
+                {remediation}
+              </p>
+            )}
             {state === "quoted" && quote && (
               <div className="animate-fade-in space-y-3">
                 <dl className="space-y-2 rounded-lg border border-border bg-input p-3.5 text-[13px]">
@@ -476,11 +505,29 @@ export default function CreatePage() {
                     <CopyButton value={depositAddress} />
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                    This address came from the 1Click deposit API just now. Funds route to{" "}
-                    <span className="num">{VAULT_CONFIG.vaultAccount}</span>; the reserve then moves
-                    to <span className="num">{VAULT_CONFIG.escrowAccount}</span>. Refunds return to
-                    the vault.
+                    This address set came from the 1Click reusable-address API just now. Funds route
+                    to <span className="num">{VAULT_CONFIG.vaultAccount}</span>; the reserve then
+                    moves to <span className="num">{VAULT_CONFIG.escrowAccount}</span>. Refunds
+                    return to the vault&apos;s intents balance.
                   </p>
+                  {chainAddresses.length > 0 && (
+                    <ul className="mt-2.5 space-y-1.5">
+                      {chainAddresses.map((c, i) => (
+                        <li
+                          key={i}
+                          className="flex items-center justify-between gap-2 rounded-md border border-border bg-card px-2.5 py-1.5"
+                        >
+                          <span className="text-[11px] font-medium text-muted-foreground">
+                            {c.blockchain ?? "chain"}
+                          </span>
+                          <span className="num min-w-0 truncate text-[11px] text-foreground">
+                            {c.depositAddress}
+                          </span>
+                          <CopyButton value={c.depositAddress ?? ""} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-border bg-input px-3.5 py-2.5 text-[13px]">
                   <span className="flex items-center gap-2 text-muted-foreground">

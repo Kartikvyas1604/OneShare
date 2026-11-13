@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getDeposit, updateDepositStatus } from "@/app/lib/deposit-store";
+import { log, requestIdOf } from "@/app/lib/log";
 
 /**
  * Real deposit status (1Click /v0/status?depositAddress=).
@@ -6,9 +8,10 @@ import { NextResponse } from "next/server";
  * INCOMPLETE_DEPOSIT | REFUNDED | FAILED (Agent.md §1.2).
  */
 export async function GET(request: Request) {
+  const requestId = requestIdOf(request);
   const address = new URL(request.url).searchParams.get("address");
-  if (!address) {
-    return NextResponse.json({ error: "Missing ?address" }, { status: 400 });
+  if (!address || !/^[A-Za-z0-9:_-]{10,130}$/.test(address)) {
+    return NextResponse.json({ error: "Missing or invalid ?address" }, { status: 400 });
   }
   try {
     const res = await fetch(
@@ -16,11 +19,21 @@ export async function GET(request: Request) {
       { cache: "no-store" },
     );
     const raw = (await res.json()) as { status?: string };
+    const status = raw.status ?? `HTTP ${res.status}`;
+    // Durable record only exists for deposits created through this app.
+    const record = await getDeposit(address);
+    if (record) await updateDepositStatus(address, status);
+    log.info("deposit.status", { requestId, status, known: Boolean(record) });
     return NextResponse.json({
-      status: raw.status ?? `HTTP ${res.status}`,
+      status,
+      known: Boolean(record),
       raw,
     });
   } catch (err) {
+    log.error("deposit.status.failed", {
+      requestId,
+      error: err instanceof Error ? err.message : "Status check failed",
+    });
     return NextResponse.json({
       status: "UNREACHABLE",
       error: err instanceof Error ? err.message : "Status check failed",

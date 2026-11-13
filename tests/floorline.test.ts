@@ -75,9 +75,9 @@ describe("NAV (4), worst case, cushion (5)", () => {
 
   it("worst case is floor + realised — never below the floor", () => {
     expect(worstCaseQuote(p)).toBe(900_000_000);
-    expect(worstCaseQuote({ ...p, realised_quote: 24_000_000, risk_units: 0, de_risked: true })).toBe(
-      924_000_000
-    );
+    expect(
+      worstCaseQuote({ floor_amount: 900_000_000, realised_quote: 24_000_000 })
+    ).toBe(924_000_000);
   });
 
   it("cushion is NAV minus floor and never negative by construction", () => {
