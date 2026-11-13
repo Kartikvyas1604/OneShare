@@ -1,0 +1,61 @@
+/**
+ * Real NEAR JSON-RPC view calls against the configured vault contract.
+ * When the contract is not deployed yet, callers get the RPC's real error —
+ * the UI surfaces it honestly instead of fabricating state.
+ */
+
+const RPC_URL = process.env.NEAR_RPC_URL ?? "https://rpc.mainnet.near.org";
+
+export class NearRpcError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NearRpcError";
+  }
+}
+
+interface RpcViewResult<T> {
+  result?: T;
+  error?: { message?: string; cause?: { info?: { account_id?: string } } };
+}
+
+/** View (read-only) contract method — args are JSON-serialized like the CLI does. */
+export async function viewContract<T>(
+  accountId: string,
+  methodName: string,
+  args: Record<string, unknown> = {}
+): Promise<T> {
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: "floorline-ui",
+      method: "query",
+      params: {
+        request_type: "call_function",
+        finality: "final",
+        account_id: accountId,
+        method_name: methodName,
+        args_base64: Buffer.from(JSON.stringify(args)).toString("base64"),
+      },
+    }),
+    cache: "no-store",
+  });
+
+  const body = (await res.json()) as RpcViewResult<{ result: Array<number>; logs: string[] }>;
+
+  if (body.error) {
+    const missing = body.error.cause?.info?.account_id;
+    if (body.error.message?.includes("does not exist while viewing")) {
+      throw new NearRpcError(`Account ${missing ?? accountId} does not exist on NEAR mainnet yet`);
+    }
+    if (body.error.message?.includes("MethodNotFound")) {
+      throw new NearRpcError(`Contract method ${methodName} not found on ${accountId}`);
+    }
+    throw new NearRpcError(body.error.message ?? `RPC query failed (${res.status})`);
+  }
+
+  const bytes = body.result?.result;
+  if (!bytes) throw new NearRpcError("Empty RPC result");
+  return JSON.parse(Buffer.from(bytes).toString("utf-8")) as T;
+}
