@@ -5,8 +5,6 @@ use crate::types::{Position, VaultConfig};
 use primitive_types::U256;
 
 pub const PRICE_SCALE: u128 = 10u128.pow(18);
-/// Quote asset decimals (USDC).
-pub const DEC_Q: u32 = 6;
 
 /// (1)/(2): F = floor(D × ratio / 10⁴); R = D − F. Floor division, always.
 pub fn split_deposit(deposit: u128, floor_ratio_bps: u16) -> (u128, u128) {
@@ -17,15 +15,17 @@ pub fn split_deposit(deposit: u128, floor_ratio_bps: u16) -> (u128, u128) {
     (floor, deposit - floor)
 }
 
-/// (3): unit_value_quote(q) = (q × P / 10¹⁸) × 10^DEC_Q / 10^DEC_R.
-/// `q` is in risk-asset whole units scaled by 10^DEC_R; P is 1e18-scaled.
-/// 256-bit intermediates: q × P overflows u128 on the golden vector.
-pub fn unit_value_quote(q_risk_scaled: u128, price_1e18: u128, dec_r: u32) -> u128 {
+/// (3): unit_value(q) = (q × P / 10¹⁸) × 10^(dec_q − dec_r).
+/// `q` is in risk-asset base units (10^-dec_r); `P` is the quote-per-risk
+/// price of ONE WHOLE risk unit in WHOLE quote units, scaled 1e18; the result
+/// is in quote base units (10^-dec_q). 256-bit intermediates: q × P overflows
+/// u128 on the golden vector.
+pub fn unit_value_quote(q_risk_scaled: u128, price_1e18: u128, dec_r: u32, dec_q: u32) -> u128 {
     let value_scaled = U256::from(q_risk_scaled) * U256::from(price_1e18) / U256::from(PRICE_SCALE);
-    let value = if DEC_Q >= dec_r {
-        value_scaled * U256::from(10u128.pow(DEC_Q - dec_r))
+    let value = if dec_q >= dec_r {
+        value_scaled * U256::from(10u128.pow(dec_q - dec_r))
     } else {
-        value_scaled / U256::from(10u128.pow(dec_r - DEC_Q))
+        value_scaled / U256::from(10u128.pow(dec_r - dec_q))
     };
     if value > U256::from(u128::MAX) {
         panic!("overflow");
@@ -34,10 +34,10 @@ pub fn unit_value_quote(q_risk_scaled: u128, price_1e18: u128, dec_r: u32) -> u1
 }
 
 /// (4): NAV = F + unit_value(q) + realised_quote.
-pub fn nav(position: &Position, price_1e18: u128, dec_r: u32) -> u128 {
+pub fn nav(position: &Position, price_1e18: u128, dec_r: u32, dec_q: u32) -> u128 {
     position
         .floor_amount
-        .checked_add(unit_value_quote(position.risk_units, price_1e18, dec_r))
+        .checked_add(unit_value_quote(position.risk_units, price_1e18, dec_r, dec_q))
         .and_then(|v| v.checked_add(position.realised_quote))
         .unwrap_or_else(|| panic!("overflow"))
 }
@@ -51,8 +51,8 @@ pub fn worst_case_quote(position: &Position) -> u128 {
 }
 
 /// (5): cushion C = NAV − F (≥ 0 by I1).
-pub fn cushion(position: &Position, price_1e18: u128, dec_r: u32) -> u128 {
-    nav(position, price_1e18, dec_r)
+pub fn cushion(position: &Position, price_1e18: u128, dec_r: u32, dec_q: u32) -> u128 {
+    nav(position, price_1e18, dec_r, dec_q)
         .checked_sub(position.floor_amount)
         .unwrap_or_else(|| panic!("cushion negative — I1 violated"))
 }
@@ -84,11 +84,13 @@ pub fn early_exit_payout(nav: u128, config: &VaultConfig) -> u128 {
         .unwrap_or_else(|| panic!("overflow"))
 }
 
-/// (10): target units q* = floor(R × 10^DEC_R × 10¹⁸ / (P × 10^DEC_Q)).
-/// 256-bit intermediates: R×10²⁴ overflows u128 on the golden vector.
-pub fn target_units(risk_budget: u128, price_1e18: u128, dec_r: u32) -> u128 {
-    let numerator = U256::from(risk_budget) * U256::from(10u128.pow(dec_r)) * U256::from(PRICE_SCALE);
-    let denominator = U256::from(price_1e18) * U256::from(10u128.pow(DEC_Q));
+/// (10): target units q* = floor(R × 10^dec_r × 10¹⁸ / (P × 10^dec_q)).
+/// 256-bit intermediates: R×10^dec_r overflows u128 on the golden vector.
+pub fn target_units(risk_budget: u128, price_1e18: u128, dec_r: u32, dec_q: u32) -> u128 {
+    let numerator = U256::from(risk_budget)
+        * U256::from(10u128.pow(dec_r))
+        * U256::from(PRICE_SCALE);
+    let denominator = U256::from(price_1e18) * U256::from(10u128.pow(dec_q));
     let q = numerator / denominator;
     if q > U256::from(u128::MAX) {
         panic!("overflow");

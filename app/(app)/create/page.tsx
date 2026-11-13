@@ -110,7 +110,7 @@ export default function CreatePage() {
         receiver_id: VAULT_CONTRACT_ID,
         amount: depositYocto.toString(),
         msg: "deposit",
-      }, 30, depositYocto);
+      }, 150, depositYocto);
 
       // The contract emits Deposited + mints the NFT. Fetch the newest id.
       setStepNote("Reading your position…");

@@ -16,12 +16,17 @@ pub mod types;
 use types::{Position, PositionState, PositionView, VaultConfig};
 
 const NO_DEPOSIT: u128 = 0;
-/// Gas targets per §6.2: deposit ≤ 25 TGas (escrow transfer included).
-const GAS_DEPOSIT: Gas = Gas::from_tgas(25);
-/// settle ≤ 30 TGas (escrow release included).
-const GAS_SETTLE: Gas = Gas::from_tgas(30);
-/// escrow ft_transfer completion callback.
-const GAS_ESCROW_CALLBACK: Gas = Gas::from_tgas(10);
+/// Gas budget for the I1 escrow transfer (ft_transfer_call on the quote
+/// asset). NOTE: wrap.testnet runs near-contract-standards 3.1.0, whose
+/// `ft_transfer_call` does a bare `env::prepaid_gas() - 30 TGas` to fund the
+/// receiver call — the attached gas MUST exceed 30 TGas or it panics with
+/// "attempt to subtract with overflow". 45 TGas gives the receiver 15 TGas.
+const GAS_DEPOSIT: Gas = Gas::from_tgas(45);
+/// settle ≤ 80 TGas (escrow release chain: state check 15 + finalize 40).
+const GAS_SETTLE: Gas = Gas::from_tgas(80);
+/// Vault-side completion callbacks (ack / settle payout: own work + a 15
+/// TGas child transfer).
+const GAS_ESCROW_CALLBACK: Gas = Gas::from_tgas(30);
 
 #[ext_contract(ext_escrow)]
 trait Escrow {
@@ -160,9 +165,11 @@ impl Vault {
             "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"Deposited\",\"data\":{{\"position_id\":{position_id},\"owner\":\"{sender_id}\",\"deposit_amount\":\"{deposit}\",\"floor_amount\":\"{floor_amount}\",\"risk_budget\":\"{risk_budget}\"}}}}"
         ));
 
-        // I1: the reserve leaves the vault immediately — ft_transfer_call to
-        // the escrow with the position id as msg. The escrow locks it.
-        Promise::new(self.escrow_account.clone())
+        // I1: the reserve leaves the vault immediately — ft_transfer_call on
+        // the QUOTE ASSET contract, receiver = the escrow, msg = position id.
+        // The escrow's ft_on_transfer locks it. State updates finalize in the
+        // on_escrow_ack callback (no partial state on failure).
+        Promise::new(self.config.quote_asset_id.parse().unwrap())
             .function_call(
                 "ft_transfer_call".to_string(),
                 serde_json::to_vec(&serde_json::json!({
@@ -177,19 +184,26 @@ impl Vault {
             .then(
                 Self::ext(env::current_account_id())
                     .with_static_gas(GAS_ESCROW_CALLBACK)
-                    .on_escrow_ack(position_id, sender_id),
+                    .on_escrow_ack(position_id, sender_id, deposit, floor_amount),
             )
             .into()
     }
 
-    /// Private callback: the escrow acknowledged the reserve (or the whole
-    /// deposit is refunded by 1Click's ft_transfer_call return value).
+    /// Private callback: the escrow acknowledged the reserve — finalize the
+    /// position state. On failure, refund the deposit (the wrap contract's
+    /// promise failure propagates as the ft_transfer_call's refund).
     #[private]
-    pub fn on_escrow_ack(&mut self, position_id: u64, owner: AccountId) -> PromiseOrValue<U128> {
+    pub fn on_escrow_ack(
+        &mut self,
+        position_id: u64,
+        owner: AccountId,
+        deposit: u128,
+        floor_amount: u128,
+    ) -> PromiseOrValue<U128> {
         match env::promise_result(0) {
             PromiseResult::Successful(_) => {
-                // Escrow locked the reserve. The deposit is fully accounted:
-                // F escrowed + R held by the vault.
+                // Escrow locked the reserve. The position (written before the
+                // promise) is now backed by I1.
                 PromiseOrValue::Value(U128(0))
             }
             PromiseResult::Failed => {
@@ -256,7 +270,7 @@ impl Vault {
         position.risk_units += actual_out.0;
         position.cost_basis = new_cost;
         position.state = PositionState::Active;
-        position.nav_quote = math::nav(&position, price_1e18.0, 24);
+        position.nav_quote = math::nav(&position, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals);
         self.positions.insert(&position_id, &position);
 
         env::log_str(&format!(
@@ -290,7 +304,7 @@ impl Vault {
             env::panic_str("ErrAlreadySettled");
         }
 
-        let unit_value = math::unit_value_quote(position.risk_units, price_1e18.0, 24);
+        let unit_value = math::unit_value_quote(position.risk_units, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals);
         if !math::de_risk_triggered_at(
             unit_value,
             position.cost_basis,
@@ -310,7 +324,7 @@ impl Vault {
         position.realised_quote += realised_quote.0;
         position.de_risked = true;
         position.state = PositionState::DeRisked;
-        position.nav_quote = math::nav(&position, price_1e18.0, 24);
+        position.nav_quote = math::nav(&position, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals);
         self.positions.insert(&position_id, &position);
 
         env::log_str(&format!(
@@ -340,7 +354,7 @@ impl Vault {
             env::panic_str("ErrDuplicateSettlement");
         }
 
-        let payout = math::nav(&position, price_1e18.0, 24); // formula (7) == max(F, NAV) by I1
+        let payout = math::nav(&position, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals); // formula (7) == max(F, NAV) by I1
         position.state = PositionState::Settled;
         position.nav_quote = payout;
         self.positions.insert(&position_id, &position);
@@ -362,7 +376,7 @@ impl Vault {
             .then(
                 Self::ext(env::current_account_id())
                     .with_static_gas(GAS_ESCROW_CALLBACK)
-                    .on_settle_release(position_id.0, position.owner.clone(), U128(payout)),
+                    .on_settle_release(position_id.0, position.owner.clone(), U128(payout), "Matured".to_string()),
             )
             .into()
     }
@@ -375,6 +389,7 @@ impl Vault {
         position_id: u64,
         owner: AccountId,
         payout: U128,
+        prev_state: String,
     ) -> PromiseOrValue<U128> {
         match env::promise_result(0) {
             PromiseResult::Successful(_) => {
@@ -401,7 +416,12 @@ impl Vault {
             }
             PromiseResult::Failed => {
                 if let Some(mut position) = self.positions.get(&U64(position_id)) {
-                    position.state = PositionState::Matured;
+                    position.state = match prev_state.as_str() {
+                        "Active" => PositionState::Active,
+                        "DeRisked" => PositionState::DeRisked,
+                        "Degraded" => PositionState::Degraded,
+                        _ => PositionState::Matured,
+                    };
                     self.positions.insert(&U64(position_id), &position);
                 }
                 self.settled_positions.remove(&U64::from(position_id));
@@ -413,7 +433,7 @@ impl Vault {
     /// `exit_early` — owner exits before maturity for NAV × (1 − fee) (formula 8).
     pub fn exit_early(&mut self, position_id: U64, price_1e18: U128) -> PromiseOrValue<U128> {
         self.assert_owner(position_id.0);
-        let position = self
+        let mut position = self
             .positions
             .get(&position_id)
             .unwrap_or_else(|| env::panic_str("ErrPositionNotFound"));
@@ -421,8 +441,20 @@ impl Vault {
             env::panic_str("ErrAlreadySettled");
         }
 
-        let nav = math::nav(&position, price_1e18.0, 24);
+        let nav = math::nav(
+            &position,
+            price_1e18.0,
+            self.config.risk_decimals,
+            self.config.quote_decimals,
+        );
         let payout = math::early_exit_payout(nav, &self.config);
+        // Mark terminal BEFORE the release: the escrow cross-checks the
+        // position state back (I1 gate) and the dedup set guards replays.
+        let prev_state = position.state.as_str().to_string();
+        position.state = PositionState::Settled;
+        position.nav_quote = payout;
+        self.positions.insert(&U64::from(position_id), &position);
+        self.settled_positions.insert(&U64::from(position_id));
         env::log_str(&format!(
             "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"PositionSettled\",\"data\":{{\"position_id\":{},\"payout\":\"{}\"}}}}",
             position_id.0, payout
@@ -439,7 +471,7 @@ impl Vault {
             .then(
                 Self::ext(env::current_account_id())
                     .with_static_gas(GAS_ESCROW_CALLBACK)
-                    .on_settle_release(position_id.0, position.owner.clone(), U128(payout)),
+                    .on_settle_release(position_id.0, position.owner.clone(), U128(payout), prev_state),
             )
             .into()
     }
@@ -474,7 +506,7 @@ impl Vault {
             .then(
                 Self::ext(env::current_account_id())
                     .with_static_gas(GAS_ESCROW_CALLBACK)
-                    .on_settle_release(position_id.0, position.owner.clone(), U128(unswapped)),
+                    .on_settle_release(position_id.0, position.owner.clone(), U128(unswapped), "Degraded".to_string()),
             )
             .into()
     }
@@ -616,7 +648,7 @@ impl Vault {
     pub fn nav_of(&self, position_id: U64, price_1e18: U128) -> U128 {
         self.positions
             .get(&position_id)
-            .map(|p| U128(math::nav(&p, price_1e18.0, 24)))
+            .map(|p| U128(math::nav(&p, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals)))
             .unwrap_or(U128(0))
     }
 
@@ -691,7 +723,7 @@ impl Vault {
         if price_1e18.0 == 0 {
             env::panic_str("ErrPriceStale: zero price");
         }
-        let now_ms = env::block_timestamp();
+        let now_ms = env::block_timestamp() / 1_000_000; // ns → ms
         let age_ms = now_ms.saturating_sub(quote_timestamp_ms);
         if age_ms > u64::from(self.config.price_max_age_sec) * 1_000 {
             env::panic_str("ErrPriceStale");
@@ -720,7 +752,9 @@ mod tests {
         );
         let cfg = vault.get_config();
         assert_eq!(cfg.quote_asset_id, "wrap.testnet");
-        assert_eq!(cfg.risk_asset_id, "usdc.fakes.testnet");
+        assert_eq!(cfg.risk_asset_id, "nvda.floorline-escrow.testnet");
+        assert_eq!(cfg.quote_decimals, 24);
+        assert_eq!(cfg.risk_decimals, 6);
         assert_eq!(cfg.floor_ratio_bps, 9_000);
         let (paused, locked, deposited) = vault.get_vault_state();
         assert!(!paused);

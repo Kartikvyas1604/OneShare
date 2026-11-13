@@ -17,8 +17,12 @@ trait Vault {
 }
 
 /// Gas for the cross-contract state check + the transfer callback.
-const GAS_RELEASE_CHECK: Gas = Gas::from_tgas(10);
-const GAS_RELEASE_FINALIZE: Gas = Gas::from_tgas(10);
+const GAS_RELEASE_CHECK: Gas = Gas::from_tgas(15);
+/// The finalize callback schedules the token transfer (15 TGas) plus its own
+/// completion callback (12 TGas) — 40 TGas covers all three.
+const GAS_RELEASE_FINALIZE: Gas = Gas::from_tgas(40);
+/// Completion callback after the reserve transfer.
+const GAS_TRANSFER_COMPLETE: Gas = Gas::from_tgas(12);
 
 impl Default for Escrow {
     /// Placeholder for the wasm non-contract fallback cfg — real state is
@@ -60,7 +64,10 @@ pub struct PendingRelease {
 #[near(contract_state)]
 impl Escrow {
     /// Initialize the escrow with the vault that exclusively controls releases.
-    #[init]
+    /// `ignore_state` allows redeploying + re-initializing over stale state
+    /// (testnet redeploys; the escrow holds no user funds outside locked
+    /// reserves, which are zeroed by the vault's own bookkeeping).
+    #[init(ignore_state)]
     pub fn new(vault: AccountId, quote_asset: AccountId) -> Self {
         Self {
             vault,
@@ -87,8 +94,11 @@ impl Escrow {
         }
 
         let amount = amount.0;
+        // Idempotent: re-locking the same position replaces the previous lock
+        // (keeps Σ locks == total_locked even if a position id is reused).
+        let existing = self.locks.get(&U64(position_id)).unwrap_or(0);
         self.locks.insert(&U64(position_id), &amount);
-        self.total_locked += amount;
+        self.total_locked = self.total_locked.saturating_sub(existing) + amount;
         // Accept the full transfer (it is now locked).
         PromiseOrValue::Value(U128(0))
     }
@@ -144,8 +154,11 @@ impl Escrow {
             PromiseResult::Failed => env::panic_str("ErrBadState: vault state query failed"),
         };
 
-        if state != "Matured" && state != "Degraded" {
-            env::panic_str("ErrBadState: reserve releases only from Matured or Degraded");
+        // Settled is accepted for early exits: the vault marks the position
+        // Settled (terminal, dedup-guarded) before releasing on both settle
+        // and exit_early paths. Matured/Degraded cover the keeperless flows.
+        if state != "Matured" && state != "Degraded" && state != "Settled" {
+            env::panic_str("ErrBadState: reserve releases only from Matured, Degraded or Settled");
         }
 
         self.do_transfer(position_id, to.to_string(), amount.0)
@@ -167,12 +180,15 @@ impl Escrow {
         }
         self.total_locked -= amount;
 
-        // NEP-141 transfer back to the vault (which pays out to the owner).
-        Promise::new(to.parse().unwrap())
+        // NEP-141 transfer back to the vault (which pays out to the owner):
+        // the call goes to the TOKEN CONTRACT with the release target as
+        // receiver. (Calling `ft_transfer` on `to` itself — the old code —
+        // would hit an account that exports no such method.)
+        Promise::new(self.quote_asset.clone())
             .function_call(
                 "ft_transfer".to_string(),
                 serde_json::to_vec(&serde_json::json!({
-                    "receiver_id": env::predecessor_account_id(),
+                    "receiver_id": to,
                     "amount": amount.to_string(),
                 }))
                 .unwrap(),
@@ -181,6 +197,7 @@ impl Escrow {
             )
             .then(
                 Self::ext(env::current_account_id())
+                    .with_static_gas(GAS_TRANSFER_COMPLETE)
                     .on_transfer_complete(position_id, U128(amount)),
             )
             .into()

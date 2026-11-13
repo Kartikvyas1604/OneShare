@@ -19,13 +19,13 @@ def call(contract, method, args=b""):
     return json.loads(raw)
 
 if __name__ == "__main__":
-    cfg = call("vault2.floorline-escrow.testnet", "get_config")
+    cfg = call("vault3.floorline-escrow.testnet", "get_config")
     print("vault config on-chain:")
     print("  quote asset:", cfg["quote_asset_id"])
     print("  risk asset:", cfg["risk_asset_id"])
     print("  floor ratio:", cfg["floor_ratio_bps"], "bps · de-risk trigger:", cfg["de_risk_trigger_bps"], "bps")
     print("  min deposit:", cfg["min_deposit"], "· early-exit fee:", cfg["early_exit_fee_bps"], "bps")
-    state = call("vault2.floorline-escrow.testnet", "get_vault_state")
+    state = call("vault3.floorline-escrow.testnet", "get_vault_state")
     print("vault state [paused, floor_locked, total_deposited]:", state)
     print("escrow locked:", call("floorline-escrow.testnet", "locked"))
-    print("positions:", call("vault2.floorline-escrow.testnet", "positions_of", json.dumps({"account_id": "floorline-escrow.testnet"}).encode()))
+    print("positions:", call("vault3.floorline-escrow.testnet", "positions_of", json.dumps({"account_id": "floorline-escrow.testnet"}).encode()))

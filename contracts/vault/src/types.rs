@@ -95,6 +95,11 @@ pub struct VaultConfig {
     /// Management/performance fees — 0 for the hackathon build.
     pub mgmt_fee_bps: u16,
     pub perf_fee_bps: u16,
+    /// Quote asset token decimals (USDC 6; wNEAR 24) — drives all quote-value
+    /// math in §4.2. Must match the NEP-141 metadata of `quote_asset_id`.
+    pub quote_decimals: u32,
+    /// Risk asset token decimals (nNVDA 6 on testnet; xStocks 6).
+    pub risk_decimals: u32,
 }
 
 impl Default for VaultConfig {
@@ -113,18 +118,23 @@ impl Default for VaultConfig {
             term_seconds: 2_592_000,          // 30 days
             mgmt_fee_bps: 0,
             perf_fee_bps: 0,
+            quote_decimals: 6,
+            risk_decimals: 24,
         }
     }
 }
 
 /// Testnet variant: quote = wNEAR (directly obtainable on testnet), risk =
-/// USDC.fakes (the Ref-Finance testnet token with real supply).
+/// the NVDA stand-in token (6 decimals) so the equity leg holds NVIDIA-labeled
+/// units for real.
 impl VaultConfig {
     pub fn testnet() -> Self {
         Self {
             quote_asset_id: "wrap.testnet".to_string(),
-            risk_asset_id: "usdc.fakes.testnet".to_string(),
+            risk_asset_id: "nvda.floorline-escrow.testnet".to_string(),
             min_deposit: near_sdk::json_types::U128(1_000_000_000_000_000_000_000_000), // 1 wNEAR (24 dec)
+            quote_decimals: 24,
+            risk_decimals: 6,
             ..Default::default()
         }
     }

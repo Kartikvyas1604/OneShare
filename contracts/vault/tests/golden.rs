@@ -14,7 +14,7 @@ fn golden_vector() {
 
     // q* = floor(R × 10^24 × 10¹⁸ / (P × 10⁶)) = 27_932_960_893_854_748_603_351_955
     // (the exact scaled integer from §4.5)
-    let q = math::target_units(r, 3_580_000_000_000_000_000, 24);
+    let q = math::target_units(r, 3_580_000_000_000_000_000, 24, 6);
     assert_eq!(q, 27_932_960_893_854_748_603_351_955u128);
 
     // unit_value(q*) ≤ R (back to quote scale)
@@ -22,6 +22,7 @@ fn golden_vector() {
         27_932_960_893_854_748_603_351_955,
         3_580_000_000_000_000_000,
         24,
+        6,
     );
     assert!(value <= r, "unit_value(q*) must not exceed the risk budget");
 }

@@ -49,7 +49,9 @@ impl Contract {
     /// Mint new tokens to an account (owner only — the testnet faucet leg).
     pub fn mint(&mut self, account_id: AccountId, amount: U128) {
         assert_eq!(env::predecessor_account_id(), self.owner_id, "ErrOwnerOnly");
-        self.token.internal_register_account(&account_id);
+        if self.token.accounts.get(&account_id).is_none() {
+            self.token.internal_register_account(&account_id);
+        }
         self.token.internal_deposit(&account_id, amount.0);
         log!("mint");
     }
@@ -57,7 +59,9 @@ impl Contract {
     /// One-time registration on the token contract (covers storage).
     pub fn register(&mut self, account_id: AccountId) {
         assert_eq!(env::predecessor_account_id(), self.owner_id, "ErrOwnerOnly");
-        self.token.internal_register_account(&account_id);
+        if self.token.accounts.get(&account_id).is_none() {
+            self.token.internal_register_account(&account_id);
+        }
     }
 }
 
