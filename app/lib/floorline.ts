@@ -121,6 +121,15 @@ export interface FloorlinePosition {
 
 /* ─── Formulas (§4.2) — copy-verbatim semantics ─── */
 
+/** Structural subset the formulas need — satisfied by real on-chain positions. */
+export interface PositionMoney {
+  floor_amount: number;
+  risk_units: number;
+  realised_quote: number;
+  cost_basis: number;
+  de_risked: boolean;
+}
+
 /** (1)/(2): F = floor(D × ratio / 10_000); R = D − F. Floor division, always. */
 export function splitDeposit(depositMicro: number, floorRatioBps: number) {
   const floorAmount = Math.floor((depositMicro * floorRatioBps) / 10_000);
@@ -133,23 +142,31 @@ export function unitValueQuote(units: number, priceUsdc: number): number {
 }
 
 /** (4): NAV = F + unit_value(q) + realised_quote. */
-export function navQuote(p: FloorlinePosition, priceUsdc: number): number {
+export function navQuote(
+  p: Pick<PositionMoney, "floor_amount" | "risk_units" | "realised_quote">,
+  priceUsdc: number
+): number {
   return p.floor_amount + unitValueQuote(p.risk_units, priceUsdc) + p.realised_quote;
 }
 
 /** §6.2 worst_case(): F + realised_quote — the number the depositor keeps. */
-export function worstCaseQuote(p: FloorlinePosition): number {
+export function worstCaseQuote(
+  p: Pick<PositionMoney, "floor_amount" | "realised_quote">
+): number {
   return p.floor_amount + p.realised_quote;
 }
 
 /** (5): cushion C = NAV − F; ≥ 0 by I1. */
-export function cushionQuote(p: FloorlinePosition, priceUsdc: number): number {
+export function cushionQuote(
+  p: PositionMoney,
+  priceUsdc: number
+): number {
   return navQuote(p, priceUsdc) - p.floor_amount;
 }
 
 /** (6): de_risk_triggered = cost_basis > 0 AND unit_value × 10⁴ < cost_basis × (10⁴ − trigger). Strict < — the boundary does not fire (§4.7 #3). */
 export function deRiskTriggered(
-  p: Pick<FloorlinePosition, "cost_basis" | "risk_units" | "de_risked">,
+  p: Pick<PositionMoney, "cost_basis" | "risk_units" | "de_risked">,
   priceUsdc: number,
   triggerBps: number = VAULT_CONFIG.deRiskTriggerBps
 ): boolean {
@@ -162,7 +179,7 @@ export function deRiskTriggered(
 
 /** Current drawdown of the risk bucket from cost basis, in bps (0 when flat or empty). */
 export function drawdownBps(
-  p: Pick<FloorlinePosition, "cost_basis" | "risk_units">,
+  p: Pick<PositionMoney, "cost_basis" | "risk_units">,
   priceUsdc: number
 ): number {
   if (p.cost_basis <= 0 || p.risk_units <= 0) return 0;
@@ -171,7 +188,7 @@ export function drawdownBps(
 }
 
 /** (8): early exit payout = NAV × (10⁴ − fee) / 10⁴. */
-export function earlyExitPayout(p: FloorlinePosition, priceUsdc: number): number {
+export function earlyExitPayout(p: PositionMoney, priceUsdc: number): number {
   return Math.floor(
     (navQuote(p, priceUsdc) * (10_000 - VAULT_CONFIG.earlyExitFeeBps)) / 10_000
   );
@@ -184,7 +201,7 @@ export function targetUnits(riskBudgetMicro: number, priceUsdc: number): number 
 
 /** Average entry price paid for the risk bucket, in USDC. */
 export function entryPriceUsdc(
-  p: Pick<FloorlinePosition, "cost_basis" | "risk_units">
+  p: Pick<PositionMoney, "cost_basis" | "risk_units">
 ): number {
   return p.risk_units > 0 ? p.cost_basis / 1e6 / p.risk_units : 0;
 }

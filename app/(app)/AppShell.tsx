@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/Button";
+import { useNearAccount } from "@/app/lib/wallet";
 import {
   LayoutDashboard,
   Plus,
@@ -23,6 +24,7 @@ const nav = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { accountId, loading } = useNearAccount();
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-background md:flex">
@@ -69,8 +71,21 @@ export function AppSidebar() {
         </Button>
         <div className="rounded-lg border border-border bg-card px-3 py-2.5">
           <p className="eyebrow">Wallet</p>
-          <p className="num mt-1 truncate text-[11px] text-foreground">priya.near</p>
-          <p className="text-[10px] text-muted-foreground">Connected · Mainnet</p>
+          {loading ? (
+            <p className="num mt-1 text-[11px] text-faint">Checking…</p>
+          ) : accountId ? (
+            <>
+              <p className="num mt-1 truncate text-[11px] text-foreground">{accountId}</p>
+              <p className="text-[10px] text-muted-foreground">Connected · Injected wallet</p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 text-[11px] text-muted-foreground">Not connected</p>
+              <p className="text-[10px] text-faint">
+                Connect an injected NEAR wallet to see your positions.
+              </p>
+            </>
+          )}
         </div>
         <p className="px-1 text-[10px] leading-relaxed text-faint">Not audited. Non-US only.</p>
       </div>

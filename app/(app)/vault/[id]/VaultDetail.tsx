@@ -1,91 +1,200 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/app/components/Button";
 import { Badge } from "@/app/components/Badge";
 import { CopyButton } from "@/app/components/CopyButton";
 import { ErrorState } from "@/app/components/ErrorState";
-import { AuditLog } from "@/app/components/AuditLog";
+import { AuditLog, type ChainTxn } from "@/app/components/AuditLog";
 import { StateBadge } from "@/app/components/vault/StateBadge";
 import { AttestationBadge } from "@/app/components/vault/AttestationBadge";
+import { useNearAccount } from "@/app/lib/wallet";
+import { useLivePrices } from "@/app/lib/prices";
+import { VAULT_CONTRACT_ID, type VaultPosition } from "@/app/lib/vault";
 import {
-  MOCK_POSITIONS,
-  RISK_PRICE_USDC,
   VAULT_CONFIG,
-  eventsFor,
   navQuote,
   worstCaseQuote,
   unitValueQuote,
   drawdownBps,
   deRiskTriggered,
-  earlyExitPayout,
   entryPriceUsdc,
   riskAsset,
-  type FloorlinePosition,
 } from "@/app/lib/floorline";
-import { getSessionPosition } from "@/app/lib/session-positions";
-import { formatUsd, formatTokenAmount, formatDate, sleep } from "@/app/lib/utils";
+import { formatUsd, formatTokenAmount, formatDate } from "@/app/lib/utils";
 import { ChevronRight, ShieldCheck, TrendingDown, Lock, ArrowUpRight, ArrowDownRight } from "lucide-react";
-
-/** Mock connected wallet — matches the AppShell wallet card. */
-const MOCK_WALLET = "priya.near";
 
 type ActionKind = "settle" | "exit" | "recover";
 type ActionPhase = "idle" | "working" | "done";
 
-function resolvePosition(raw: string): FloorlinePosition | undefined {
-  const key = raw.toLowerCase().replace(/^0x/, "");
-  return (
-    MOCK_POSITIONS.find((p) => p.hex_id.toLowerCase().replace(/^0x/, "") === key) ??
-    MOCK_POSITIONS.find((p) => String(p.id) === raw) ??
-    getSessionPosition(raw)
-  );
-}
-
 export function VaultDetail({ rawId }: { rawId: string }) {
+  const { accountId, loading: walletLoading } = useNearAccount();
+  const { prices, loading: pricesLoading } = useLivePrices();
+  const [position, setPosition] = useState<VaultPosition | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notDeployed, setNotDeployed] = useState(false);
+  const [txns, setTxns] = useState<ChainTxn[] | null>(null);
   const [action, setAction] = useState<ActionKind | null>(null);
   const [phase, setPhase] = useState<ActionPhase>("idle");
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const position = resolvePosition(rawId);
+  const positionId = Number(rawId);
+  const validId = Number.isInteger(positionId) && positionId >= 0;
 
-  if (!position) {
+  const loading = validId && position === null && error === null;
+
+  // Real on-chain read by numeric token id. Every state update happens after
+  // the awaited fetch — no synchronous setState in the effect body.
+  useEffect(() => {
+    if (!validId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/vault/position/${positionId}`);
+        const body = (await res.json()) as {
+          position?: VaultPosition;
+          error?: string;
+          notDeployed?: boolean;
+        };
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(body.error ?? `Vault read failed (${res.status})`);
+          setNotDeployed(Boolean(body.notDeployed));
+          return;
+        }
+        setPosition(body.position ?? null);
+        setError(null);
+        setNotDeployed(false);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Vault read failed");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [positionId, validId]);
+
+  // Real vault-account transactions from the indexer.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/activity?account=${encodeURIComponent(VAULT_CONTRACT_ID)}`);
+        const body = (await res.json()) as { txns?: ChainTxn[]; error?: string };
+        if (!cancelled) setTxns(body.txns ?? []);
+      } catch {
+        if (!cancelled) setTxns([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const runAction = async (kind: ActionKind) => {
+    if (!position) return;
+    if (!accountId) {
+      setActionError("Connect an injected NEAR wallet first — actions sign against your account.");
+      return;
+    }
+    setAction(kind);
+    setPhase("working");
+    setActionError(null);
+    try {
+      // Real transaction through the injected wallet; the chain's real result
+      // (including failures while the contract is still undeployed) is shown.
+      const injected = (
+        window as {
+          near?: {
+            signAndSendTransaction?: (args: {
+              signerId: string;
+              receiverId: string;
+              actions: Array<{ type: string; methodName?: string; args?: unknown; gas?: string; deposit?: string }>;
+            }) => Promise<unknown>;
+          };
+        }
+      ).near;
+      if (!injected?.signAndSendTransaction) {
+        throw new Error("The connected wallet cannot sign transactions in this browser.");
+      }
+      const method =
+        kind === "settle" ? "settle" : kind === "exit" ? "exit_early" : "emergency_recover";
+      await injected.signAndSendTransaction({
+        signerId: accountId,
+        receiverId: VAULT_CONTRACT_ID,
+        actions: [
+          { type: "FunctionCall", methodName: method, args: { position_id: position.id }, gas: "150000000000000", deposit: "0" },
+        ],
+      });
+      setPhase("done");
+    } catch (err) {
+      setPhase("idle");
+      setActionError(err instanceof Error ? err.message : "Transaction failed");
+    }
+  };
+
+  if (!validId) {
     return (
       <ErrorState
-        title="Position not found"
-        description="This token may be settled (NFT burned) or the id is incorrect. Your live positions are in the portfolio."
+        title="Position id is not valid"
+        description={`Positions are addressed by their numeric NEP-171 token id — "${rawId}" doesn't resolve on ${VAULT_CONTRACT_ID}.`}
       />
     );
   }
 
-  if (position.owner !== MOCK_WALLET) {
+  if (error) {
     return (
       <ErrorState
-        title="Connect to manage this position"
-        description={`The vault page reads onchain state for the connected wallet. This position belongs to ${position.owner}.`}
+        title={notDeployed ? "The vault contract is not deployed yet" : "Position unavailable"}
+        description={`${error} · reads go to ${VAULT_CONTRACT_ID} on NEAR mainnet. Nothing is simulated — this page fills with real on-chain state the moment the contract is live.`}
+      />
+    );
+  }
+
+  if (loading || walletLoading || pricesLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="engraved rounded-2xl bg-card p-8 text-center">
+          <p className="text-[13px] text-muted-foreground">
+            Reading {VAULT_CONTRACT_ID} on NEAR mainnet…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!position) {
+    return (
+      <ErrorState
+        title="Position not found on-chain"
+        description={`Token ${rawId} does not exist on ${VAULT_CONTRACT_ID}, or it settled and the NFT burned. Live positions are in the portfolio.`}
+      />
+    );
+  }
+
+  if (position.owner && accountId && position.owner !== accountId) {
+    return (
+      <ErrorState
+        title="Connect the owner's wallet"
+        description={`This position belongs to ${position.owner} on-chain; the connected account is ${accountId}.`}
       />
     );
   }
 
   const asset = riskAsset(position.risk_asset_id);
-  const price = RISK_PRICE_USDC;
-  const nav = navQuote(position, price);
+  const price = prices.get(position.risk_asset_id)?.price;
+  const hasPrice = typeof price === "number";
+  const nav = hasPrice ? navQuote(position, price) : null;
   const worst = worstCaseQuote(position);
-  const cushion = nav - position.floor_amount;
-  const pnl = nav - position.deposit_amount;
-  const pnlPct = position.deposit_amount > 0 ? pnl / position.deposit_amount : 0;
-  const isPositive = pnl >= 0;
-  const bucketValue = unitValueQuote(position.risk_units, price);
-  const drawdown = drawdownBps(position, price);
-  const triggerArmed = deRiskTriggered(position, price);
+  const cushion = hasPrice ? (nav as number) - position.floor_amount : null;
+  const pnl = hasPrice ? (nav as number) - position.deposit_amount : null;
+  const pnlPct = pnl !== null && position.deposit_amount > 0 ? pnl / position.deposit_amount : null;
+  const isPositive = (pnl ?? 0) >= 0;
+  const bucketValue = hasPrice ? unitValueQuote(position.risk_units, price) : null;
+  const drawdown = hasPrice ? drawdownBps(position, price) : 0;
+  const triggerArmed = hasPrice ? deRiskTriggered(position, price) : false;
   const entry = entryPriceUsdc(position);
-
-  const runAction = async (kind: ActionKind) => {
-    setAction(kind);
-    setPhase("working");
-    await sleep(1_400);
-    setPhase("done");
-  };
 
   const actionBusy = phase === "working";
   const canSettle = position.state === "matured";
@@ -116,26 +225,23 @@ export function VaultDetail({ rawId }: { rawId: string }) {
               <span className="num text-[11px] text-muted-foreground">
                 NEP-171 · token #{position.id}
               </span>
-              <CopyButton value={position.hex_id} label={position.hex_id.slice(0, 10) + "…"} />
+              {position.owner && (
+                <CopyButton value={position.owner} label={position.owner} />
+              )}
             </div>
           </div>
         </div>
 
-        {/* Actions — contextual per state */}
+        {/* Actions — real transactions through the connected wallet */}
         <div className="flex flex-wrap gap-2">
           {phase === "done" && action === "settle" && (
             <p className="num animate-fade-in self-center text-[13px] font-medium text-up">
-              {formatUsd(nav / 1e6)} payout sent · NFT burned
+              Settle confirmed on-chain
             </p>
           )}
-          {phase === "done" && action === "exit" && (
-            <p className="num animate-fade-in self-center text-[13px] font-medium text-foreground">
-              Exited early · {formatUsd(earlyExitPayout(position, price) / 1e6)} after fee
-            </p>
-          )}
-          {phase === "done" && action === "recover" && (
+          {phase === "done" && action !== "settle" && (
             <p className="num animate-fade-in self-center text-[13px] font-medium text-up">
-              Reserve returned · NFT burned
+              {action === "exit" ? "Early exit" : "Emergency recover"} confirmed on-chain
             </p>
           )}
           {phase !== "done" && (
@@ -162,30 +268,40 @@ export function VaultDetail({ rawId }: { rawId: string }) {
           )}
         </div>
       </header>
+      {actionError && (
+        <ErrorState title="Transaction rejected" description={actionError} />
+      )}
 
-      {/* Value */}
+      {/* Value — live price × on-chain state */}
       <section className="animate-fade-up delay-75">
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
           <span className="num text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
-            {formatUsd(nav / 1e6)}
+            {hasPrice ? formatUsd((nav as number) / 1e6) : "—"}
           </span>
-          <span
-            className={`num inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[13px] font-semibold ${
-              isPositive ? "bg-up-soft text-up" : "bg-down-soft text-down"
-            }`}
-          >
-            {isPositive ? (
-              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-            ) : (
-              <ArrowDownRight className="h-3.5 w-3.5" aria-hidden />
-            )}
-            {`${pnlPct >= 0 ? "+" : "−"}${Math.abs(pnlPct * 100).toFixed(2)}%`}
-          </span>
+          {pnlPct !== null && (
+            <span
+              className={`num inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[13px] font-semibold ${
+                isPositive ? "bg-up-soft text-up" : "bg-down-soft text-down"
+              }`}
+            >
+              {isPositive ? (
+                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <ArrowDownRight className="h-3.5 w-3.5" aria-hidden />
+              )}
+              {`${pnlPct >= 0 ? "+" : "−"}${Math.abs(pnlPct * 100).toFixed(2)}%`}
+            </span>
+          )}
         </div>
         <p className="num mt-2 text-[13px] text-muted-foreground">
-          Worst case{" "}
-          <span className="font-semibold text-foreground">{formatUsd(worst / 1e6)}</span> · cushion{" "}
-          {formatUsd(cushion / 1e6)} · deposited {formatUsd(position.deposit_amount / 1e6)}
+          Worst case <span className="font-semibold text-foreground">{formatUsd(worst / 1e6)}</span>
+          {cushion !== null && (
+            <>
+              {" "}· cushion {formatUsd(cushion / 1e6)}
+            </>
+          )}{" "}
+          · deposited {formatUsd(position.deposit_amount / 1e6)} · price{" "}
+          {hasPrice ? `$${price?.toFixed(4)}` : "—"} live from 1Click
         </p>
 
         <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
@@ -196,17 +312,21 @@ export function VaultDetail({ rawId }: { rawId: string }) {
           />
           <Stat
             label="Risk bucket"
-            value={formatUsd(bucketValue / 1e6)}
+            value={bucketValue !== null ? formatUsd(bucketValue / 1e6) : "—"}
             sub={
               position.risk_units > 0
-                ? `${formatTokenAmount(position.risk_units, 4)} ${asset.symbol} @ $${entry.toFixed(2)}`
+                ? `${formatTokenAmount(position.risk_units, 4)} ${asset.symbol} @ $${entry.toFixed(2)} entry`
                 : "no units yet"
             }
           />
           <Stat
             label="Cost basis"
             value={position.cost_basis > 0 ? formatUsd(position.cost_basis / 1e6) : "—"}
-            sub={position.realised_quote > 0 ? `${formatUsd(position.realised_quote / 1e6)} realised` : "all at risk"}
+            sub={
+              position.realised_quote > 0
+                ? `${formatUsd(position.realised_quote / 1e6)} realised`
+                : "all at risk"
+            }
           />
           <Stat label="Matures" value={formatDate(position.matures_at)} sub="UTC · payout = NAV" />
         </dl>
@@ -265,8 +385,8 @@ export function VaultDetail({ rawId }: { rawId: string }) {
                 <p className="flex items-center justify-between text-[11px] text-muted-foreground">
                   <span>
                     Value now{" "}
-                    <span className="num text-foreground">{formatUsd(bucketValue / 1e6)}</span> · cost{" "}
-                    <span className="num text-foreground">{formatUsd(position.cost_basis / 1e6)}</span>
+                    <span className="num text-foreground">{formatUsd((bucketValue ?? 0) / 1e6)}</span> ·
+                    cost <span className="num text-foreground">{formatUsd(position.cost_basis / 1e6)}</span>
                   </span>
                   <span className="num">trigger −{(VAULT_CONFIG.deRiskTriggerBps / 100).toFixed(0)}%</span>
                 </p>
@@ -295,22 +415,20 @@ export function VaultDetail({ rawId }: { rawId: string }) {
               <ShieldCheck className="h-4 w-4 text-faint" aria-hidden />
               <p className="text-[13px] font-medium text-foreground">Keeper &amp; attestation</p>
             </div>
-            <AttestationBadge
-              status={position.de_risked ? "attested" : "pending"}
-              hash={position.de_risked ? "ed25519:3kQ4xYz9p…mV2r" : undefined}
-            />
+            <AttestationBadge status="pending" />
           </div>
           <p className="px-4 py-3.5 text-xs leading-relaxed text-muted-foreground">
-            The de-risk decision runs on NEAR AI Cloud inside a TEE; the attestation hash is bound
-            to this position. Until the TEE flow verifies end-to-end, the local rule (formula 6)
-            executes and the badge stays pending — it is never faked.
+            The de-risk decision runs on NEAR AI Cloud inside a TEE. The attestation comes from the
+            keeper&apos;s <span className="num">/v1/attestation/:id</span> endpoint once that flow
+            verifies end-to-end; until then the local rule (formula 6) executes and the badge stays
+            pending — it is never faked with a placeholder hash.
           </p>
         </div>
       </section>
 
-      {/* Events */}
+      {/* Events — real vault transactions from the indexer */}
       <section className="animate-fade-up delay-200">
-        <AuditLog entries={eventsFor(position.id)} />
+        <AuditLog txns={txns ?? []} loading={txns === null} account={VAULT_CONTRACT_ID} />
       </section>
 
       <p className="text-[11px] leading-relaxed text-faint">

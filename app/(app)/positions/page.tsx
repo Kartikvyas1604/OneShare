@@ -1,51 +1,105 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/app/components/Button";
 import { PositionCard } from "@/app/components/PositionCard";
 import { EmptyState } from "@/app/components/EmptyState";
 import { ErrorState } from "@/app/components/ErrorState";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
-import { MOCK_POSITIONS, RISK_PRICE_USDC, navQuote, worstCaseQuote } from "@/app/lib/floorline";
+import { useNearAccount } from "@/app/lib/wallet";
+import { useLivePrices } from "@/app/lib/prices";
+import { VAULT_CONTRACT_ID, type VaultPosition } from "@/app/lib/vault";
+import { navQuote, worstCaseQuote } from "@/app/lib/floorline";
 import { formatUsd } from "@/app/lib/utils";
 import { Layers } from "lucide-react";
 
 export default function PositionsPage() {
-  const [loading] = useState(false);
-  const [error] = useState<string | null>(null);
-  const positions = useMemo(() => MOCK_POSITIONS, []);
-  const price = RISK_PRICE_USDC;
+  const { accountId, loading: walletLoading } = useNearAccount();
+  const { prices, loading: pricesLoading } = useLivePrices();
+  const [result, setResult] = useState<{ account: string; positions: VaultPosition[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notDeployed, setNotDeployed] = useState(false);
+
+  useEffect(() => {
+    if (!accountId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/vault/positions?account=${encodeURIComponent(accountId)}`);
+        const body = (await res.json()) as {
+          positions?: VaultPosition[];
+          error?: string;
+          notDeployed?: boolean;
+        };
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(body.error ?? `Vault read failed (${res.status})`);
+          setNotDeployed(Boolean(body.notDeployed));
+          return;
+        }
+        setResult({ account: accountId, positions: body.positions ?? [] });
+        setError(null);
+        setNotDeployed(false);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Vault read failed");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId]);
+
+  const loading =
+    walletLoading || pricesLoading || (accountId !== null && result === null && !error);
+  const price = prices.get("nep141:wrap.near")?.price;
+  // Only render positions fetched for the connected account (no stale flashes).
+  const list = result && result.account === accountId ? result.positions : [];
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-xl space-y-8">
+        <Header />
+        <ErrorState
+          title={notDeployed ? "The vault contract is not deployed yet" : "Couldn't load positions"}
+          description={`${error} · reads go to ${VAULT_CONTRACT_ID} on NEAR mainnet. Nothing is simulated here — the list fills with real positions the moment the contract is live.`}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
       <div className="space-y-4">
+        <Header />
         <SkeletonCard />
         <SkeletonCard />
       </div>
     );
   }
 
-  if (error) {
+  if (!accountId) {
     return (
-      <ErrorState
-        title="Couldn't load positions"
-        description="This is usually a network hiccup. Try again in a moment."
-        onRetry={() => window.location.reload()}
-      />
+      <div className="mx-auto max-w-xl space-y-8">
+        <Header />
+        <EmptyState
+          icon={Layers}
+          title="Connect a NEAR wallet"
+          description="Positions are read straight from the vault contract for your account — connect an injected NEAR wallet to see the real list."
+          action={{ label: "Open a wallet in this browser", href: "/dashboard" }}
+        />
+      </div>
     );
   }
 
-  if (positions.length === 0) {
+  if (list.length === 0) {
     return (
       <div className="mx-auto max-w-xl space-y-8">
-        <header>
-          <p className="eyebrow">Portfolio</p>
-          <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
-        </header>
+        <Header />
         <EmptyState
           icon={Layers}
-          title="No positions yet"
-          description="Deposit from any chain, pick a loss limit, and own the floor. Your first one takes 60 seconds."
+          title="No positions on-chain yet"
+          description={`The vault contract holds no positions for ${accountId}. Create the first one with a real deposit from any chain.`}
           action={{ label: "Create your first position", href: "/create" }}
         />
       </div>
@@ -55,63 +109,54 @@ export default function PositionsPage() {
   let deposited = 0;
   let navTotal = 0;
   let worstTotal = 0;
-  for (const p of positions) {
+  for (const p of list) {
     deposited += p.deposit_amount;
-    navTotal += navQuote(p, price);
+    navTotal += price !== undefined ? navQuote(p, price) : 0;
     worstTotal += worstCaseQuote(p);
   }
-  const pnlPct = deposited > 0 ? (navTotal - deposited) / deposited : 0;
-  const isPositive = pnlPct >= 0;
-  const reserveTotal = positions.reduce((sum, p) => sum + p.floor_amount, 0);
-  const live = positions.filter((p) => p.state === "active" || p.state === "open").length;
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <p className="eyebrow">Portfolio</p>
-          <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
-        </div>
-        <Button href="/create">New position</Button>
-      </header>
+      <Header />
 
-      {/* Summary */}
-      <section className="animate-fade-up grid grid-cols-2 divide-border engraved rounded-2xl bg-card sm:grid-cols-4 sm:divide-x">
-        <Cell label="Total NAV" value={formatUsd(navTotal / 1e6)} />
-        <Cell label="Reserve escrowed" value={formatUsd(reserveTotal / 1e6)} />
+      {/* Summary — computed from real on-chain positions and the live price */}
+      <section className="animate-fade-up grid grid-cols-2 divide-border rounded-xl border border-border bg-card sm:grid-cols-4 sm:divide-x">
+        <Cell label="Total NAV" value={price !== undefined ? formatUsd(navTotal / 1e6) : "—"} />
         <Cell
-          label="Worst case"
-          value={<span className="text-foreground">{formatUsd(worstTotal / 1e6)}</span>}
+          label="Reserve escrowed"
+          value={formatUsd(list.reduce((s, p) => s + p.floor_amount, 0) / 1e6)}
         />
-        <Cell
-          label="Total PnL"
-          value={
-            <span
-              className={`num flex items-center justify-end ${isPositive ? "text-up" : "text-down"}`}
-            >
-              {formatUsd((navTotal - deposited) / 1e6)}
-            </span>
-          }
-        />
+        <Cell label="Worst case" value={formatUsd(worstTotal / 1e6)} />
+        <Cell label="Deposited" value={formatUsd(deposited / 1e6)} />
       </section>
 
       {/* List */}
       <section className="animate-fade-up delay-100 space-y-2.5">
-        {positions.map((p) => (
-          <PositionCard key={p.hex_id} position={p} currentPrice={price} />
+        {list.map((p) => (
+          <PositionCard key={p.id} position={p} currentPrice={price} />
         ))}
       </section>
 
       <p className="animate-fade-up delay-200 text-center text-[11px] text-muted-foreground">
-        {live} live · each position is a NEP-171 NFT on NEAR. Transfer it and the claim moves with
-        it — settle pays the new owner.
+        Read live from {VAULT_CONTRACT_ID} · NEP-171 transfer: settle pays whoever holds the token.
       </p>
     </div>
   );
 }
 
-function Cell({ label, value }: { label: string; value: React.ReactNode }) {
+function Header() {
+  return (
+    <header className="flex items-start justify-between gap-4">
+      <div>
+        <p className="eyebrow">Portfolio</p>
+        <h1 className="display mt-1.5 text-3xl text-foreground">Positions</h1>
+      </div>
+      <Button href="/create">New position</Button>
+    </header>
+  );
+}
+
+function Cell({ label, value }: { label: string; value: string }) {
   return (
     <div className="p-4">
       <p className="eyebrow">{label}</p>

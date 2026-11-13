@@ -1,28 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
 import { ChainBadge } from "@/app/components/ChainBadge";
 import { CopyButton } from "@/app/components/CopyButton";
 import { Badge } from "@/app/components/Badge";
 import { Slider } from "@/app/components/Slider";
-import { Check, ChevronDown, CircleDot } from "lucide-react";
+import { ErrorState } from "@/app/components/ErrorState";
+import { Check, ChevronDown, CircleDot, RefreshCw } from "lucide-react";
 import {
   RISK_ASSETS,
-  RISK_PRICE_USDC,
   VAULT_CONFIG,
-  MOCK_EPOCH,
   splitDeposit,
   targetUnits,
   riskAsset,
-  type FloorlinePosition,
 } from "@/app/lib/floorline";
-import { pushSessionPosition } from "@/app/lib/session-positions";
-import { formatUsd, formatTokenAmount, sleep } from "@/app/lib/utils";
+import { useLivePrices } from "@/app/lib/prices";
+import { formatUsd, formatTokenAmount } from "@/app/lib/utils";
 
-type CreateState = "config" | "quoting" | "quoted" | "submitting" | "done";
+type CreateState = "config" | "quoting" | "quoted" | "submitting" | "funding" | "settled";
+
+const TERMINAL_STATUSES = new Set(["SUCCESS", "FAILED", "REFUNDED", "INCOMPLETE_DEPOSIT"]);
 
 const TERMS = [
   { label: "7 days", seconds: 604_800 },
@@ -30,70 +29,136 @@ const TERMS = [
   { label: "90 days", seconds: 7_776_000 },
 ] as const;
 
-const DEPOSIT_ADDRESS = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb";
+interface RealQuote {
+  amountIn?: string;
+  amountInUsd?: string;
+  amountOut?: string;
+  amountOutFormatted?: string;
+  amountOutUsd?: string;
+  minAmountOut?: string;
+  timeEstimate?: number;
+}
 
 export default function CreatePage() {
-  const router = useRouter();
+  const { prices } = useLivePrices();
   const [state, setState] = useState<CreateState>("config");
   const [amount, setAmount] = useState("100");
   const [amountTouched, setAmountTouched] = useState(false);
   const [floorBps, setFloorBps] = useState<number>(VAULT_CONFIG.floorRatioBps);
   const [termSeconds, setTermSeconds] = useState<number>(VAULT_CONFIG.termSeconds);
   const [assetId, setAssetId] = useState<string>(VAULT_CONFIG.riskAssetId);
-  const [minted, setMinted] = useState<FloorlinePosition | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const [quote, setQuote] = useState<RealQuote | null>(null);
+  const [depositAddress, setDepositAddress] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const asset = riskAsset(assetId);
+  const livePrice = prices.get(assetId)?.price;
   const parsedUsdc = Number(amount) || 0;
   const depositMicro = Math.round(parsedUsdc * 1e6);
   const { floorAmount, riskBudget } = splitDeposit(depositMicro, floorBps);
-  const units = targetUnits(riskBudget, RISK_PRICE_USDC);
+  const units = livePrice !== undefined ? targetUnits(riskBudget, livePrice) : null;
 
-  const amountError = useMemo(() => {
+  const amountError = (() => {
     if (!amountTouched) return undefined;
     if (parsedUsdc < VAULT_CONFIG.minDeposit / 1e6)
       return `Minimum deposit is ${VAULT_CONFIG.minDeposit / 1e6} USDC.`;
     if (depositMicro > VAULT_CONFIG.maxTvl) return "Above the vault's 100,000 USDC cap.";
     return undefined;
-  }, [amountTouched, parsedUsdc, depositMicro]);
+  })();
 
   const canReview = !amountError && parsedUsdc > 0;
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
 
   const review = async () => {
     setAmountTouched(true);
     if (!canReview) return;
     setState("quoting");
-    await sleep(700); // mock 1Click dry quote
-    setState("quoted");
+    setError(null);
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amountMicro: depositMicro,
+          destinationAsset: assetId,
+          deadlineIso: new Date(Date.now() + 30 * 60_000).toISOString(),
+        }),
+      });
+      const body = (await res.json()) as { quote?: RealQuote; error?: string };
+      if (!res.ok || !body.quote) throw new Error(body.error ?? "Quote rejected");
+      setQuote(body.quote);
+      setState("quoted");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Quote failed");
+      setState("config");
+    }
   };
 
   const confirmDeposit = async () => {
     setState("submitting");
-    await sleep(1_800); // mock deposit → escrow → buy settle
-    const id = 100 + Math.floor(Math.random() * 100);
-    const hex =
-      "0x" +
-      Array.from({ length: 32 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join(
-        ""
-      );
-    const position: FloorlinePosition = {
-      id,
-      hex_id: hex,
-      owner: "priya.near",
-      risk_asset_id: assetId,
-      deposit_amount: depositMicro,
-      floor_amount: floorAmount,
-      risk_budget: riskBudget,
-      risk_units: 0,
-      cost_basis: 0,
-      realised_quote: 0,
-      de_risked: false,
-      opened_at: MOCK_EPOCH,
-      matures_at: MOCK_EPOCH + termSeconds * 1_000,
-      state: "open",
-    };
-    pushSessionPosition(position);
-    setMinted(position);
-    setState("done");
+    setError(null);
+    try {
+      const res = await fetch("/api/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amountMicro: depositMicro,
+          destinationAsset: assetId,
+          deadlineIso: new Date(Date.now() + 30 * 60_000).toISOString(),
+        }),
+      });
+      const body = (await res.json()) as { depositAddress?: string; error?: string };
+      if (!res.ok || !body.depositAddress) throw new Error(body.error ?? "Deposit submit rejected");
+      setDepositAddress(body.depositAddress);
+      setState("funding");
+      // Poll the real 1Click status endpoint until a terminal state.
+      pollRef.current = setInterval(async () => {
+        try {
+          const s = await fetch(`/api/deposit/status?address=${encodeURIComponent(body.depositAddress as string)}`);
+          const sb = (await s.json()) as { status?: string };
+          if (sb.status) {
+            setStatus(sb.status);
+            if (TERMINAL_STATUSES.has(sb.status)) {
+              if (pollRef.current) clearInterval(pollRef.current);
+              if (sb.status === "SUCCESS") setState("settled");
+            }
+          }
+        } catch {
+          /* transient — the next tick retries for real */
+        }
+      }, 5_000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Deposit submit failed");
+      setState("quoted");
+    }
+  };
+
+  const retryStatus = () => {
+    if (!depositAddress) return;
+    setStatus(null);
+    pollRef.current = setInterval(async () => {
+      try {
+        const s = await fetch(`/api/deposit/status?address=${encodeURIComponent(depositAddress)}`);
+        const sb = (await s.json()) as { status?: string };
+        if (sb.status) {
+          setStatus(sb.status);
+          if (TERMINAL_STATUSES.has(sb.status)) {
+            if (pollRef.current) clearInterval(pollRef.current);
+            if (sb.status === "SUCCESS") setState("settled");
+          }
+        }
+      } catch {
+        /* retry next tick */
+      }
+    }, 5_000);
   };
 
   return (
@@ -103,8 +168,8 @@ export default function CreatePage() {
         <p className="eyebrow">Create</p>
         <h1 className="display mt-1.5 text-3xl text-foreground">New position</h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          Deposit USDC from any chain, pick a loss limit, and see the worst case in dollars before
-          you send anything.
+          Real 1Click quote, real deposit address — the worst case in dollars before you send
+          anything.
         </p>
       </header>
 
@@ -113,12 +178,12 @@ export default function CreatePage() {
         <ol className="flex items-center gap-2" aria-label="Progress">
           {(
             [
-              { key: "quoted", label: "Split" },
-              { key: "submitting", label: "Settle" },
-              { key: "done", label: "Mint" },
+              { key: "quoted", label: "Quote" },
+              { key: "funding", label: "Fund" },
+              { key: "settled", label: "Settle" },
             ] as const
           ).map((step, idx) => {
-            const order = ["config", "quoting", "quoted", "submitting", "done"];
+            const order = ["config", "quoting", "quoted", "submitting", "funding", "settled"];
             const reached = order.indexOf(state) >= order.indexOf(step.key);
             return (
               <li key={step.key} className="flex flex-1 items-center gap-2">
@@ -165,6 +230,7 @@ export default function CreatePage() {
             <div className="space-y-1.5" role="radiogroup" aria-label="Risk asset">
               {RISK_ASSETS.map((a) => {
                 const selected = a.assetId === assetId;
+                const live = prices.get(a.assetId);
                 return (
                   <button
                     key={a.assetId}
@@ -196,9 +262,16 @@ export default function CreatePage() {
                         <span className="block text-[11px] text-muted-foreground">{a.note}</span>
                       </span>
                     </span>
-                    <Badge variant={a.verified ? "up" : "neutral"}>
-                      {a.verified ? "Verified route" : "Route pending"}
-                    </Badge>
+                    <span className="flex flex-col items-end gap-1">
+                      <Badge variant={a.verified ? "up" : "neutral"}>
+                        {a.verified ? "Verified route" : "Route pending"}
+                      </Badge>
+                      {live && (
+                        <span className="num text-[10px] text-muted-foreground">
+                          ${live.price.toFixed(4)} live
+                        </span>
+                      )}
+                    </span>
                   </button>
                 );
               })}
@@ -296,7 +369,7 @@ export default function CreatePage() {
             </div>
           </div>
 
-          {/* Live readout */}
+          {/* Live readout — real price, real split */}
           <div className="space-y-2.5 p-4">
             <div className="rounded-lg border border-border bg-input p-3.5">
               <div className="flex items-baseline justify-between">
@@ -312,16 +385,23 @@ export default function CreatePage() {
             <Row label="Reserve (escrowed)" value={formatUsd(floorAmount / 1e6)} />
             <Row label="Risk budget" value={formatUsd(riskBudget / 1e6)} />
             <Row
-              label={`Est. ${asset.symbol} @ $${RISK_PRICE_USDC.toFixed(2)}`}
-              value={riskBudget > 0 ? `${formatTokenAmount(units, 4)} ${asset.symbol}` : "—"}
+              label={`Est. ${asset.symbol}`}
+              value={
+                units !== null && riskBudget > 0
+                  ? `${formatTokenAmount(units, 4)} @ $${livePrice?.toFixed(4) ?? "—"} live`
+                  : "—"
+              }
             />
             <Row label="De-risk trigger" value="−50% from cost basis" />
             <Row label="Early exit fee" value={`${VAULT_CONFIG.earlyExitFeeBps / 100}%`} />
             <Row label="Fees" value="0% for the hackathon" />
           </div>
 
-          {/* Actions */}
+          {/* Actions — real 1Click rail */}
           <div className="p-4">
+            {state === "config" && error && (
+              <ErrorState title="Quote failed" description={error} className="mb-3" />
+            )}
             {(state === "config" || state === "quoting") && (
               <Button
                 className="w-full"
@@ -330,30 +410,44 @@ export default function CreatePage() {
                 isLoading={state === "quoting"}
                 disabled={!canReview}
               >
-                {state === "quoting" ? "Fetching 1Click quote…" : "Review deposit"}
+                {state === "quoting" ? "Requesting real quote…" : "Review deposit"}
               </Button>
             )}
 
-            {state === "quoted" && (
+            {state === "quoted" && quote && (
               <div className="animate-fade-in space-y-3">
-                <div className="rounded-lg border border-dashed border-border-strong bg-input p-3.5">
-                  <p className="text-xs text-muted-foreground">
-                    Send{" "}
-                    <span className="num font-medium text-foreground">{formatUsd(parsedUsdc)}</span>{" "}
-                    USDC on Base to
-                  </p>
-                  <div className="mt-1.5 flex items-center justify-between gap-2">
-                    <code className="num text-[13px] text-foreground">{DEPOSIT_ADDRESS}</code>
-                    <CopyButton value={DEPOSIT_ADDRESS} />
+                <dl className="space-y-2 rounded-lg border border-border bg-input p-3.5 text-[13px]">
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">1Click quote · live</dt>
+                    <dd className="num font-medium text-foreground">
+                      {quote.timeEstimate !== undefined ? `~${quote.timeEstimate}s` : "—"}
+                    </dd>
                   </div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                    1Click routes it to {VAULT_CONFIG.vaultAccount} on NEAR. The reserve moves to{" "}
-                    <span className="num">{VAULT_CONFIG.escrowAccount}</span> at deposit; refunds
-                    return to your wallet.
-                  </p>
-                </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">You receive</dt>
+                    <dd className="num font-medium text-foreground">
+                      {quote.amountOutFormatted
+                        ? `${Number(quote.amountOutFormatted).toFixed(4)} ${asset.symbol}`
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Minimum out (1% slippage)</dt>
+                    <dd className="num font-medium text-foreground">
+                      {quote.minAmountOut
+                        ? `${formatTokenAmount(Number(quote.minAmountOut) / 1e24, 4)} ${asset.symbol}`
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className="text-muted-foreground">Value</dt>
+                    <dd className="num font-medium text-foreground">
+                      {quote.amountOutUsd ? formatUsd(Number(quote.amountOutUsd)) : "—"}
+                    </dd>
+                  </div>
+                </dl>
                 <Button className="w-full" size="lg" variant="secondary" onClick={confirmDeposit}>
-                  I sent the funds
+                  Get deposit address
                 </Button>
                 <Button className="w-full" variant="ghost" size="sm" onClick={() => setState("config")}>
                   Back to edit
@@ -364,39 +458,78 @@ export default function CreatePage() {
             {state === "submitting" && (
               <div className="animate-fade-in flex flex-col items-center gap-2 py-4">
                 <p className="text-[13px] font-medium text-foreground">
-                  Escrowing the reserve, buying the risk budget…
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Two transactions: escrow deposit, then the 1Click swap. About 20 seconds.
+                  Requesting a deposit address from 1Click…
                 </p>
               </div>
             )}
 
-            {state === "done" && minted && (
+            {state === "funding" && depositAddress && (
+              <div className="animate-fade-in space-y-3">
+                <div className="rounded-lg border border-dashed border-border-strong bg-input p-3.5">
+                  <p className="text-xs text-muted-foreground">
+                    Send{" "}
+                    <span className="num font-medium text-foreground">{formatUsd(parsedUsdc)}</span>{" "}
+                    USDC on any supported chain to
+                  </p>
+                  <div className="mt-1.5 flex items-center justify-between gap-2">
+                    <code className="num break-all text-[13px] text-foreground">{depositAddress}</code>
+                    <CopyButton value={depositAddress} />
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                    This address came from the 1Click deposit API just now. Funds route to{" "}
+                    <span className="num">{VAULT_CONFIG.vaultAccount}</span>; the reserve then moves
+                    to <span className="num">{VAULT_CONFIG.escrowAccount}</span>. Refunds return to
+                    the vault.
+                  </p>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border bg-input px-3.5 py-2.5 text-[13px]">
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                    1Click status
+                  </span>
+                  <span className="num font-medium text-foreground">{status ?? "checking…"}</span>
+                </div>
+                {status && TERMINAL_STATUS_BADGE[status] && (
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    {TERMINAL_STATUS_BADGE[status]}
+                  </p>
+                )}
+                {status === "FAILED" || status === "REFUNDED" || status === "INCOMPLETE_DEPOSIT" ? (
+                  <Button className="w-full" variant="secondary" onClick={retryStatus}>
+                    Retry status
+                  </Button>
+                ) : (
+                  <Button className="w-full" size="lg" variant="secondary" disabled>
+                    Waiting for your deposit…
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {state === "settled" && (
               <div className="animate-fade-in space-y-3">
                 <div className="flex flex-col items-center gap-2 py-2 text-center">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-up-soft text-up">
                     <Check className="h-4 w-4" aria-hidden />
                   </span>
-                  <p className="text-[13px] font-medium text-foreground">Position minted</p>
-                  <p className="num text-[11px] text-muted-foreground">
-                    NEP-171 token #{minted.id} · {minted.hex_id.slice(0, 10)}… ·{" "}
-                    {formatUsd(minted.deposit_amount / 1e6)} deposited
+                  <p className="text-[13px] font-medium text-foreground">Deposit settled on 1Click</p>
+                  <p className="max-w-sm text-[11px] leading-relaxed text-muted-foreground">
+                    The risk leg swapped into {asset.symbol}. Minting the position NFT runs through
+                    the vault contract&apos;s deposit entry — that opens the moment the contract is
+                    deployed at <span className="num">{VAULT_CONFIG.vaultAccount}</span>.
                   </p>
                 </div>
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={() => router.push(`/vault/${minted.hex_id}`)}
-                >
-                  View position
+                <Button className="w-full" size="lg" href="/positions">
+                  Open positions
                 </Button>
                 <Button
                   className="w-full"
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setMinted(null);
+                    setQuote(null);
+                    setDepositAddress(null);
+                    setStatus(null);
                     setState("config");
                   }}
                 >
@@ -418,7 +551,7 @@ export default function CreatePage() {
           </li>
           <li>
             The keeper swaps the risk budget into {asset.symbol} through 1Click, inside your
-            slippage bound.
+            slippage bound — the quote above is the real one.
           </li>
           <li>You receive a NEP-171 NFT — the position. Sell it without unwinding it.</li>
         </ol>
@@ -426,6 +559,16 @@ export default function CreatePage() {
     </div>
   );
 }
+
+const TERMINAL_STATUS_BADGE: Record<string, string> = {
+  PENDING_DEPOSIT: "1Click is watching this address — send the funds to proceed.",
+  KNOWN_DEPOSIT_TX: "Deposit detected on the source chain.",
+  PROCESSING: "Solvers are processing the swap.",
+  SUCCESS: "Deposit settled — the risk leg is in.",
+  FAILED: "1Click reported a failure — funds follow the refund path.",
+  REFUNDED: "Funds were refunded to the vault's address.",
+  INCOMPLETE_DEPOSIT: "Deposit incomplete — the amount did not cover the quote.",
+};
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
