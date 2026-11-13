@@ -43,9 +43,14 @@ export async function POST(request: Request) {
   };
 
   try {
+    const authHeaders: Record<string, string> = {};
+    if (process.env.INTENTS_JWT) {
+      // Authenticated partner schedule: removes the 0.25% unauthenticated fee.
+      authHeaders["Authorization"] = `Bearer ${process.env.INTENTS_JWT}`;
+    }
     const res = await fetch("https://1click.chaindefuser.com/v0/quote", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify(payload),
       cache: "no-store",
     });

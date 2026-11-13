@@ -49,6 +49,7 @@ export async function POST(request: Request) {
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (process.env.ONE_CLICK_API_KEY) headers["X-API-Key"] = process.env.ONE_CLICK_API_KEY;
+  if (process.env.INTENTS_JWT) headers["Authorization"] = `Bearer ${process.env.INTENTS_JWT}`;
   const userJwt = request.headers.get("authorization");
   if (userJwt) headers["Authorization"] = userJwt;
 
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
         depositAddress?: string;
         chainDepositAddresses?: Array<{
           blockchain?: string;
+          address?: string;
           depositAddress?: string;
           memo?: string;
         }>;
@@ -87,7 +89,12 @@ export async function POST(request: Request) {
       message?: string;
     };
 
-    const chainAddresses = raw.quote?.chainDepositAddresses ?? [];
+    // Real per-chain entries use `address`; some quote shapes use `depositAddress`.
+    const chainAddresses = (raw.quote?.chainDepositAddresses ?? []).map((c) => ({
+      blockchain: c.blockchain,
+      depositAddress: c.address ?? c.depositAddress,
+      memo: c.memo,
+    }));
     const primary = raw.quote?.depositAddress ?? chainAddresses[0]?.depositAddress;
 
     if (!res.ok || !primary) {
@@ -108,7 +115,9 @@ export async function POST(request: Request) {
     }
 
     // Real addresses: persist every chain entry for durable tracking.
-    const records = chainAddresses.length > 0 ? chainAddresses : [{ depositAddress: primary }];
+    const records = (chainAddresses.length > 0
+      ? chainAddresses
+      : [{ depositAddress: primary }]) as Array<{ depositAddress?: string; blockchain?: string }>;
     for (const addr of records) {
       if (!addr.depositAddress) continue;
       await saveDeposit({
