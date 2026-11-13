@@ -242,6 +242,9 @@ fn invariants_hold_under_random_sequences() {
                 let _ = tv.vault.exit_early(U64(pid), U128(price));
                 tv.set_env_with_promise(SELF, PromiseResult::Successful(vec![]));
                 tv.vault.on_settle_release(pid, USER.parse().unwrap(), U128(payout), "Open".to_string());
+                // The payout confirms in its own receipt; finalize after it.
+                tv.set_env_with_promise(SELF, PromiseResult::Successful(vec![]));
+                tv.vault.on_payout_complete(pid, USER.parse().unwrap(), U128(payout), "Open".to_string());
                 assert!(tv.vault.get_position(U64(pid)).is_none(), "settled position removed");
                 let (_, locked, deposited) = tv.vault.get_vault_state();
                 assert_eq!(locked.0, 0, "I1 aggregate must clear after settlement");
@@ -407,6 +410,8 @@ fn nft_transfer_moves_the_claim() {
     let _ = tv.vault.settle(U64(1), U128(2_000_000_000_000_000_000));
     tv.set_env_with_promise(SELF, PromiseResult::Successful(vec![]));
     tv.vault.on_settle_release(1, USER2.parse().unwrap(), U128(1_350_000_000_000_000_000_000_000), "Matured".to_string());
+    tv.set_env_with_promise(SELF, PromiseResult::Successful(vec![]));
+    tv.vault.on_payout_complete(1, USER2.parse().unwrap(), U128(1_350_000_000_000_000_000_000_000), "Matured".to_string());
     assert!(tv.vault.get_position(U64(1)).is_none(), "settled position removed; payout paid the NEW owner");
 }
 

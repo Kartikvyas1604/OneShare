@@ -518,9 +518,12 @@ impl Vault {
     ) -> PromiseOrValue<U128> {
         match env::promise_result(0) {
             PromiseResult::Successful(_) => {
-                self.remove_position(position_id, &owner);
                 // Pay out in the quote asset (the vault holds the risk sale
-                // proceeds + the released reserve).
+                // proceeds + the released reserve). The position is removed
+                // only AFTER the payout confirms — a failed payout must never
+                // strand the claim (the owner retries settle; no double-pay is
+                // possible because the payout can only succeed if the reserve
+                // actually arrived).
                 Promise::new(
                     self.config
                         .quote_asset_id
@@ -537,7 +540,56 @@ impl Vault {
                         NearToken::from_yoctonear(1),
                         GAS_ESCROW_CALLBACK,
                     )
+                    .then(
+                        Self::ext(env::current_account_id())
+                            .with_static_gas(GAS_ESCROW_CALLBACK)
+                            .on_payout_complete(
+                                position_id,
+                                owner,
+                                payout,
+                                prev_state,
+                            ),
+                    )
                     .into()
+            }
+            PromiseResult::Failed => {
+                // The escrow refused the release — restore the position and
+                // RETURN normally (a panic would roll the restore back).
+                if let Some(mut position) = self.positions.get(&U64(position_id)) {
+                    position.state = match prev_state.as_str() {
+                        "Active" => PositionState::Active,
+                        "DeRisked" => PositionState::DeRisked,
+                        "Degraded" => PositionState::Degraded,
+                        _ => PositionState::Matured,
+                    };
+                    self.positions.insert(&U64(position_id), &position);
+                }
+                self.settled_positions.remove(&U64::from(position_id));
+                env::log_str(&format!(
+                    "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"ReleaseRejected\",\"data\":{{\"position_id\":{} }} }}",
+                    position_id
+                ));
+                PromiseOrValue::Value(U128(0))
+            }
+        }
+    }
+
+    /// Private callback: finalize the settlement after the payout transfer.
+    /// Success → remove the position (the claim is fulfilled). Failure →
+    /// restore the position for a retry and mark the event; NO panic (a panic
+    /// would roll the restore back and strand the claim).
+    #[private]
+    pub fn on_payout_complete(
+        &mut self,
+        position_id: u64,
+        owner: AccountId,
+        payout: U128,
+        prev_state: String,
+    ) -> PromiseOrValue<U128> {
+        match env::promise_result(0) {
+            PromiseResult::Successful(_) => {
+                self.remove_position(position_id, &owner);
+                PromiseOrValue::Value(U128(0))
             }
             PromiseResult::Failed => {
                 if let Some(mut position) = self.positions.get(&U64(position_id)) {
@@ -550,7 +602,11 @@ impl Vault {
                     self.positions.insert(&U64(position_id), &position);
                 }
                 self.settled_positions.remove(&U64::from(position_id));
-                env::panic_str("ErrEscrowRejected: reserve release failed, position restored");
+                env::log_str(&format!(
+                    "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"PayoutFailed\",\"data\":{{\"position_id\":{},\"payout\":\"{}\"}} }}",
+                    position_id, payout.0
+                ));
+                PromiseOrValue::Value(U128(0))
             }
         }
     }

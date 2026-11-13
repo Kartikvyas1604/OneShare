@@ -209,17 +209,26 @@ impl Escrow {
             .into()
     }
 
-    /// Private callback: revert the bookkeeping if the NEP-141 transfer failed.
+    /// Private callback: if the NEP-141 transfer failed, the reserve never
+    /// left — restore the lock and RETURN normally (no panic: a panic here
+    /// would roll the restore back, losing the lock bookkeeping). The vault's
+    /// ack treats the chain as complete; the payout leg will fail in turn and
+    /// the position is restored for a retry — no double-pay is possible
+    /// because the payout can only succeed if the reserve actually arrived.
     #[private]
     pub fn on_transfer_complete(&mut self, position_id: U64, amount: U128) -> PromiseOrValue<U128> {
         match env::promise_result(0) {
             PromiseResult::Successful(_) => PromiseOrValue::Value(U128(0)),
             PromiseResult::Failed => {
-                // Roll the lock forward — the reserve never leaves on failure.
+                // The reserve never left: put the lock back and mark it.
                 let current = self.locks.get(&position_id).unwrap_or(0);
                 self.locks.insert(&position_id, &(current + amount.0));
                 self.total_locked += amount.0;
-                env::panic_str("ErrTransferFailed: reserve return failed, lock restored");
+                env::log_str(&format!(
+                    "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"ReleaseFailed\",\"data\":{{\"position_id\":{},\"amount\":\"{}\"}}}}",
+                    position_id.0, amount.0
+                ));
+                PromiseOrValue::Value(U128(0))
             }
         }
     }
