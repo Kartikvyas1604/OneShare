@@ -25,7 +25,7 @@ export function LandingNavbar() {
 
         {/* Working pages, properly linked */}
         <nav className="hidden items-center gap-1 md:flex" aria-label="Landing">
-          {LINKS.map((item) => (
+          {[{ href: "/dashboard", label: "Overview" }, ...LINKS].map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -37,9 +37,6 @@ export function LandingNavbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" href="/dashboard" className="hidden sm:inline-flex">
-            Open app
-          </Button>
           <Button size="sm" href="/create">
             Create
             <ArrowUpRight className="h-3 w-3" aria-hidden />

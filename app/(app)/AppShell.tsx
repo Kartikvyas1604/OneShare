@@ -50,7 +50,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1100px] items-center justify-between gap-3 px-4 md:px-10">
         <Link
-          href="/dashboard"
+          href="/"
           className="flex shrink-0 items-center gap-2.5 transition-opacity duration-200 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
