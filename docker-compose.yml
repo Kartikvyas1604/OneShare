@@ -1,0 +1,20 @@
+# Floorline — production stack (self-host). `.data` is a mounted volume so
+# deposit-tracking records survive redeploys.
+services:
+  floorline:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NEAR_RPC_URL=${NEAR_RPC_URL:-https://rpc.mainnet.near.org}
+      - VAULT_CONTRACT_ID=${VAULT_CONTRACT_ID:-floorline-demo.near}
+      - ONE_CLICK_API_KEY=${ONE_CLICK_API_KEY:-}
+      - INTENTS_JWT=${INTENTS_JWT:-}
+      - NEAR_AI_API_KEY=${NEAR_AI_API_KEY:-}
+      - DEPOSITS_STORE_PATH=/app/.data/deposits.json
+    volumes:
+      - floorline-data:/app/.data
+    restart: unless-stopped
+
+volumes:
+  floorline-data:
