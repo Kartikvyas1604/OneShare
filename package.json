@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "check:copy": "grep -rEn \"revolutionary|game.changing|disrupting|seamless(ly)? |world.class|next.gen|guaranteed|risk.free|principal protected|passive income|to the moon|safe returns|you cannot lose\" app docs README.md && exit 1 || exit 0"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "tailwindcss": "4.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }
