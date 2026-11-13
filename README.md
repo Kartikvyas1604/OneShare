@@ -31,7 +31,40 @@ Not a brokerage. Not a custodial exchange. Not a perp DEX. Not a lending protoco
 
 Old routes redirect: `/buy → /create`, `/sim → /crash`, `/positions/[id] → /vault/[id]`.
 
-## Honest limitations
+## API reference (Next Route Handlers — the keeper backend)
+
+All endpoints are Next.js Route Handlers under `/api` (spec §6.3's keeper API, versioned under `/api/v1` where contract-stable). Consistent error shape: `{ error: string, ...context }` with proper HTTP status codes. Rate limited per IP (quote 30/min, crash-sim 10/min; 429 + `Retry-After`). Correlation id: send `x-request-id`, or read it from the JSON logs.
+
+| Endpoint | Method | Real source | Notes |
+|---|---|---|---|
+| `/api/healthz` | GET | probes NEAR RPC + 1Click | 5s timeouts; wire your uptime monitor here |
+| `/api/prices` | GET | 1Click `/v0/tokens` | live prices; filtered to configured assets |
+| `/api/quote` | POST | 1Click `/v0/quote` (dry) | `{amountMicro, destinationAsset?}`; validated |
+| `/api/deposit` | POST | 1Click reusable-address flow | needs `ONE_CLICK_API_KEY` (G-4); returns the real per-chain address set or the upstream rejection + remediation |
+| `/api/deposit/status` | GET | 1Click `/v0/status` | `?address=`; live status enum |
+| `/api/vault/positions` | GET | NEAR JSON-RPC `positions_of` | `?account=`; real "not deployed" state |
+| `/api/vault/position/[id]` | GET | NEAR JSON-RPC `get_position` | numeric NEP-171 token id |
+| `/api/activity` | GET | nearblocks indexer | `?account=`; real tx history |
+| `/api/v1/crash-sim` | POST | deterministic engine | `{shock_pct, seed?}` → losses + `path[]` (F-16) |
+| `/api/v1/attestation/:id` | GET | — until TEE wired | honestly `verified: false` |
+
+## Runbook
+
+**Health.** `GET /api/healthz` returns per-dependency ok/latency for NEAR RPC and 1Click. Wire an external uptime monitor to `/api/healthz` and alert when `dependencies[].ok = false` for 3 consecutive minutes.
+
+**Logs.** Every route logs structured JSON with a correlation id (`x-request-id` honoured). In production: `docker logs -f floorline | jq 'select(.level=="error")'`.
+
+**Deploy (Vercel).** Set the env vars from `.env.example` in the project settings; `vercel deploy --prod`. Rollback: `vercel rollback <deployment>` — under 1 minute.
+
+**Deploy (self-host).** `npm run build && npm run start` (or `docker compose up` with a mounted volume for `DEPOSITS_STORE_PATH`). Rollback: redeploy the previous git tag; the deposit store is append-mostly and forward-compatible.
+
+**Known limits (honest).**
+- The vault contract is not deployed on mainnet yet: position reads surface the chain's real error ("account does not exist on NEAR mainnet yet") and real empty states — nothing is simulated.
+- Deposit-address creation requires the 1Click partner key (`ONE_CLICK_API_KEY`, spec G-4). Without it the endpoint returns the upstream rejection plus the remediation; no address is ever fabricated.
+- Rate limiting is per-process in-memory. Multi-instance production needs a shared store (swap `app/lib/rate-limit.ts`'s bucket for Redis — one file).
+- The TEE attestation is honestly pending (`verified: false`) until `NEAR_AI_API_KEY` is set and the verify flow is wired.
+
+## Limitations (honest)
 
 - **Equity route gated (G-2).** Tokenized equities were **not present** on 1Click's 230-token list (verified 12 Nov 2026). The demo runs the verified fallback asset (`nep141:wrap.near`) with the identical mechanism; the equity wedge stays a documented roadmap item.
 - **TEE attestation pending (R3).** Until the NEAR AI Cloud attestation flow verifies end-to-end, the local rule (formula 6 only) executes and every badge says pending. Badges are never faked.
