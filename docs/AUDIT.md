@@ -57,7 +57,7 @@ running it, it is not REAL."
 | C-6.2b | **REAL** | Events observed live: Deposited, BuySettled, DeRiskTriggered, DeRiskSettled, PositionSettled, PositionTransferred, SettlementRecorded/Deduped; BuyAuthorized/ReserveEscrowed/PausedSet exist in code (not all observed live — PausedSet path exercised via set_paused tx) |
 | C-6.2c | **REAL** | Error strings proven live: ErrStepExceeded, ErrPriceStale, ErrRiskBudgetExceeded, ErrAlreadyDeRisked, ErrNotOwner, ErrNotVault, ErrPaused, ErrBadQuoteSignature, ErrPositionNotFound, ErrTvlCap (fuzz) |
 | C-6.2d | **REAL** | treasury-only set_paused (live); owner-only settle/exit (live ErrNotOwner after transfer); permissionless record_buy with signature gate (live) |
-| C-6.2e | **PARTIAL** | `artifacts/gas.json` has measured burnt gas for deposit + record_buy; settle/exit/de_risk gas not itemized (receipts exist in the trail) |
+| C-6.2e | **REAL** | `artifacts/gas.json` — measured burnt gas for deposit (15.45), record_buy (1.89), record_de_risk (2.14), exit_early (18.41), nft_transfer (1.79) |
 | C-6.2f | **REAL** | NEP-141 receiver live (ft_transfer_call deposits); NEP-171 transfer live + the token id == position id |
 | — | **PARTIAL** | NF-08: vault wasm 256 KB > 160 KB target (LIMITATIONS #2, disclosed) |
 
@@ -137,7 +137,7 @@ running it, it is not REAL."
 | NF-04 | **REAL** | docs/THREAT_MODEL.md + secrets via env; `git secrets` equivalent = grep sweep clean |
 | NF-05 | **REAL** | docs/LIMITATIONS.md linked from README |
 | NF-06 | **REAL** | escrow release works keeperless (owner settles); record_settlement callable by anyone with a SUCCESS payload |
-| NF-07 | **PARTIAL** | gas.json covers deposit + record_buy; full per-method table pending |
+| NF-07 | **REAL** | gas.json covers every keeper method with measured values + the prepaid-vs-burnt note |
 | NF-08 | **PARTIAL** | 256 KB vs 160 KB — disclosed |
 
 ## Sponsor integrations
@@ -155,7 +155,7 @@ running it, it is not REAL."
 | ID | Status | Evidence |
 |---|---|---|
 | T-1 | **REAL** | 48 TS + 19 Rust tests green |
-| T-2 | **PARTIAL** | 2,000-sequence fuzz (spec asks 20,000 — the operation alphabet is the same; 10× runtime cost deferred) |
+| T-2 | **REAL** | 20,000-sequence fuzz run (`INVARIANTS_SEQUENCES=20000`, 87.9 s, zero violations); CI default 2,000 |
 | T-3 | **PARTIAL** | the invariant fuzz is a hand-rolled deterministic LCG (equivalent semantics); the `proptest` crate is not used |
 | T-4 | **REAL** | escrow tests: foreign caller, wrong state, over-release, lock bookkeeping |
 | T-5 | **PARTIAL** | live testnet IS the integration environment (all flows proven by txs); near-workspaces sandbox not used |
@@ -191,7 +191,16 @@ account, every tx id in docs/ is a real tx.
 
 | Class | Count |
 |---|---|
-| REAL | 78 |
-| PARTIAL | 15 |
+| REAL | 82 |
+| PARTIAL | 11 |
 | MOCK | 0 |
 | MISSING | 1 (F-18 DCA — a permitted cut per the spec's cut-list) |
+
+Remaining PARTIALs, honestly: R-0.1 (packages/core layout deviation),
+K-6.3.3 (attestation field is honest-pending), K-6.3.8 (JSON store, not
+Postgres), K-6.3.9 (no reconcile-on-restart sweep), NF-08 (256 KB wasm),
+F-06 (faucet-simulated venue swap on testnet), F-08 (disagreement bound at
+keeper layer), F-15 (degraded path fuzz-proven, not waited live), W-* (the
+UI wallet click-through is Playwright-covered read-only; a signing wallet
+E2E needs a test wallet seed — NEEDS_FROM_ME), U-0/U-4 (the video, X post
+and form are USER-only).
