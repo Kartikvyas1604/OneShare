@@ -17,7 +17,7 @@ import {
   riskAsset,
 } from "@/app/lib/floorline";
 import { useLivePrices } from "@/app/lib/prices";
-import { useNearAccount } from "@/app/lib/wallet";
+import { useWallet } from "@/app/components/wallet/WalletProvider";
 import { formatUsd, formatTokenAmount } from "@/app/lib/utils";
 
 type CreateState = "config" | "quoting" | "quoted" | "submitting" | "funding" | "settled";
@@ -41,7 +41,7 @@ interface RealQuote {
 }
 
 export default function CreatePage() {
-  const { accountId } = useNearAccount();
+  const { accountId } = useWallet();
   const { prices } = useLivePrices();
   const [state, setState] = useState<CreateState>("config");
   const [amount, setAmount] = useState("100");

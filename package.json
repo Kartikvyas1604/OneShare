@@ -13,6 +13,9 @@
     "check:copy": "grep -rEn \"revolutionary|game.changing|disrupting|seamless(ly)? |world.class|next.gen|guaranteed|risk.free|principal protected|passive income|to the moon|safe returns|you cannot lose\" app docs README.md && exit 1 || exit 0"
   },
   "dependencies": {
+    "@near-wallet-selector/core": "^10.1.4",
+    "@near-wallet-selector/modal-ui": "^10.1.4",
+    "@near-wallet-selector/my-near-wallet": "^10.1.4",
     "clsx": "^2.1.1",
     "framer-motion": "^14.13.0",
     "lucide-react": "^1.72.0",

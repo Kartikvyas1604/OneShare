@@ -6,7 +6,7 @@ import { PositionCard } from "@/app/components/PositionCard";
 import { EmptyState } from "@/app/components/EmptyState";
 import { ErrorState } from "@/app/components/ErrorState";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
-import { useNearAccount } from "@/app/lib/wallet";
+import { useWallet } from "@/app/components/wallet/WalletProvider";
 import { useLivePrices } from "@/app/lib/prices";
 import { VAULT_CONTRACT_ID, type VaultPosition } from "@/app/lib/vault";
 import { navQuote, worstCaseQuote } from "@/app/lib/floorline";
@@ -14,7 +14,7 @@ import { formatUsd } from "@/app/lib/utils";
 import { Layers } from "lucide-react";
 
 export default function PositionsPage() {
-  const { accountId, loading: walletLoading } = useNearAccount();
+  const { accountId, connecting: walletLoading, showConnect } = useWallet();
   const { prices, loading: pricesLoading } = useLivePrices();
   const [result, setResult] = useState<{ account: string; positions: VaultPosition[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +85,8 @@ export default function PositionsPage() {
         <EmptyState
           icon={Layers}
           title="Connect a NEAR wallet"
-          description="Positions are read straight from the vault contract for your account — connect an injected NEAR wallet to see the real list."
-          action={{ label: "Open a wallet in this browser", href: "/dashboard" }}
+          description="Positions are read straight from the vault contract for your account — connect a wallet to see the real list."
+          action={{ label: "Connect wallet", onClick: showConnect }}
         />
       </div>
     );

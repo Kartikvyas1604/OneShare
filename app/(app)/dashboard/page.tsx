@@ -8,7 +8,7 @@ import { EmptyState } from "@/app/components/EmptyState";
 import { SkeletonCard } from "@/app/components/SkeletonCard";
 import { ErrorState } from "@/app/components/ErrorState";
 import type { ChainTxn } from "@/app/components/AuditLog";
-import { useNearAccount } from "@/app/lib/wallet";
+import { useWallet } from "@/app/components/wallet/WalletProvider";
 import { useLivePrices } from "@/app/lib/prices";
 import {
   VAULT_CONTRACT_ID,
@@ -21,7 +21,7 @@ import { formatUsd, formatPercent, formatDate, timeAgoLabel } from "@/app/lib/ut
 import { ArrowRightLeft, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 export default function DashboardPage() {
-  const { accountId, loading: walletLoading } = useNearAccount();
+  const { accountId, connecting: walletLoading, showConnect } = useWallet();
   const { prices, loading: pricesLoading } = useLivePrices();
   const [positions, setPositions] = useState<VaultPosition[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +108,8 @@ export default function DashboardPage() {
         <EmptyState
           icon={ArrowRightLeft}
           title="Connect a NEAR wallet"
-          description="The overview reads your positions straight from the vault contract. Open this app inside a browser with an injected NEAR wallet (Wallet Selector-compatible) to load the real portfolio — no account is simulated while you are not connected."
+          description="The overview reads your positions straight from the vault contract. Connect a wallet to load the real portfolio — no account is simulated while you are not connected."
+          action={{ label: "Connect wallet", onClick: showConnect }}
         />
       </div>
     );

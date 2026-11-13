@@ -9,7 +9,7 @@ import { ErrorState } from "@/app/components/ErrorState";
 import { AuditLog, type ChainTxn } from "@/app/components/AuditLog";
 import { StateBadge } from "@/app/components/vault/StateBadge";
 import { AttestationBadge } from "@/app/components/vault/AttestationBadge";
-import { useNearAccount } from "@/app/lib/wallet";
+import { useWallet } from "@/app/components/wallet/WalletProvider";
 import { useLivePrices } from "@/app/lib/prices";
 import { VAULT_CONTRACT_ID, type VaultPosition } from "@/app/lib/vault";
 import {
@@ -29,7 +29,7 @@ type ActionKind = "settle" | "exit" | "recover";
 type ActionPhase = "idle" | "working" | "done";
 
 export function VaultDetail({ rawId }: { rawId: string }) {
-  const { accountId, loading: walletLoading } = useNearAccount();
+  const { accountId, signCall } = useWallet();
   const { prices, loading: pricesLoading } = useLivePrices();
   const [position, setPosition] = useState<VaultPosition | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +38,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
   const [action, setAction] = useState<ActionKind | null>(null);
   const [phase, setPhase] = useState<ActionPhase>("idle");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const positionId = Number(rawId);
   const validId = Number.isInteger(positionId) && positionId >= 0;
@@ -73,7 +74,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [positionId, validId]);
+  }, [positionId, validId, refetchKey]);
 
   // Real vault-account transactions from the indexer.
   useEffect(() => {
@@ -95,39 +96,21 @@ export function VaultDetail({ rawId }: { rawId: string }) {
   const runAction = async (kind: ActionKind) => {
     if (!position) return;
     if (!accountId) {
-      setActionError("Connect an injected NEAR wallet first — actions sign against your account.");
+      setActionError("Connect a NEAR wallet first — actions are signed with your account.");
       return;
     }
     setAction(kind);
     setPhase("working");
     setActionError(null);
     try {
-      // Real transaction through the injected wallet; the chain's real result
-      // (including failures while the contract is still undeployed) is shown.
-      const injected = (
-        window as {
-          near?: {
-            signAndSendTransaction?: (args: {
-              signerId: string;
-              receiverId: string;
-              actions: Array<{ type: string; methodName?: string; args?: unknown; gas?: string; deposit?: string }>;
-            }) => Promise<unknown>;
-          };
-        }
-      ).near;
-      if (!injected?.signAndSendTransaction) {
-        throw new Error("The connected wallet cannot sign transactions in this browser.");
-      }
+      // Real signed transaction through the connected wallet. The chain's real
+      // outcome — including the contract's real errors — flows back here.
       const method =
         kind === "settle" ? "settle" : kind === "exit" ? "exit_early" : "emergency_recover";
-      await injected.signAndSendTransaction({
-        signerId: accountId,
-        receiverId: VAULT_CONTRACT_ID,
-        actions: [
-          { type: "FunctionCall", methodName: method, args: { position_id: position.id }, gas: "150000000000000", deposit: "0" },
-        ],
-      });
+      await signCall(VAULT_CONTRACT_ID, method, { position_id: position.id }, 30);
       setPhase("done");
+      // Re-read the real on-chain state after a confirmed transaction.
+      setRefetchKey((k) => k + 1);
     } catch (err) {
       setPhase("idle");
       setActionError(err instanceof Error ? err.message : "Transaction failed");
@@ -152,7 +135,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
     );
   }
 
-  if (loading || walletLoading || pricesLoading) {
+  if (loading || pricesLoading) {
     return (
       <div className="space-y-4">
         <div className="engraved rounded-2xl bg-card p-8 text-center">

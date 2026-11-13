@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/Button";
-import { useNearAccount } from "@/app/lib/wallet";
+import { useWallet } from "@/app/components/wallet/WalletProvider";
 import { Landmark, Menu, X } from "lucide-react";
 
 const NAV = [
@@ -24,7 +24,7 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { accountId, loading } = useNearAccount();
+  const { accountId, connecting, showConnect, signOut } = useWallet();
 
   // Close the drawer on route change; defer out of the effect body.
   useEffect(() => {
@@ -83,13 +83,33 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Real wallet state — compact */}
-          <span
-            className="num hidden rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-muted-foreground lg:inline-flex"
-            title="Real connected account from an injected NEAR wallet"
-          >
-            {loading ? "wallet…" : accountId ? accountId : "no wallet"}
-          </span>
+          {/* Real wallet connection through the Wallet Selector modal */}
+          {connecting ? (
+            <span className="num hidden rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-muted-foreground lg:inline-flex">
+              wallet…
+            </span>
+          ) : accountId ? (
+            <>
+              <span
+                className="num hidden max-w-44 truncate rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-foreground lg:inline-flex"
+                title={`Connected: ${accountId}`}
+              >
+                {accountId}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="hidden lg:inline-flex"
+                onClick={() => void signOut()}
+              >
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" variant="secondary" onClick={showConnect}>
+              Connect
+            </Button>
+          )}
           <Button size="sm" href="/create" className="hidden sm:inline-flex">
             New position
           </Button>
