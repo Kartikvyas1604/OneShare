@@ -13,5 +13,8 @@ borsh = { version = "1", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+[features]
+break_escrow = []
+
 [dev-dependencies]
 near-sdk = { workspace = true, features = ["unit-testing"] }

@@ -100,6 +100,12 @@ pub struct VaultConfig {
     pub quote_decimals: u32,
     /// Risk asset token decimals (nNVDA 6 on testnet; xStocks 6).
     pub risk_decimals: u32,
+    /// Ed25519 public key (64 hex chars) of the price oracle. Every
+    /// record_buy/record_de_risk quote MUST carry a valid signature over
+    /// `floorline-quote:{position_id}:{price_1e18}:{quote_timestamp_ms}` from
+    /// this key — the on-chain enforcement of T-02 (T-02: an unsigned or
+    /// wrongly-signed price cannot move a position).
+    pub oracle_pubkey_hex: String,
 }
 
 impl Default for VaultConfig {
@@ -120,6 +126,11 @@ impl Default for VaultConfig {
             perf_fee_bps: 0,
             quote_decimals: 6,
             risk_decimals: 24,
+            // Price-oracle key: quotes must be signed by this key (T-02).
+            // Test keypair committed for the test build; mainnet uses a
+            // generated key whose seed never enters the repo.
+            oracle_pubkey_hex:
+                "95ae72804c1662017e5b1198eb2a2824ad8a6c4c8ba0034589796ebe29de57c1".to_string(),
         }
     }
 }

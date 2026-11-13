@@ -49,6 +49,7 @@ impl Default for Vault {
             total_floor_locked: 0,
             total_deposited: 0,
             settled_positions: UnorderedSet::new(b"settled_positions".to_vec()),
+            settled_deposits: UnorderedSet::new(b"settled_deposits".to_vec()),
         }
     }
 }
@@ -73,6 +74,8 @@ pub struct Vault {
     total_deposited: u128,
     /// Idempotent settlement keys (I5): position_id → settled.
     settled_positions: UnorderedSet<U64>,
+    /// Idempotent 1Click deposit-address settlements (I5 / F-14).
+    settled_deposits: UnorderedSet<String>,
 }
 
 #[near(contract_state)]
@@ -98,6 +101,7 @@ impl Vault {
             total_floor_locked: 0,
             total_deposited: 0,
             settled_positions: UnorderedSet::new(b"settled_positions".to_vec()),
+            settled_deposits: UnorderedSet::new(b"settled_deposits".to_vec()),
         }
     }
 
@@ -112,12 +116,11 @@ impl Vault {
         amount: U128,
         msg: String,
     ) -> PromiseOrValue<U128> {
-        if msg != "deposit" {
-            env::panic_str("ErrBadMsg: msg must be \"deposit\"");
+        if !msg.starts_with("deposit") {
+            env::panic_str("ErrBadMsg: msg must be \"deposit\" or \"deposit:<ratio_bps>\"");
         }
-        if self.paused {
-            env::panic_str("ErrPaused: the vault is paused for buys and de-risks");
-        }
+        // NOTE: deposits are ALLOWED while paused (spec edge case 9) — the
+        // pause gate covers buys and de-risks only (assert_buy_preconditions).
         if env::predecessor_account_id().to_string() != self.config.quote_asset_id {
             env::panic_str("ErrBadAsset: only the quote asset is accepted");
         }
@@ -130,8 +133,27 @@ impl Vault {
             env::panic_str("ErrTvlCap");
         }
 
+        // The loss limit is per deposit: msg = "deposit" uses the vault ratio;
+        // msg = "deposit:<ratio_bps>" overrides it. The contract clamps BOTH
+        // paths to [5000, 9800] step 100 (F-22) — no caller, human or agent,
+        // can push the risk budget past 50% of the deposit.
+        // msg = "deposit" (vault ratio) or "deposit:<ratio_bps>" (per-deposit
+        // loss limit). The strict legacy check is replaced by the parser below.
+        let ratio_bps: u16 = match msg.strip_prefix("deposit:") {
+            Some(raw) => match raw.parse::<u16>() {
+                Ok(r) => {
+                    if r < 5_000 || r > 9_800 || r % 100 != 0 {
+                        env::panic_str("ErrStepExceeded: ratio must be in [5000, 9800] step 100");
+                    }
+                    r
+                }
+                Err(_) => env::panic_str("ErrBadMsg: deposit ratio must be a bps integer"),
+            },
+            None => self.config.floor_ratio_bps,
+        };
+
         // F + R with floor division (formula 1/2); F-03 identity holds by construction.
-        let (floor_amount, risk_budget) = math::split_deposit(deposit, self.config.floor_ratio_bps);
+        let (floor_amount, risk_budget) = math::split_deposit(deposit, ratio_bps);
         let position_id = self.next_position_id;
         self.next_position_id += 1;
 
@@ -235,9 +257,59 @@ impl Vault {
 
     // ─── Buy (keeper-executed venue swap; contract enforces the rules) ───
 
+    /// T-02 on-chain: a price quote is only trusted when the configured
+    /// oracle key signed `floorline-quote:{position_id}:{price_1e18}:{ts}`.
+    /// Anything else — replayed, truncated, or forged — reverts here, before
+    /// any state change. `sig_hex` is the 64-byte ed25519 signature, hex.
+    fn verify_oracle_quote(
+        &self,
+        position_id: u64,
+        price_1e18: u128,
+        quote_timestamp_ms: u64,
+        quote_signature: &str,
+    ) {
+        let pubkey = self.oracle_pubkey();
+        let sig = self.hex_to_64(quote_signature, "ErrBadQuoteSignature");
+        let msg = format!("floorline-quote:{position_id}:{price_1e18}:{quote_timestamp_ms}");
+        if !env::ed25519_verify(&sig, msg.as_bytes(), &pubkey) {
+            env::panic_str("ErrBadQuoteSignature: price quote is not signed by the oracle key");
+        }
+    }
+
+    fn oracle_pubkey(&self) -> [u8; 32] {
+        let hex_str = &self.config.oracle_pubkey_hex;
+        if hex_str.len() != 64 {
+            env::panic_str("ErrNoOracle: oracle pubkey misconfigured");
+        }
+        self.hex_to_n(hex_str, "ErrNoOracle")
+    }
+
+    fn hex_to_64(&self, s: &str, err: &str) -> [u8; 64] {
+        self.hex_to_n(s, err)
+    }
+
+    /// Fixed-size hex decode without a dependency; every failure is a loud
+    /// panic (never a silent zero-fill).
+    fn hex_to_n<const N: usize>(&self, s: &str, err: &str) -> [u8; N] {
+        let bytes = s.as_bytes();
+        if bytes.len() != N * 2 {
+            env::panic_str(err);
+        }
+        let mut out = [0u8; N];
+        let mut i = 0;
+        while i < N {
+            let hi = (bytes[i * 2] as char).to_digit(16).unwrap_or_else(|| env::panic_str(err));
+            let lo = (bytes[i * 2 + 1] as char).to_digit(16).unwrap_or_else(|| env::panic_str(err));
+            out[i] = (hi * 16 + lo) as u8;
+            i += 1;
+        }
+        out
+    }
+
     /// `record_buy` — the keeper reports the executed risk-asset purchase for
-    /// a position. Permissionless: the contract validates price freshness,
-    /// the risk-budget cap (I2), and slippage against `min_out`.
+    /// a position. Permissionless: the contract validates the oracle
+    /// signature (T-02), price freshness, the risk-budget cap (I2), and
+    /// slippage against `min_out`.
     pub fn record_buy(
         &mut self,
         position_id: U64,
@@ -248,6 +320,12 @@ impl Vault {
         quote_timestamp_ms: Timestamp,
         quote_signature: String,
     ) {
+        self.verify_oracle_quote(
+            position_id.0,
+            price_1e18.0,
+            quote_timestamp_ms,
+            &quote_signature,
+        );
         self.assert_buy_preconditions(price_1e18, quote_timestamp_ms);
         let mut position = self
             .positions
@@ -291,6 +369,12 @@ impl Vault {
         quote_timestamp_ms: Timestamp,
         quote_signature: String,
     ) {
+        self.verify_oracle_quote(
+            position_id.0,
+            price_1e18.0,
+            quote_timestamp_ms,
+            &quote_signature,
+        );
         self.assert_buy_preconditions(price_1e18, quote_timestamp_ms);
         let mut position = self
             .positions
@@ -320,8 +404,14 @@ impl Vault {
             position_id.0, position.cost_basis, unit_value
         ));
 
+        // The whole bucket is sold (I6, single-shot). The bucket's quote
+        // footprint is now the realised proceeds — cost_basis zeroes so I2
+        // (cost + realised ≤ R) measures the bucket, not the spent-and-returned
+        // amount twice. A sale at price P returns units×P ≤ cost by
+        // construction of the trigger, so realised ≤ R always holds.
         position.risk_units = 0;
-        position.realised_quote += realised_quote.0;
+        position.cost_basis = 0;
+        position.realised_quote = realised_quote.0;
         position.de_risked = true;
         position.state = PositionState::DeRisked;
         position.nav_quote = math::nav(&position, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals);
@@ -330,6 +420,41 @@ impl Vault {
         env::log_str(&format!(
             "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"DeRiskSettled\",\"data\":{{\"position_id\":{},\"realised_quote\":\"{}\"}}}}",
             position_id.0, realised_quote.0
+        ));
+    }
+
+    // ─── Cross-chain settlement (I5 / F-14) ───
+
+    /// `record_settlement` — the keeper (or anyone holding a valid SUCCESS
+    /// payload, NF-06) reports that the venue settled the swap for
+    /// `deposit_address`. Idempotent on the address: a replay is a no-op,
+    /// never a double credit. Only `SUCCESS` is accepted; anything else
+    /// reverts so a `REFUNDED`/`FAILED` status can never mark money arrived.
+    pub fn record_settlement(&mut self, position_id: U64, deposit_address: String, status: String) {
+        if status != "SUCCESS" {
+            env::panic_str("ErrBadStatus: only SUCCESS settles");
+        }
+        if deposit_address.is_empty() || deposit_address.len() > 128 {
+            env::panic_str("ErrBadDepositAddress");
+        }
+        if self
+            .positions
+            .get(&position_id)
+            .is_none_or(|p| p.state == PositionState::Settled)
+        {
+            env::panic_str("ErrPositionNotFound");
+        }
+        // I5: the second call with the same address is a no-op.
+        if self.settled_deposits.contains(&deposit_address) {
+            env::log_str(&format!(
+                "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"SettlementDeduped\",\"data\":{{\"deposit_address\":\"{deposit_address}\"}}}}"
+            ));
+            return;
+        }
+        self.settled_deposits.insert(&deposit_address);
+        env::log_str(&format!(
+            "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"SettlementRecorded\",\"data\":{{\"position_id\":{},\"deposit_address\":\"{deposit_address}\"}}}}",
+            position_id.0
         ));
     }
 

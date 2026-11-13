@@ -119,9 +119,15 @@ impl Escrow {
     /// position state and completes the transfer in a callback — a vault that
     /// calls `release` for an `Active` position reverts (ErrBadState).
     pub fn release(&mut self, position_id: U64, to: AccountId, amount: U128) -> Promise {
+        // The I1 access gate. `break_escrow` (a deliberately broken build used
+        // by the invariant suite to prove the tests have teeth) removes it —
+        // the foreign-caller test must then FAIL.
+        #[cfg(not(feature = "break_escrow"))]
         if env::predecessor_account_id() != self.vault {
             env::panic_str("ErrNotVault: only the vault may release the reserve");
         }
+        #[cfg(feature = "break_escrow")]
+        let _ = self.vault;
         let amount = amount.0;
         let locked = self.locks.get(&position_id).unwrap_or(0);
         if amount > locked {
