@@ -39,7 +39,8 @@ interface WalletContextValue {
     receiverId: string,
     methodName: string,
     args: Record<string, unknown>,
-    gasTGas: number
+    gasTGas: number,
+    attachedDeposit?: bigint
   ) => Promise<unknown>;
 }
 
@@ -122,7 +123,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       receiverId: string,
       methodName: string,
       args: Record<string, unknown>,
-      gasTGas: number
+      gasTGas: number,
+      attachedDeposit?: bigint
     ) => {
       if (!selector) throw new Error("Wallet is not ready yet.");
       const state = selector.store.getState();
@@ -133,11 +135,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const wallet = await selector.wallet();
       // Real signed transaction (near-js Action) — the chain's real outcome,
       // including the contract's real errors, flows back to the caller.
-      const gas = BigInt(gasTGas) * BigInt(10 ** 12); // TGas -> yoctoNEAR-adjacent gas units
+      const gas = BigInt(gasTGas) * BigInt(10 ** 12); // TGas -> gas units
+      const deposit = attachedDeposit ?? BigInt(0);
       return await wallet.signAndSendTransaction({
         signerId,
         receiverId,
-        actions: [actionCreators.functionCall(methodName, args, gas, BigInt(0))],
+        actions: [actionCreators.functionCall(methodName, args, gas, deposit)],
       });
     },
     [selector]
