@@ -43,3 +43,31 @@ Log per spec §0.4: date · ambiguity · choice · reason. Newest last.
    30 s revalidate) — real NVDA quotes for the wedge and the keeper path;
    switches to the 1Click quote when NVDAon lists (G-2).
 8. Full trail with tx ids: docs/ONCHAIN-TRAIL.md.
+
+## 2026-11-14 — production-readiness sprint
+
+1. **I2 semantics after a de-risk sale (spec ambiguity).** `cost_basis +
+   realised_quote ≤ R` double-counts a fully-sold bucket (cost spent +
+   proceeds returned). Resolution: a full sale zeroes `cost_basis`; the
+   bucket's footprint is `realised ≤ R` (a sale at the trigger returns ≤ cost
+   by construction). Logged per §0.4.
+2. **Payout failure must not strand the claim.** The payout confirms in its
+   own receipt; failure restores the position WITHOUT panicking (a panic
+   rolls the restore back). No double-pay: the payout can only succeed if
+   the reserve arrived. Same fix in the escrow's transfer callback.
+3. **Per-owner storage prefixes.** `owner_positions` vectors shared one
+   prefix; a transfer to a new owner corrupted shared storage. Prefix is now
+   `owner_positions_v1:<account>`.
+4. **Deposits are allowed while paused** (spec edge case 9); the pause gate
+   covers buys and de-risks only.
+5. **Per-deposit loss limit.** `msg = "deposit:<ratio_bps>"` overrides the
+   vault ratio, clamped [5000, 9800] step 100 on-chain (F-22) — the agent
+   policy's enforcement point, verified live with 8500 and rejected with
+   10000 (ErrStepExceeded).
+6. **Oracle trust.** On-chain ed25519 quote-signature verification (T-02):
+   every record_buy/record_de_risk requires `floorline-quote:{pid}:{price}:
+   {ts}` signed by the configured oracle key. Proven live: unsigned and
+   forged quotes revert; signed pass.
+7. **wrap.testnet's 3.1.0 `ft_transfer_call` needs prepaid > 30 TGas** (a
+   bare `prepaid_gas() − 30 TGas` in the old standard). GAS_DEPOSIT 45; UI
+   deposits attach 150 TGas.
