@@ -15,6 +15,7 @@ import { setupWalletSelector } from "@near-wallet-selector/core";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupNightly } from "@near-wallet-selector/nightly";
+import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { actionCreators } from "@near-js/transactions";
 import "@near-wallet-selector/modal-ui/styles.css";
@@ -65,8 +66,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         const selectorInstance = await setupWalletSelector({
-          network: "mainnet",
+          network: "testnet",
           modules: [
+            setupMeteorWallet(),
             setupMyNearWallet(),
             setupLedger(),
             setupNightly(),

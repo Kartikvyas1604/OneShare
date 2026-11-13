@@ -13,6 +13,9 @@ export class NearRpcError extends Error {
   }
 }
 
+/** The wallet provider connects to this network too. */
+export const NEAR_NETWORK = process.env.NEAR_NETWORK ?? "testnet";
+
 interface RpcViewResult<T> {
   result?: T;
   error?: {
@@ -63,6 +66,8 @@ export async function viewContract<T>(
   }
 
   const bytes = body.result?.result;
-  if (!bytes) throw new NearRpcError("Empty RPC result");
+  // A view call returning no bytes means the contract returned `None` (e.g.
+  // get_position for a settled/burned token) — not an error.
+  if (!bytes || bytes.length === 0) return null as T;
   return JSON.parse(Buffer.from(bytes).toString("utf-8")) as T;
 }

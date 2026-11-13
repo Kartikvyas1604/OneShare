@@ -92,10 +92,13 @@ async function main() {
   j = await r.json();
   check("attestation honestly pending", r.status === 200 && j.verified === false && j.quote === null && j.verify_url.startsWith("https://"));
 
-  // 9. Vault reads — the real RPC error until the contract is deployed.
+  // 9. Vault reads — real on-chain state: positions array (deployed contract)
+  //    or the honest not-deployed error (before deployment). Both are real.
   r = await fetch(`${BASE}/api/vault/positions?account=priya.near`);
   j = await r.json();
-  check("vault read surfaces the real on-chain state", r.status === 502 && typeof j.error === "string" && typeof j.notDeployed === "boolean", JSON.stringify(j).slice(0, 140));
+  const deployedRead = r.status === 200 && Array.isArray(j.positions);
+  const notDeployedRead = r.status === 502 && j.notDeployed === true && typeof j.error === "string";
+  check("vault read surfaces real on-chain state", deployedRead || notDeployedRead, JSON.stringify(j).slice(0, 140));
 
   // 10. Vault validation.
   r = await fetch(`${BASE}/api/vault/position/not-a-number`);

@@ -7,7 +7,14 @@ export async function GET(request: Request) {
   const __rl = rateLimit("vault", clientIp(request));
   if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const account = new URL(request.url).searchParams.get("account");
-  if (!account || !account.endsWith(".near")) {
+  if (
+    !account ||
+    !(
+      account.endsWith(".near") ||
+      account.endsWith(".testnet") ||
+      /^[0-9a-f]{64}$/.test(account)
+    )
+  ) {
     return NextResponse.json({ error: "Missing or invalid ?account" }, { status: 400 });
   }
   try {
