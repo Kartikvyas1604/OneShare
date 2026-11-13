@@ -136,6 +136,27 @@ export function SiteHeader() {
           className="animate-fade-in border-t border-border bg-background md:hidden"
         >
           <div className="flex flex-col gap-1 px-4 py-4">
+            {/* Real wallet connection in the drawer */}
+            <div className="px-1 pb-2">
+              {connecting ? (
+                <p className="num text-[11px] text-faint">wallet…</p>
+              ) : accountId ? (
+                <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2.5">
+                  <span className="num truncate text-[11px] text-foreground">{accountId}</span>
+                  <button
+                    type="button"
+                    onClick={() => void signOut()}
+                    className="text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <Button size="sm" variant="secondary" className="w-full" onClick={showConnect}>
+                  Connect wallet
+                </Button>
+              )}
+            </div>
             {NAV.map(({ href, label }) => {
               const active = pathname === href || pathname.startsWith(`${href}/`);
               return (

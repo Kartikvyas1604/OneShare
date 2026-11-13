@@ -14,8 +14,10 @@
   },
   "dependencies": {
     "@near-wallet-selector/core": "^10.1.4",
+    "@near-wallet-selector/ledger": "^10.1.4",
     "@near-wallet-selector/modal-ui": "^10.1.4",
     "@near-wallet-selector/my-near-wallet": "^10.1.4",
+    "@near-wallet-selector/nightly": "^10.1.4",
     "clsx": "^2.1.1",
     "framer-motion": "^14.13.0",
     "lucide-react": "^1.72.0",
