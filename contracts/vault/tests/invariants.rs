@@ -1,8 +1,9 @@
 //! Vault invariant fuzz suite (Agent.md §10 — R1; I1–I6; edge cases §4.7).
 //!
-//! Deterministic: seed 20261112 (the spec's Monte-Carlo seed). Runs 2,000
-//! randomised operation sequences (deposit / signed buy / de-risk / early
-//! exit / NFT transfer / pause) and checks the invariants after EVERY action:
+//! Deterministic: seed 20261112 (the spec's Monte-Carlo seed). Runs a
+//! configurable number of randomised operation sequences (default 2,000,
+//! `INVARIANTS_SEQUENCES=20000` for the spec's 20,000) and checks the
+//! invariants after EVERY action:
 //!   I1  total_floor_locked == Σ position.floor_amount
 //!   I2  cost_basis + realised_quote ≤ risk_budget for every position
 //!   I3  floor_amount is written once at deposit and never mutated
@@ -166,7 +167,13 @@ fn invariants_hold_under_random_sequences() {
     let mut open_position: Option<u64> = None;
     let mut ops = 0usize;
 
-    for seq in 0..2_000u64 {
+    // The spec asks for 20,000 sequences (§10). Default 2,000 keeps the CI
+    // fast; INVARIANTS_SEQUENCES=20000 runs the full suite (~90 s).
+    let seqs: u64 = std::env::var("INVARIANTS_SEQUENCES")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(2_000);
+    for seq in 0..seqs {
         tv.tick(1_000 + (next() % 5_000) as u64);
         let action = next() % 5;
 
@@ -288,14 +295,14 @@ fn invariants_hold_under_random_sequences() {
         }
     }
 
-    assert!(ops >= 400, "suite must exercise real work; got {ops} ops");
+    assert!(ops >= (seqs / 5) as usize, "suite must exercise real work; got {ops} ops for {seqs} sequences");
 }
 
 /// Attack: a quote signed by a non-oracle key must revert (T-02).
 #[test]
 fn non_oracle_signature_is_rejected() {
     let mut tv = TestVault::new();
-    let (pid_opened, _) = deposit_open(&mut tv, "deposit");
+    let (_pid_opened, _) = deposit_open(&mut tv, "deposit");
     let price = 4_000_000_000_000_000_000u128;
     let ts = tv.now_ms;
     let wrong_sig = {
@@ -319,7 +326,7 @@ fn non_oracle_signature_is_rejected() {
 #[test]
 fn stale_quote_is_rejected() {
     let mut tv = TestVault::new();
-    let (pid_opened, _) = deposit_open(&mut tv, "deposit");
+    let (_pid_opened, _) = deposit_open(&mut tv, "deposit");
     let price = 4_000_000_000_000_000_000u128;
     let old_ts = tv.now_ms - 90_000; // 90 s old, max age 60 s
     let sig = tv.sign(1, price, old_ts);
@@ -335,7 +342,7 @@ fn stale_quote_is_rejected() {
 #[test]
 fn over_budget_buy_is_rejected() {
     let mut tv = TestVault::new();
-    let (pid_opened, _) = deposit_open(&mut tv, "deposit");
+    let (_pid_opened, _) = deposit_open(&mut tv, "deposit");
     let price = 4_000_000_000_000_000_000u128;
     let ts = tv.now_ms;
     let sig = tv.sign(1, price, ts);
@@ -381,7 +388,7 @@ fn deposit_ratio_clamp() {
 #[test]
 fn settlement_is_idempotent() {
     let mut tv = TestVault::new();
-    let (pid_opened, _) = deposit_open(&mut tv, "deposit");
+    let (_pid_opened, _) = deposit_open(&mut tv, "deposit");
     tv.set_env(USER);
     tv.vault.record_settlement(U64(1), "deposit-abc-123".to_string(), "SUCCESS".to_string());
     // Replay: no-op, no panic.
@@ -396,7 +403,7 @@ fn settlement_is_idempotent() {
 #[test]
 fn nft_transfer_moves_the_claim() {
     let mut tv = TestVault::new();
-    let (pid_opened, _) = deposit_open(&mut tv, "deposit");
+    let (_pid_opened, _) = deposit_open(&mut tv, "deposit");
     tv.set_env(USER);
     tv.vault.nft_transfer(USER2.parse().unwrap(), U64(1), None, None);
     assert_eq!(
