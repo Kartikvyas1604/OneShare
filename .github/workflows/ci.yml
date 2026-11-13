@@ -37,3 +37,14 @@ jobs:
 
       - name: Audit (high and above; dev-only findings tracked in DECISIONS.md)
         run: npm audit --audit-level=critical
+
+      - name: Start production server
+        run: |
+          npm run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/healthz > /dev/null && break
+            sleep 1
+          done
+
+      - name: Smoke test the production server
+        run: node scripts/smoke.mjs http://localhost:3000
