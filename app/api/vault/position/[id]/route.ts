@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { fetchPosition, isNotDeployed, VAULT_CONTRACT_ID } from "@/app/lib/vault";
 
 /** Real on-chain position by numeric token id. */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const __rl = rateLimit("vault", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const { id } = await params;
   const positionId = Number(id);
   if (!Number.isInteger(positionId) || positionId < 0) {

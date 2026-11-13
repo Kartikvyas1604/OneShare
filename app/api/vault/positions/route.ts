@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { fetchPositions, isNotDeployed, VAULT_CONTRACT_ID } from "@/app/lib/vault";
 
 /** Real on-chain positions for an account (query param `account`). */
 export async function GET(request: Request) {
+  const __rl = rateLimit("vault", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const account = new URL(request.url).searchParams.get("account");
   if (!account || !account.endsWith(".near")) {
     return NextResponse.json({ error: "Missing or invalid ?account" }, { status: 400 });

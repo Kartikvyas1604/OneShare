@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { VAULT_CONFIG } from "@/app/lib/floorline";
 import { saveDeposit } from "@/app/lib/deposit-store";
 import { log, requestIdOf } from "@/app/lib/log";
@@ -28,6 +29,8 @@ interface DepositRequestBody {
 }
 
 export async function POST(request: Request) {
+  const __rl = rateLimit("deposit", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const requestId = requestIdOf(request);
   let body: DepositRequestBody;
   try {

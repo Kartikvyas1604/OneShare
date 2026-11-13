@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 
 /**
  * Real transaction history for an account from the nearblocks.io indexer.
@@ -13,6 +14,8 @@ interface NearblocksTxn {
 }
 
 export async function GET(request: Request) {
+  const __rl = rateLimit("activity", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const account = new URL(request.url).searchParams.get("account");
   if (!account) {
     return NextResponse.json({ error: "Missing ?account" }, { status: 400 });

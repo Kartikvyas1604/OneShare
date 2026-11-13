@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { getDeposit, updateDepositStatus } from "@/app/lib/deposit-store";
 import { log, requestIdOf } from "@/app/lib/log";
 
@@ -8,6 +9,8 @@ import { log, requestIdOf } from "@/app/lib/log";
  * INCOMPLETE_DEPOSIT | REFUNDED | FAILED (Agent.md §1.2).
  */
 export async function GET(request: Request) {
+  const __rl = rateLimit("deposit", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const requestId = requestIdOf(request);
   const address = new URL(request.url).searchParams.get("address");
   if (!address || !/^[A-Za-z0-9:_-]{10,130}$/.test(address)) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { simulateCrash } from "@/app/lib/crash-sim";
 import { log, requestIdOf } from "@/app/lib/log";
 
@@ -19,6 +20,8 @@ interface CrashSimBody {
 }
 
 export async function POST(request: Request) {
+  const __rl = rateLimit("crash-sim", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   const requestId = requestIdOf(request);
   let body: CrashSimBody;
   try {

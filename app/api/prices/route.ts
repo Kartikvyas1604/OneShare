@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, clientIp, tooManyRequests } from "@/app/lib/rate-limit";
 import { VAULT_CONFIG, RISK_ASSETS } from "@/app/lib/floorline";
 
 /**
@@ -12,7 +13,9 @@ const NEEDED_ASSET_IDS = new Set<string>([
   ...RISK_ASSETS.map((a) => a.assetId),
 ]);
 
-export async function GET() {
+export async function GET(request: Request) {
+  const __rl = rateLimit("prices", clientIp(request));
+  if (!__rl.ok) return tooManyRequests(__rl.retryAfterSec);
   try {
     const res = await fetch("https://1click.chaindefuser.com/v0/tokens", {
       cache: "no-store",
