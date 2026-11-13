@@ -6,8 +6,6 @@ import { VAULT_CONFIG, RISK_ASSETS } from "@/app/lib/floorline";
  * endpoint (Agent.md §1.2). No mock prices: whatever this returns is what the
  * UI shows. Cached 60s server-side; the oracle's own staleness bound is 60s.
  */
-export const revalidate = 60;
-
 const NEEDED_ASSET_IDS = new Set<string>([
   VAULT_CONFIG.quoteAssetId,
   VAULT_CONFIG.riskAssetId,
@@ -17,7 +15,7 @@ const NEEDED_ASSET_IDS = new Set<string>([
 export async function GET() {
   try {
     const res = await fetch("https://1click.chaindefuser.com/v0/tokens", {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) {
       return NextResponse.json(
@@ -25,20 +23,23 @@ export async function GET() {
         { status: 502 },
       );
     }
-    const body = (await res.json()) as {
-      tokens?: Array<{ assetId: string; symbol: string; price: number; decimals: number; blockchain: string }>;
-    };
-    const tokens = body.tokens ?? [];
-    const prices = tokens
-      .filter((t) => NEEDED_ASSET_IDS.has(t.assetId) && typeof t.price === "number")
-      .map((t) => ({
-        assetId: t.assetId,
-        symbol: t.symbol,
-        price: t.price,
-        decimals: t.decimals,
-        blockchain: t.blockchain,
-      }));
-    return NextResponse.json({ prices, fetchedAt: new Date().toISOString() });
+    const rawBody = (await res.json()) as
+      | Array<{ assetId: string; symbol: string; price: number; decimals: number; blockchain: string }>
+      | { tokens?: Array<{ assetId: string; symbol: string; price: number; decimals: number; blockchain: string }> };
+    // 1Click returns a bare token array; accept a {tokens} wrapper too.
+    const tokens = Array.isArray(rawBody) ? rawBody : (rawBody.tokens ?? []);
+    return NextResponse.json({
+      prices: tokens
+        .filter((t) => NEEDED_ASSET_IDS.has(t.assetId) && typeof t.price === "number")
+        .map((t) => ({
+          assetId: t.assetId,
+          symbol: t.symbol,
+          price: t.price,
+          decimals: t.decimals,
+          blockchain: t.blockchain,
+        })),
+      fetchedAt: new Date().toISOString(),
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Price fetch failed" },

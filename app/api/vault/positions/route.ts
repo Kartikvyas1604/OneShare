@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchPositions, isNotDeployed, VAULT_CONTRACT_ID } from "@/app/lib/vault";
 
-export const dynamic = "force-dynamic";
-
 /** Real on-chain positions for an account (query param `account`). */
 export async function GET(request: Request) {
   const account = new URL(request.url).searchParams.get("account");

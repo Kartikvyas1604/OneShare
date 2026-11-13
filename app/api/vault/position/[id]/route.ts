@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchPosition, isNotDeployed, VAULT_CONTRACT_ID } from "@/app/lib/vault";
 
-export const dynamic = "force-dynamic";
-
 /** Real on-chain position by numeric token id. */
 export async function GET(
   _request: Request,

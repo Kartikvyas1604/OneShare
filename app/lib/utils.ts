@@ -68,8 +68,8 @@ export function formatDate(date: Date | string | number) {
   }).format(d);
 }
 
-/** Relative label ("3h ago") computed against the fixed mock epoch. */
-export function timeAgoLabel(ts: number, now = MOCK_EPOCH_FALLBACK) {
+/** Relative label ("3h ago") against the real clock. */
+export function timeAgoLabel(ts: number, now = Date.now()) {
   const diff = Math.max(0, now - ts);
   const mins = Math.round(diff / 60000);
   if (mins < 60) return `${mins}m ago`;
@@ -77,9 +77,6 @@ export function timeAgoLabel(ts: number, now = MOCK_EPOCH_FALLBACK) {
   if (hours < 24) return `${hours}h ago`;
   return `${Math.round(hours / 24)}d ago`;
 }
-
-// Matches MOCK_EPOCH in data.ts without a circular import.
-const MOCK_EPOCH_FALLBACK = Date.UTC(2026, 10, 12, 6, 0, 0);
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

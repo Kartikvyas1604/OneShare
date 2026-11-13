@@ -6,8 +6,6 @@ import { VAULT_CONFIG } from "@/app/lib/floorline";
  * (verified Agent.md §1.2 / G-1). The raw real response is passed through —
  * including its real errors when a parameter is rejected.
  */
-export const dynamic = "force-dynamic";
-
 interface QuoteRequestBody {
   amountMicro?: number;
   destinationAsset?: string;

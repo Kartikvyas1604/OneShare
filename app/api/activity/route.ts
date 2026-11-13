@@ -4,8 +4,6 @@ import { NextResponse } from "next/server";
  * Real transaction history for an account from the nearblocks.io indexer.
  * Returns the indexer's real data (or its real error) — no fabricated events.
  */
-export const revalidate = 30;
-
 interface NearblocksTxn {
   transaction_hash?: string;
   block_timestamp?: string; // nanoseconds as string

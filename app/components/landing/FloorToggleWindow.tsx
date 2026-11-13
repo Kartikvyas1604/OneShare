@@ -1,25 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { RECORDED_RUN } from "@/app/lib/crash-sim";
+import { simulateCrash, DEFAULT_SEED } from "@/app/lib/crash-sim";
 import { formatUsd } from "@/app/lib/utils";
 import { ArrowRight } from "lucide-react";
 
 const EASE_OUT: [number, number, number, number] = [0, 0, 0.2, 1];
+const DEMO_SHOCK = -45;
 
 /**
- * Hero session panel — the recorded −45% crash with a Naive/Floor toggle,
- * Obligor-style. Numbers come straight from the deterministic recorded run
- * (seed 20261112), never invented.
+ * Hero session panel — a −45% crash against a $1,000 position, computed live
+ * in the browser by the deterministic engine (seed 20261112). Nothing is
+ * pre-baked: same seed, same numbers, computed at runtime.
  */
 export function FloorToggleWindow() {
   const [floored, setFloored] = useState(true);
   const reduced = useReducedMotion();
 
-  const naive = RECORDED_RUN.arms[0];
-  const flooredArm = RECORDED_RUN.arms[1];
+  // Real deterministic computation, not stored results.
+  const arms = useMemo(() => simulateCrash(DEMO_SHOCK).arms, []);
+  const naive = arms[0];
+  const flooredArm = arms[1];
   const arm = floored ? flooredArm : naive;
   const kept = arm.medianTerminalUsd;
   const drawdown = arm.medianMaxDrawdownPct;
@@ -31,10 +34,10 @@ export function FloorToggleWindow() {
         <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
         <span className="num ml-2 text-[11px] text-muted-foreground">
-          floorline-demo.near / vault / 8f3a1c42
+          floorline-demo.near / vault / loss-limit
         </span>
         <span className="num ml-auto rounded-md border border-border bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
-          recorded run · −45% · seed 20261112
+          deterministic run · −45% · seed {DEFAULT_SEED}
         </span>
       </div>
 
@@ -107,8 +110,8 @@ export function FloorToggleWindow() {
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Deterministic — same seed, same numbers. Run it live with all three arms in the crash
-            test.
+            Computed in your browser at load — deterministic, not stored. Run all three arms live
+            in the crash test.
           </p>
           <Link
             href="/crash"

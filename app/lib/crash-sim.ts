@@ -11,7 +11,7 @@
  */
 
 export const DEFAULT_SEED = 20261112;
-export const RECORDED_SHOCK_PCT = -45;
+export const DEMO_SHOCK_PCT = -45;
 
 export interface CrashArm {
   key: "naive" | "static" | "derisk";
@@ -191,7 +191,6 @@ function representativePaths(
   return targets.map((t) => t.path);
 }
 
-/** Run the simulation. Deterministic: identical (shockPct, seed, params) → identical result. */
 export function simulateCrash(shockPct: number, options: CrashOptions = {}): CrashResult {
   const opts: Required<CrashOptions> = {
     depositUsd: options.depositUsd ?? 1_000,
@@ -243,10 +242,3 @@ export function simulateCrash(shockPct: number, options: CrashOptions = {}): Cra
     arms,
   };
 }
-
-/**
- * Cached recorded run (§11 fallback 2): the −45% shock computed eagerly with
- * the fixed seed. Served instantly by "Replay recorded run" and as the error
- * fallback if a live run throws.
- */
-export const RECORDED_RUN: CrashResult = simulateCrash(RECORDED_SHOCK_PCT);

@@ -5,7 +5,8 @@ import { Button } from "@/app/components/Button";
 import { Slider } from "@/app/components/Slider";
 import { Reveal } from "@/app/components/motion/Reveal";
 import { STAGGER } from "@/app/components/motion/timing";
-import { VAULT_CONFIG, splitDeposit, targetUnits, RISK_PRICE_USDC } from "@/app/lib/floorline";
+import { VAULT_CONFIG, splitDeposit, targetUnits } from "@/app/lib/floorline";
+import { useLivePrices } from "@/app/lib/prices";
 import { formatUsd, formatTokenAmount } from "@/app/lib/utils";
 
 const DEMO_DEPOSIT_MIN = 10;
@@ -21,8 +22,10 @@ const PRESETS = [
 export function LossLimitPreview() {
   const [deposit, setDeposit] = useState(1_000);
   const [floorBps, setFloorBps] = useState<number>(VAULT_CONFIG.floorRatioBps);
+  const { prices } = useLivePrices();
   const { floorAmount, riskBudget } = splitDeposit(deposit * 1e6, floorBps);
-  const units = targetUnits(riskBudget, RISK_PRICE_USDC);
+  const livePrice = prices.get("nep141:wrap.near")?.price;
+  const units = livePrice !== undefined ? targetUnits(riskBudget, livePrice) : null;
 
   return (
     <section id="limits" className="scroll-mt-20 border-b border-border">
@@ -134,9 +137,11 @@ export function LossLimitPreview() {
                   <dd className="num font-medium text-foreground">{formatUsd(riskBudget / 1e6)}</dd>
                 </div>
                 <div className="flex items-center justify-between">
-                  <dt className="text-muted-foreground">Est. wNEAR @ ${RISK_PRICE_USDC.toFixed(2)}</dt>
+                  <dt className="text-muted-foreground">
+                    Est. wNEAR {livePrice !== undefined ? `@ $${livePrice.toFixed(4)} live` : ""}
+                  </dt>
                   <dd className="num font-medium text-foreground">
-                    {riskBudget > 0 ? formatTokenAmount(units, 3) : "0"}
+                    {units !== null && riskBudget > 0 ? formatTokenAmount(units, 3) : "—"}
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between border-t border-border pt-3">

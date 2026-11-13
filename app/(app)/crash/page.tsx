@@ -7,8 +7,6 @@ import { CrashChart } from "@/app/components/CrashChart";
 import { ErrorState } from "@/app/components/ErrorState";
 import {
   DEFAULT_SEED,
-  RECORDED_RUN,
-  RECORDED_SHOCK_PCT,
   simulateCrash,
   type CrashResult,
 } from "@/app/lib/crash-sim";
@@ -16,6 +14,8 @@ import { formatUsd, formatPercent } from "@/app/lib/utils";
 import { History, Play } from "lucide-react";
 
 type RunState = "idle" | "simulating" | "done" | "error";
+
+const DEMO_SHOCK = -45;
 
 const ARM_META: Record<
   "naive" | "static" | "derisk",
@@ -27,40 +27,39 @@ const ARM_META: Record<
 };
 
 export default function CrashPage() {
-  const [shockPct, setShockPct] = useState(RECORDED_SHOCK_PCT);
+  const [shockPct, setShockPct] = useState(DEMO_SHOCK);
   const [state, setState] = useState<RunState>("idle");
   const [result, setResult] = useState<CrashResult | null>(null);
-  const [fromCache, setFromCache] = useState(false);
 
   const run = useCallback(async (pct: number) => {
     setState("simulating");
-    setFromCache(false);
     try {
       // ~10,000 paths × 90 steps land in well under 100 ms; the pause makes
       // the simulating state perceivable instead of a flicker.
       await new Promise((r) => setTimeout(r, 350));
-      setResult(simulateCrash(pct));
+      setResult(simulateCrash(pct)); // computed live — deterministic, nothing stored
       setState("done");
     } catch {
-      // Error → cached result (§11 fallback 2). Never leave the judge on a red screen.
-      setResult(RECORDED_RUN);
-      setFromCache(true);
-      setState("done");
+      // Real failure of the computation itself — surface it honestly.
+      setState("error");
     }
   }, []);
 
   // Auto-run the recorded −45% shock on mount so the page is never empty.
   // Deferred out of the effect body so the simulating state isn't a sync setState.
   useEffect(() => {
-    const t = setTimeout(() => void run(RECORDED_SHOCK_PCT), 0);
+    const t = setTimeout(() => void run(DEMO_SHOCK), 0);
     return () => clearTimeout(t);
   }, [run]);
 
-  const replayRecorded = () => {
-    setShockPct(RECORDED_SHOCK_PCT);
-    setResult(RECORDED_RUN);
-    setFromCache(true);
-    setState("done");
+  const replayDemoShock = () => {
+    setShockPct(DEMO_SHOCK);
+    setState("simulating");
+    const t = setTimeout(() => {
+      setResult(simulateCrash(DEMO_SHOCK));
+      setState("done");
+    }, 350);
+    return () => clearTimeout(t);
   };
 
   return (
@@ -111,9 +110,9 @@ export default function CrashPage() {
               <Button className="w-full" onClick={() => void run(shockPct)} isLoading={state === "simulating"}>
                 {state === "simulating" ? "Simulating…" : "Run simulation"}
               </Button>
-              <Button className="w-full" variant="secondary" onClick={replayRecorded}>
+              <Button className="w-full" variant="secondary" onClick={replayDemoShock}>
                 <History className="h-3.5 w-3.5" aria-hidden />
-                Replay recorded run
+                Rerun the −45% demo shock
               </Button>
             </div>
             <p className="border-t border-border px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
@@ -135,13 +134,6 @@ export default function CrashPage() {
 
           {result && state !== "error" && (
             <>
-              {fromCache && (
-                <p className="rounded-lg border border-border bg-card px-4 py-2.5 text-xs text-muted-foreground">
-                  Recorded run · seed <span className="num">{result.seed}</span> · reproduced, not
-                  estimated.
-                </p>
-              )}
-
               <div className="engraved rounded-2xl bg-card p-4 md:p-5">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-[13px] font-medium text-foreground">

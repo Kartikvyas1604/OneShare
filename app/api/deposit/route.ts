@@ -6,8 +6,6 @@ import { VAULT_CONFIG } from "@/app/lib/floorline";
  * depositAddress is where the user actually sends funds — no placeholder
  * addresses in the UI.
  */
-export const dynamic = "force-dynamic";
-
 interface DepositRequestBody {
   amountMicro?: number;
   destinationAsset?: string;

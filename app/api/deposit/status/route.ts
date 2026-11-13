@@ -5,8 +5,6 @@ import { NextResponse } from "next/server";
  * Statuses: PENDING_DEPOSIT | KNOWN_DEPOSIT_TX | PROCESSING | SUCCESS |
  * INCOMPLETE_DEPOSIT | REFUNDED | FAILED (Agent.md §1.2).
  */
-export const dynamic = "force-dynamic";
-
 export async function GET(request: Request) {
   const address = new URL(request.url).searchParams.get("address");
   if (!address) {

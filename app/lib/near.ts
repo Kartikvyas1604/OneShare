@@ -15,7 +15,11 @@ export class NearRpcError extends Error {
 
 interface RpcViewResult<T> {
   result?: T;
-  error?: { message?: string; cause?: { info?: { account_id?: string } } };
+  error?: {
+    message?: string;
+    data?: string;
+    cause?: { info?: { account_id?: string } };
+  };
 }
 
 /** View (read-only) contract method — args are JSON-serialized like the CLI does. */
@@ -46,13 +50,16 @@ export async function viewContract<T>(
 
   if (body.error) {
     const missing = body.error.cause?.info?.account_id;
-    if (body.error.message?.includes("does not exist while viewing")) {
+    // The human-readable detail (e.g. "account X does not exist while viewing")
+    // lives in error.data; "message" is a generic "Server error".
+    const detail = body.error.data ?? body.error.message ?? `RPC query failed (${res.status})`;
+    if (detail.includes("does not exist while viewing")) {
       throw new NearRpcError(`Account ${missing ?? accountId} does not exist on NEAR mainnet yet`);
     }
-    if (body.error.message?.includes("MethodNotFound")) {
+    if (detail.includes("MethodNotFound") || detail.includes("method not found")) {
       throw new NearRpcError(`Contract method ${methodName} not found on ${accountId}`);
     }
-    throw new NearRpcError(body.error.message ?? `RPC query failed (${res.status})`);
+    throw new NearRpcError(detail);
   }
 
   const bytes = body.result?.result;
