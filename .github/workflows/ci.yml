@@ -28,8 +28,12 @@ jobs:
 
       - name: Unit tests
         run: npm test
-
-      - name: Copy hygiene (banned marketing phrases — spec §0.5)
+      - name: Rust tests (unit + invariants)
+        run: cd contracts && cargo test
+      - name: Contract build (wasm)
+        run: |
+          cd contracts && cargo build
+      - name: Copy hygiene (banned marketing phrases + asset-name rule — spec §0.5/U2)
         run: npm run check:copy
 
       - name: Production build
@@ -48,3 +52,9 @@ jobs:
 
       - name: Smoke test the production server
         run: node scripts/smoke.mjs http://localhost:3000
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps || npx playwright install chromium
+
+      - name: E2E tests (against the running production server)
+        run: E2E_NO_SERVER=1 npx playwright test

@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "node scripts/smoke.mjs",
-    "check:copy": "grep -rEn \"revolutionary|game.changing|disrupting|seamless(ly)? |world.class|next.gen|guaranteed|risk.free|principal protected|passive income|to the moon|safe returns|you cannot lose\" app docs README.md && exit 1 || exit 0"
+    "check:copy": "node scripts/check-copy.mjs",
+    "test:e2e": "playwright test",
+    "test:rust": "cd contracts && cargo test"
   },
   "dependencies": {
     "@near-wallet-selector/core": "^10.1.4",
@@ -29,6 +31,7 @@
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
