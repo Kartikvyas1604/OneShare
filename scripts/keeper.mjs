@@ -28,7 +28,6 @@ const require = createRequire(import.meta.url);
 
 const RPC = process.env.NEAR_RPC_URL || "https://rpc.testnet.near.org";
 const VAULT = process.env.VAULT_CONTRACT_ID || "vault3.floorline-escrow.testnet";
-const QUOTE = "wrap.testnet";
 const SIGNER = process.env.KEEPER_SIGNER || "floorline-escrow.testnet";
 const INTERVAL = Number(process.env.KEEPER_INTERVAL_SEC || 60);
 
@@ -184,9 +183,9 @@ async function tick(accounts, log) {
 function signQuote(positionId, price, ts) {
   const seed = Buffer.from(envValue("ORACLE_SEED_HEX"), "hex");
   const nacl = require("tweetnacl");
-  const kp = nacl.sign.keyPair.fromSeed(new Uint8Array(seed));
+  const keypair = nacl.sign.keyPair.fromSeed(new Uint8Array(seed));
   const msg = `floorline-quote:${positionId}:${price}:${ts}`;
-  return Buffer.from(nacl.sign.detached(Buffer.from(msg, "utf8"), kp.secretKey)).toString("hex");
+  return Buffer.from(nacl.sign.detached(Buffer.from(msg, "utf8"), keypair.secretKey)).toString("hex");
 }
 
 

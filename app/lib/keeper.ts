@@ -5,6 +5,7 @@
  * serialize u128 as bare JSON numbers — JS floats mangle 1e23).
  */
 import { execFileSync } from "node:child_process";
+import nacl from "tweetnacl";
 import { existsSync, readFileSync } from "node:fs";
 
 export interface KeeperAction {
@@ -61,8 +62,6 @@ async function view(contract: string, method: string, args: Record<string, unkno
 function signQuote(positionId: number, price: string, ts: number): string {
   const seedHex = envValue("ORACLE_SEED_HEX");
   if (!seedHex) throw new Error("ORACLE_SEED_HEX not set");
-  // Lazy require so the route module works in any runtime with node deps.
-  const nacl = require("tweetnacl") as typeof import("tweetnacl");
   const kp = nacl.sign.keyPair.fromSeed(new Uint8Array(Buffer.from(seedHex, "hex")));
   const msg = `floorline-quote:${positionId}:${price}:${ts}`;
   return Buffer.from(nacl.sign.detached(Buffer.from(msg, "utf8"), kp.secretKey)).toString("hex");

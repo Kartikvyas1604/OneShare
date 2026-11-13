@@ -58,6 +58,7 @@ if (cmd === "check") {
   const [, , , account, key58, pub58] = process.argv;
   const seed = dec58exact(key58.replace("ed25519:", ""));
   const kp = seedToKeyPair(seed.length === 32 ? seed : seed.subarray(0, 32));
+  void kp;
   const derived = enc58exact(kp.pubRaw);
   console.log("derived pub matches on-chain:", derived === pub58.replace("ed25519:", ""));
   const secret64 = Buffer.concat([kp.privRaw, kp.pubRaw]);
@@ -75,6 +76,7 @@ if (cmd === "check") {
     if (parsesTo64(secret64)) {
       const seed = privRaw;
       const kp = seedToKeyPair(seed);
+      void kp;
       console.log("tries:", tries);
       console.log("PUB=ed25519:" + enc58exact(pubRaw));
       console.log("SECRET64=ed25519:" + enc58exact(secret64));

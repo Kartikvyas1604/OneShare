@@ -14,7 +14,7 @@ const assetAllowedFiles = [/docs\/DECISIONS\.md/, /docs\/AGENT_POLICY\.md/, /doc
 function grep(pattern, args) {
   try {
     return execFileSync("grep", ["-rEn", pattern, ...args], { encoding: "utf8" });
-  } catch (e) {
+  } catch {
     return ""; // no matches → grep exits 1
   }
 }

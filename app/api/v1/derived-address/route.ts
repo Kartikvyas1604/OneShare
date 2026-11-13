@@ -29,7 +29,6 @@ const RPC = {
 
 // secp256k1 field + curve constants.
 const P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2fn;
-const TWO = 2n;
 const THREE = 3n;
 const SEVEN = 7n;
 

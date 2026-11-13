@@ -38,7 +38,7 @@ async function worker() {
       latencies.push(ms);
       await res.arrayBuffer(); // drain
       statuses.set(res.status, (statuses.get(res.status) ?? 0) + 1);
-    } catch (err) {
+    } catch {
       if (signal.aborted) break; // deadline unwind — not a real error
       errors++;
       latencies.push(performance.now() - t0);

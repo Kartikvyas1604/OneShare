@@ -9,7 +9,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import type { AgentPolicy } from "@/app/lib/agent-policy";
 
 export interface StoredPolicy {
-  id: string; // sha256(mandate)
+  id: string; // sha256(mandate) truncated
+  mandate_hash: string; // the full SHA-256 — proves what was hashed, no PII
   policy: AgentPolicy;
   position_id: number | null; // set when a deposit references this policy
   created_at: string;
@@ -44,6 +45,7 @@ export function savePolicy(
   const store = readAll();
   const record: StoredPolicy = {
     id,
+    mandate_hash: mandateHash,
     policy,
     position_id: store[id]?.position_id ?? null,
     created_at: store[id]?.created_at ?? new Date().toISOString(),

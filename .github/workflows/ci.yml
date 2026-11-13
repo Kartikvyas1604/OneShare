@@ -28,6 +28,9 @@ jobs:
 
       - name: Unit tests
         run: npm test
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Rust tests (unit + invariants)
         run: cd contracts && cargo test
       - name: Contract build (wasm)
