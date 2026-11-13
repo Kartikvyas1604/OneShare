@@ -2,143 +2,147 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/Button";
 import { useNearAccount } from "@/app/lib/wallet";
-import {
-  LayoutDashboard,
-  Plus,
-  Layers,
-  TrendingDown,
-  MessageSquareText,
-  Landmark,
-} from "lucide-react";
+import { Landmark, Menu, X } from "lucide-react";
 
-const nav = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/create", label: "Create", icon: Plus },
-  { href: "/positions", label: "Positions", icon: Layers },
-  { href: "/crash", label: "Crash test", icon: TrendingDown },
-  { href: "/explain", label: "Explain", icon: MessageSquareText },
+const NAV = [
+  { href: "/dashboard", label: "Overview" },
+  { href: "/create", label: "Create" },
+  { href: "/positions", label: "Positions" },
+  { href: "/crash", label: "Crash test" },
+  { href: "/explain", label: "Explain" },
 ];
 
-export function AppSidebar() {
+/**
+ * Single sticky top header for every app page — no sidebar, no dock.
+ * Desktop: inline nav + wallet state + CTA. Mobile: hamburger drawer that
+ * closes on route change and Escape, with body scroll locked while open.
+ */
+export function SiteHeader() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const { accountId, loading } = useNearAccount();
 
+  // Close the drawer on route change; defer out of the effect body.
+  useEffect(() => {
+    const t = setTimeout(() => setOpen(false), 0);
+    return () => clearTimeout(t);
+  }, [pathname]);
+
+  // Escape closes; lock body scroll while open.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-background md:flex">
-      {/* Brand */}
-      <div className="flex h-16 items-center gap-2.5 border-b border-border px-5">
-        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Landmark className="h-4 w-4" aria-hidden />
-        </span>
-        <Link href="/dashboard" className="display text-lg text-foreground focus-visible:outline-none">
-          Floorline
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-[1100px] items-center justify-between gap-3 px-4 md:px-10">
+        <Link
+          href="/dashboard"
+          className="flex shrink-0 items-center gap-2.5 transition-opacity duration-200 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Landmark className="h-3.5 w-3.5" aria-hidden />
+          </span>
+          <span className="display text-lg text-foreground">Floorline</span>
         </Link>
-      </div>
 
-      {/* Nav */}
-      <nav aria-label="Primary" className="flex-1 space-y-0.5 px-3 py-4">
-        {nav.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                isActive
-                  ? "bg-secondary text-foreground"
-                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-              )}
-            >
-              <item.icon
-                className={cn("h-4 w-4", isActive ? "text-foreground" : "text-faint")}
-                aria-hidden
-              />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+        {/* Desktop nav — real working pages */}
+        <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+          {NAV.map((item) => {
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "rounded-full px-3.5 py-2 text-[13px] font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  active
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
 
-      {/* Bottom */}
-      <div className="space-y-3 border-t border-border p-3">
-        <Button className="w-full" href="/create">
-          New position
-        </Button>
-        <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-          <p className="eyebrow">Wallet</p>
-          {loading ? (
-            <p className="num mt-1 text-[11px] text-faint">Checking…</p>
-          ) : accountId ? (
-            <>
-              <p className="num mt-1 truncate text-[11px] text-foreground">{accountId}</p>
-              <p className="text-[10px] text-muted-foreground">Connected · Injected wallet</p>
-            </>
-          ) : (
-            <>
-              <p className="mt-1 text-[11px] text-muted-foreground">Not connected</p>
-              <p className="text-[10px] text-faint">
-                Connect an injected NEAR wallet to see your positions.
-              </p>
-            </>
-          )}
+        <div className="flex items-center gap-2">
+          {/* Real wallet state — compact */}
+          <span
+            className="num hidden rounded-full border border-border bg-card px-3 py-1.5 text-[11px] text-muted-foreground lg:inline-flex"
+            title="Real connected account from an injected NEAR wallet"
+          >
+            {loading ? "wallet…" : accountId ? accountId : "no wallet"}
+          </span>
+          <Button size="sm" href="/create" className="hidden sm:inline-flex">
+            New position
+          </Button>
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? "Close menu" : "Open menu"}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          >
+            {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+          </button>
         </div>
-        <p className="px-1 text-[10px] leading-relaxed text-faint">Not audited. Non-US only.</p>
       </div>
-    </aside>
-  );
-}
 
-export function MobileDock() {
-  const pathname = usePathname();
-
-  return (
-    <nav
-      aria-label="Primary"
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
-    >
-      <div className="mx-auto grid max-w-md grid-cols-5 px-1">
-        {nav.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
+      {/* Mobile drawer */}
+      {open && (
+        <nav
+          id="mobile-nav"
+          aria-label="Mobile"
+          className="animate-fade-in border-t border-border bg-background md:hidden"
+        >
+          <div className="flex flex-col gap-1 px-4 py-4">
+            {NAV.map(({ href, label }) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "rounded-lg px-3 py-3 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    active
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  )}
+                >
+                  {label}
+                </Link>
+              );
+            })}
             <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex flex-col items-center gap-0.5 rounded-lg py-2 text-[10px] font-medium transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
+              href="/create"
+              className="mt-2 inline-flex h-12 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <item.icon className={cn("h-[18px] w-[18px]", isActive && "text-up")} aria-hidden />
-              {item.label}
+              New position
             </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
-export function MobileHeader() {
-  return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur md:hidden">
-      <Link
-        href="/dashboard"
-        className="flex items-center gap-2 focus-visible:outline-none"
-      >
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Landmark className="h-3.5 w-3.5" aria-hidden />
-        </span>
-        <span className="display text-lg text-foreground">Floorline</span>
-      </Link>
-      <Button size="sm" href="/create" className="h-8">
-        Create
-      </Button>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

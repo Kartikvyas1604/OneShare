@@ -11,7 +11,7 @@ import {
   type CrashResult,
 } from "@/app/lib/crash-sim";
 import { formatUsd, formatPercent } from "@/app/lib/utils";
-import { History, Play } from "lucide-react";
+import { History } from "lucide-react";
 
 type RunState = "idle" | "simulating" | "done" | "error";
 
@@ -210,12 +210,43 @@ export default function CrashPage() {
                 })}
               </div>
 
-              <p className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
-                <Play className="mt-0.5 h-3.5 w-3.5 shrink-0 text-faint" aria-hidden />
-                Same seed, identical output — the keeper endpoint <span className="num">/v1/crash-sim</span>{" "}
-                matches these numbers within ±0.5 pp (F-16). No leverage, no liquidation: the
-                reserve caps the loss at the number picked at deposit.
-              </p>
+              <div className="engraved rounded-2xl bg-card p-4 md:p-5">
+                <p className="eyebrow">What is this simulation?</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+                  A deterministic Monte-Carlo run in your browser. The engine drops{" "}
+                  <span className="num text-foreground">10,000</span> simulated price paths of the
+                  risk asset, applies your chosen one-day shock at step{" "}
+                  <span className="num text-foreground">30</span> of{" "}
+                  <span className="num text-foreground">90</span>, then evolves every path with
+                  GBM (σ 0.80, median-neutral) to maturity. All three arms ride the exact same
+                  paths — the only difference is the mechanism:
+                </p>
+                <ul className="mt-3 space-y-1.5 text-[13px] leading-relaxed text-muted-foreground">
+                  <li>
+                    <span className="font-medium text-foreground">Naive</span> — the whole deposit
+                    rides the market; no reserve.
+                  </li>
+                  <li>
+                    <span className="font-medium text-foreground">Static floor</span> — 90% of the
+                    deposit is escrowed before the first trade; the risk bucket rides exposed.
+                  </li>
+                  <li>
+                    <span className="font-medium text-foreground">Floorline</span> — same floor,
+                    plus the de-risk rule: if the bucket falls 50% below what it cost, it sells in
+                    full, once, and the proceeds lock.
+                  </li>
+                </ul>
+                <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+                  <span className="font-medium text-foreground">Median terminal</span> is the
+                  middle outcome across all paths,{" "}
+                  <span className="font-medium text-foreground">worst 1% keeps</span> is the
+                  dollar result of the unluckiest percentile, and{" "}
+                  <span className="font-medium text-foreground">max drawdown</span> is the deepest
+                  peak-to-trough fall on the way. Same seed → identical output, every run. No
+                  leverage, no liquidation: the reserve caps the loss at the number picked at
+                  deposit.
+                </p>
+              </div>
             </>
           )}
 
