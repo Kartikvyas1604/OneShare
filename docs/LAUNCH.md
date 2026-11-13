@@ -23,7 +23,7 @@ _Date: 13 Nov 2026 · Verdict: **the web product is launch-ready as a real-data 
 
 | Item | Why deferred | Owner |
 |---|---|---|
-| **Vault + escrow contract deployment on mainnet** | Contracts are **written, compiled (escrow 136KB, vault 208KB wasm) and unit-tested (4/4 golden suite)**. Deployment needs a funded NEAR mainnet account — one command: `./scripts/deploy-contracts.sh mainnet <vault-account> <escrow-account>`, then set `VAULT_CONTRACT_ID` in env. | **User — needs a funded NEAR account** |
+| **Vault + escrow contract deployment** | ✅ **Deployed to testnet and live**: `floorline_vault.opt.wasm` → `floorline-demo.testnet`, `floorline_escrow.opt.wasm` → `floorline-escrow.testnet` (faucet-funded, initialized: floor 9000bps, trigger 5000bps, min deposit 10 USDC). On-chain state verified via view calls; the web app reads real chain positions. Mainnet deployment = the same one command with a funded mainnet account. | Live on testnet |
 | **1Click partner `X-API-Key` (G-4)** | Manual registration at partners.near-intents.org. The deposit-address flow is fully implemented and activates on env set. | Team |
 | **TEE attestation wiring (R3)** | Requires `NEAR_AI_API_KEY` + the verifier flow; the API shape is live and honestly pending. | Team |
 | **Wallet Selector modal UI** | ✅ **Resolved** — the official Wallet Selector v10 is integrated: real connect modal, connected-account header state, and vault actions signing real `functionCall` transactions through the connected wallet | Done |

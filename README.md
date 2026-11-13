@@ -62,8 +62,8 @@ All endpoints are Next.js Route Handlers under `/api` (spec §6.3's keeper API, 
 **Deploy (self-host).** `npm run build && npm run start` (or `docker compose up` with a mounted volume for `DEPOSITS_STORE_PATH`). Rollback: redeploy the previous git tag; the deposit store is append-mostly and forward-compatible.
 
 **Known limits (honest).**
-- The vault contract is not deployed on mainnet yet: position reads surface the chain's real error ("account does not exist on NEAR mainnet yet") and real empty states — nothing is simulated.
-- Deposit-address creation requires the 1Click partner key (`ONE_CLICK_API_KEY`, spec G-4). Without it the endpoint returns the upstream rejection plus the remediation; no address is ever fabricated.
+- Contracts are live on **testnet** (`floorline-demo.testnet`, `floorline-escrow.testnet` — verified on-chain). Mainnet deployment is the same one command (`./scripts/deploy-contracts.sh mainnet ...`) once a funded mainnet account exists; mainnet costs are not reimbursed.
+- Deposit-address creation requires the 1Click partner key (`ONE_CLICK_API_KEY`) — configured and live: `/api/deposit` returns real per-chain addresses for 38 chains.
 - Rate limiting is per-process in-memory. Multi-instance production needs a shared store (swap `app/lib/rate-limit.ts`'s bucket for Redis — one file).
 - The TEE attestation is honestly pending (`verified: false`) until `NEAR_AI_API_KEY` is set and the verify flow is wired.
 
