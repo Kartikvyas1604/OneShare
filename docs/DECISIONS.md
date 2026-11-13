@@ -14,3 +14,32 @@ Log per spec §0.4: date · ambiguity · choice · reason. Newest last.
 - 2026-11-13 · Real-data objective · **Every fixture removed; the app reads only real sources** · Live prices + quotes + deposit addresses from 1Click (verified unauthenticated endpoints), on-chain positions via JSON-RPC view calls (`positions_of` / `get_position`, §6.2) against `VAULT_CONTRACT_ID`, tx history from the nearblocks indexer. Until the vault contract is deployed, the UI shows the chain's real error ("account does not exist on NEAR mainnet yet") and real empty states — nothing simulated. Crash-sim numbers are computed at runtime by the deterministic engine (no stored results). Position ids in URLs are the on-chain numeric token ids; the earlier hex URL scheme was fixture-only and is retired.
 - 2026-11-13 · Production hardening · **Keeper API versioned under `/api/v1`, healthz with dependency probes, per-IP token buckets, security headers, vitest + 15-check smoke suite in CI, Dockerfile + compose, ToS/Privacy at /legal** · Remaining known gaps are external dependencies (contract deployment, 1Click partner key, TEE credentials) surfaced honestly rather than simulated; the 7 moderate npm-audit findings are dev-lint-only (typescript-eslint/minimatch) and deferred with the major-bump risk documented.
 - 2026-11-13 · Wallet connection · **Official Wallet Selector v10 (`my-near-wallet` module + modal) replaces the injected-wallet probe** · Real connect modal, real signed `functionCall` transactions for Settle / Exit early / Emergency recover (30 TGas, near-js actions), on-chain state re-read after confirmation. Transaction failures while the vault contract is undeployed surface the chain's real errors — the honest state until deployment.
+
+## 2026-11-14 — On-chain demo loop session
+
+1. **wrap.testnet's 3.1.0 `ft_transfer_call` needs > 30 TGas attached.** The
+   old standard does a bare `prepaid_gas() − 30 TGas` (25T receiver + 5T
+   resolve); attaching less panics "attempt to subtract with overflow" after
+   the tokens already moved (refunds roll everything back). Vault constants:
+   GAS_DEPOSIT 45 TGas, GAS_SETTLE 80, GAS_ESCROW_CALLBACK 30; the UI deposit
+   attaches 150 TGas.
+2. **Quote-asset decimals are config, not constants.** The math assumed USDC
+   (6 dp); testnet runs wNEAR (24 dp). `quote_decimals`/`risk_decimals` are
+   VaultConfig fields; price convention: `price_1e18` = whole-quote units per
+   whole-risk unit, scaled 1e18.
+3. **Price freshness compares ms to ms.** `env::block_timestamp()` is ns; the
+   old check built a 60-µs window. Now `block_timestamp()/1e6` vs a
+   millisecond quote timestamp.
+4. **Early exit releases through the escrow gate.** `exit_early` marks the
+   position Settled (terminal, dedup-guarded) before `release`; the escrow
+   gate accepts Matured/Degraded/Settled; the failure callback restores the
+   true prior state instead of assuming Matured.
+5. **The escrow's `do_transfer` targets the token contract** (quote asset)
+   with the release destination as receiver — it previously called
+   `ft_transfer` on the recipient account.
+6. **NVDA stand-in faucet is idempotent** — token registrations outlive
+   account recreation on testnet, so `mint`/`register` skip existing accounts.
+7. **Equity price feed**: `/api/v1/equity-price` (Yahoo Finance chart API,
+   30 s revalidate) — real NVDA quotes for the wedge and the keeper path;
+   switches to the 1Click quote when NVDAon lists (G-2).
+8. Full trail with tx ids: docs/ONCHAIN-TRAIL.md.
