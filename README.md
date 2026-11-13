@@ -15,6 +15,9 @@ Built for [NEAR Hackathon 2026](https://nearhackathon.com/) (deadline 14 Nov 202
 5. Open `/crash` → drag the shock to −45% → **three arms** (naive red, static floor amber, Floorline green) with median terminal, worst-1% in dollars, and max drawdown; "Replay recorded run" reproduces the recorded result exactly (seed 20261112).
 6. Run `npm run check:copy` → the banned-words rule (§0.5 of the spec) passes with zero matches.
 7. Run `npx tsc --noEmit` → the whole app type-checks clean.
+8. Run `npm test` → 29 unit tests on the formula core and the crash engine pass.
+9. Run `npm run build && npm run start`, then `npm run smoke` → **15 production checks** pass against the real server: live prices, real quote, deterministic crash-sim byte-identity, honest deposit/attestation states, real on-chain error semantics, security headers, rate limiting.
+10. Open `/legal` → the ToS + privacy policy with the disclosure set (non-US, not audited, third-party rails).
 
 ## What it is NOT
 
