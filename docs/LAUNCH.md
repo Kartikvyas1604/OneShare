@@ -25,7 +25,7 @@ _Date: 13 Nov 2026 · Verdict: **the web product is launch-ready as a real-data 
 | **Vault + escrow contract deployment on mainnet** | External to this repository — the Rust contracts are the other half of the build. The web layer is complete against the §6.2 interface and flips from "not deployed yet" to real data the moment it deploys. | Team (Rust) |
 | **1Click partner `X-API-Key` (G-4)** | Manual registration at partners.near-intents.org. The deposit-address flow is fully implemented and activates on env set. | Team |
 | **TEE attestation wiring (R3)** | Requires `NEAR_AI_API_KEY` + the verifier flow; the API shape is live and honestly pending. | Team |
-| **Wallet Selector modal UI** | Position reads work with the injected-wallet standard today; the full modal (multi-wallet picker, transaction signing UX) is a UX upgrade, not a data-layer gap. | Next iteration |
+| **Wallet Selector modal UI** | ✅ **Resolved** — the official Wallet Selector v10 is integrated: real connect modal, connected-account header state, and vault actions signing real `functionCall` transactions through the connected wallet | Done |
 | **typescript-eslint minimatch advisories** | 7 moderate, dev-lint-only (no runtime exposure); fixing needs a typescript-eslint major bump — deferred to avoid lint-rule churn at launch. Tracked in DECISIONS.md. | Next iteration |
 | **Postgres for the deposit store** | Single-instance JSON store is real and durable for v1; Postgres swap is a one-file change (documented in the store module). | At scale |
 | **Analytics** | Needs the user's provider choice before launch week. | User |
