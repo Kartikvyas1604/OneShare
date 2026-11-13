@@ -100,6 +100,10 @@ pub struct VaultConfig {
     pub quote_decimals: u32,
     /// Risk asset token decimals (nNVDA 6 on testnet; xStocks 6).
     pub risk_decimals: u32,
+    /// Secondary-oracle disagreement bound in bps (spec §4.1: 300 = 3%).
+    /// record_buy/record_de_risk reject a primary quote whose price differs
+    /// from the secondary oracle's stored price by more than this (F-08).
+    pub oracle_disagreement_bps: u16,
     /// Ed25519 public key (64 hex chars) of the price oracle. Every
     /// record_buy/record_de_risk quote MUST carry a valid signature over
     /// `floorline-quote:{position_id}:{price_1e18}:{quote_timestamp_ms}` from
@@ -126,6 +130,7 @@ impl Default for VaultConfig {
             perf_fee_bps: 0,
             quote_decimals: 6,
             risk_decimals: 24,
+            oracle_disagreement_bps: 300,
             // Price-oracle key: quotes must be signed by this key (T-02).
             // Test keypair committed for the test build; mainnet uses a
             // generated key whose seed never enters the repo.
@@ -146,6 +151,7 @@ impl VaultConfig {
             min_deposit: near_sdk::json_types::U128(1_000_000_000_000_000_000_000_000), // 1 wNEAR (24 dec)
             quote_decimals: 24,
             risk_decimals: 6,
+            oracle_disagreement_bps: 300,
             ..Default::default()
         }
     }

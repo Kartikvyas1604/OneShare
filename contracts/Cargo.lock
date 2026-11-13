@@ -765,6 +765,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "floorline-oracle"
+version = "1.0.0"
+dependencies = [
+ "near-sdk",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "floorline-vault"
 version = "1.0.0"
 dependencies = [

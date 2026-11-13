@@ -80,12 +80,27 @@ function nearCliArgs(jsonArgs, method, account, gas = "30 TGas") {
   ];
 }
 
-function submitTx(jsonArgs, method, account, gas) {
+function submitTx(jsonArgs, method, account, gas = "60 TGas") {
   const out = execFileSync("near", nearCliArgs(jsonArgs, method, account, gas), {
     encoding: "utf8", timeout: 120_000, stdio: ["ignore", "pipe", "pipe"],
   });
   const m = out.match(/Transaction ID: ([A-Za-z0-9]+)/);
   return m ? m[1] : null;
+}
+
+async function submitOraclePrice(price) {
+  const out = execFileSync("near", [
+    "contract", "call-function", "as-transaction",
+    process.env.ORACLE_CONTRACT_ID || "oracle.floorline-escrow.testnet",
+    "set_price", "json-args", JSON.stringify({
+      asset_id: process.env.RISK_ASSET_ID || "nvda.floorline-escrow.testnet",
+      price_1e18: price,
+    }),
+    "prepaid-gas", "15 TGas", "attached-deposit", "0 NEAR",
+    "sign-as", process.env.ORACLE_ACCOUNT_ID || "nvda.floorline-escrow.testnet",
+    "network-config", "testnet", "sign-with-keychain", "send",
+  ], { encoding: "utf8", timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] });
+  return out.match(/Transaction ID: ([A-Za-z0-9]+)/)?.[1] ?? null;
 }
 
 async function livePrice1e18() {
@@ -132,6 +147,7 @@ async function tick(accounts, log) {
         if (units > 0) {
           const ts = Date.now();
           const sig = signQuote(pid, price, ts);
+          await submitOraclePrice(price);
           try {
             const tx = submitTx(
               {
@@ -140,7 +156,7 @@ async function tick(accounts, log) {
                 price_1e18: String(price), quote_timestamp_ms: ts,
                 quote_signature: sig,
               },
-              "record_buy", SIGNER
+              "record_buy", SIGNER, "60 TGas"
             );
             log(`✓ buy recorded for position ${pid} (${units} units) tx=${tx}`);
             actions.push({ action: "record_buy", position: pid, tx });
@@ -157,6 +173,7 @@ async function tick(accounts, log) {
         if (deRiskTriggered(value, pos.cost_basis, pos.de_risked, 5000)) {
           const ts = Date.now();
           const sig = signQuote(pid, price, ts);
+          await submitOraclePrice(price);
           try {
             const tx = submitTx(
               {
@@ -164,7 +181,7 @@ async function tick(accounts, log) {
                 price_1e18: String(price), quote_timestamp_ms: ts,
                 quote_signature: sig,
               },
-              "record_de_risk", SIGNER
+              "record_de_risk", SIGNER, "60 TGas"
             );
             log(`✓ de-risk recorded for position ${pid} (value ${value}) tx=${tx}`);
             actions.push({ action: "record_de_risk", position: pid, tx });

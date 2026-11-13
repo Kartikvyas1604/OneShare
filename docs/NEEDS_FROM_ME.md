@@ -22,6 +22,15 @@ items that need a human decision, credential, or real money:
    - No `website` field (spam trap)
 4. Save the confirmation screenshot to `artifacts/submission-proof/`.
 
+## For CI on the real runner (blocking the remote CI proof)
+
+5. **Unlock GitHub Actions billing** — every remote CI run currently fails at
+   start with *"The job was not started because your account is locked due
+   to a billing issue"* (run 43516276725). Fix the billing/spending limit in
+   the GitHub account settings; the workflow itself is complete (rust
+   toolchain, playwright, secrets scan) and all of its steps pass locally —
+   see `docs/AUDIT.md` §CI.
+
 ## For real-money flows (non-blocking for the hackathon)
 
 5. **A funded mainnet NEAR account** (≤ $5) — enables the mainnet contract

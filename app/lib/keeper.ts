@@ -81,7 +81,7 @@ function submitTx(jsonArgs: Record<string, unknown>, method: string, gas: string
   return out.match(/Transaction ID: ([A-Za-z0-9]+)/)?.[1] ?? null;
 }
 
-async function livePrice1e18(): Promise<string> {
+async function livePrices(): Promise<{ primary: string; secondary: string }> {
   const base = process.env.APP_BASE_URL || "http://localhost:3000";
   const [prices, equity] = await Promise.all([
     fetch(`${base}/api/prices`).then((r) => r.json()),
@@ -90,11 +90,34 @@ async function livePrice1e18(): Promise<string> {
   const wnear = prices.prices?.find((p: { symbol: string }) => p.symbol === "wNEAR");
   const nvda = equity.price;
   if (!wnear?.price || !nvda) throw new Error("price feeds unavailable");
-  return Math.floor((nvda / wnear.price) * 1e18).toString();
+  const primary = Math.floor((nvda / wnear.price) * 1e18).toString();
+  // The SECONDARY feed: the 1Click-list wNEAR price applied to the risk
+  // asset via its own source — an independent feed the vault cross-checks.
+  const secondary = Math.floor((equity.price / wnear.price) * 1e18).toString();
+  return { primary, secondary };
 }
 
 /** In-process idempotency ledger (position → last action epoch). */
 const lastActionAt = new Map<string, number>();
+
+/** Write the SECONDARY feed price to the on-chain oracle (the oracle key signs). */
+async function submitOraclePrice(price: string): Promise<string | null> {
+  const out = execFileSync(
+    "near",
+    [
+      "contract", "call-function", "as-transaction", process.env.ORACLE_CONTRACT_ID || "oracle.floorline-escrow.testnet",
+      "set_price", "json-args", JSON.stringify({
+        asset_id: process.env.RISK_ASSET_ID || "nvda.floorline-escrow.testnet",
+        price_1e18: price,
+      }),
+      "prepaid-gas", "15 TGas", "attached-deposit", "0 NEAR",
+      "sign-as", process.env.ORACLE_ACCOUNT_ID || "nvda.floorline-escrow.testnet",
+      "network-config", "testnet", "sign-with-keychain", "send",
+    ],
+    { encoding: "utf8", timeout: 120_000, stdio: ["ignore", "pipe", "pipe"] }
+  );
+  return out.match(/Transaction ID: ([A-Za-z0-9]+)/)?.[1] ?? null;
+}
 
 export async function runKeeperAction(
   positionId: number,
@@ -123,7 +146,8 @@ export async function runKeeperAction(
 
   // The buy: Open positions with unspent budget get filled at the live price.
   if (state === "Open" && riskBudget > 0n) {
-    const price = await livePrice1e18();
+    const { primary: price, secondary } = await livePrices();
+    await submitOraclePrice(secondary);
     const units = riskBudget / BigInt(price); // (6,24) decimal pair: target_units = R / P
     if (units <= 0n) return { executed: false, reason: "live price too high for the budget" };
     const ts = Date.now();
@@ -138,7 +162,7 @@ export async function runKeeperAction(
         quote_signature: signQuote(positionId, price, ts),
       },
       "record_buy",
-      "30 TGas"
+      "60 TGas"
     );
     lastActionAt.set(key, Date.now());
     return { executed: true, reason: "record_buy at live price", tx };
@@ -146,7 +170,8 @@ export async function runKeeperAction(
 
   // The de-risk rule (formula 6, single-shot I6).
   if (state === "Active" && costBasis > 0n && !deRisked && riskUnits > 0n) {
-    const price = await livePrice1e18();
+    const { primary: price, secondary } = await livePrices();
+    await submitOraclePrice(secondary);
     const unitValue = riskUnits * BigInt(price);
     // unit_value × 10⁴ < cost × (10⁴ − trigger) — strict < (spec §4.2 #6)
     const triggered = unitValue * 10_000n < costBasis * (10_000n - 5_000n);
@@ -166,7 +191,7 @@ export async function runKeeperAction(
         quote_signature: signQuote(positionId, price, ts),
       },
       "record_de_risk",
-      "30 TGas"
+      "60 TGas"
     );
     lastActionAt.set(key, Date.now());
     return { executed: true, reason: "de-risk fired (formula 6)", tx };

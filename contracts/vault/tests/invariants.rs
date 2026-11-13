@@ -129,6 +129,12 @@ impl TestVault {
     }
 }
 
+
+/// The secondary-oracle promise result as the contract parses it: (U128 string, u64 number).
+fn oracle_result_bytes(price: u128, set_at_ms: u64) -> Vec<u8> {
+    format!("[\"{price}\", \"{set_at_ms}\"]").into_bytes()
+}
+
 fn catch_panic(f: impl FnOnce() + std::panic::UnwindSafe) -> bool {
     std::panic::catch_unwind(f).is_err()
 }
@@ -218,7 +224,14 @@ fn invariants_hold_under_random_sequences() {
                 let ts = tv.now_ms;
                 let sig = tv.sign(pid, price, ts);
                 tv.set_env(USER);
-                tv.vault.record_buy(U64(pid), U128(units), U128(cost), U128(units), U128(price), ts, sig);
+                let _ = tv.vault.record_buy(U64(pid), U128(units), U128(cost), U128(units), U128(price), ts, sig);
+                // The buy applies after the secondary-oracle cross-check (F-08):
+                // the oracle agrees on the same price.
+                tv.set_env_with_promise(
+                    SELF,
+                    PromiseResult::Successful(oracle_result_bytes(price, tv.now_ms)),
+                );
+                tv.vault.on_buy_price_check(U64(pid), U128(units), U128(cost), U128(units), U128(price), ts);
                 let pos = tv.vault.get_position(U64(pid)).unwrap();
                 assert_eq!(pos.state, "Active", "buy must move Open → Active");
                 assert!(pos.cost_basis <= pos.risk_budget, "I2 violated");
@@ -232,7 +245,12 @@ fn invariants_hold_under_random_sequences() {
                 let sig = tv.sign(pid, price, ts);
                 let realised = pos.risk_units * price; // (6,24) pair: unit_value = q × P
                 tv.set_env(USER);
-                tv.vault.record_de_risk(U64(pid), U128(realised), U128(price), ts, sig);
+                let _ = tv.vault.record_de_risk(U64(pid), U128(realised), U128(price), ts, sig);
+                tv.set_env_with_promise(
+                    SELF,
+                    PromiseResult::Successful(oracle_result_bytes(price, tv.now_ms)),
+                );
+                tv.vault.on_de_risk_price_check(U64(pid), U128(realised), U128(price));
                 let pos = tv.vault.get_position(U64(pid)).unwrap();
                 assert!(pos.de_risked, "I6 must latch");
                 assert_eq!(pos.state, "DeRisked");
@@ -349,8 +367,9 @@ fn over_budget_buy_is_rejected() {
     let pos = tv.vault.get_position(U64(1)).unwrap();
     let excess = pos.risk_budget + 1;
     tv.set_env(USER);
+    // The parent receipt re-checks I2 BEFORE spending gas on the oracle call.
     let rejected = catch_panic(std::panic::AssertUnwindSafe(|| {
-        tv.vault.record_buy(U64(1), U128(1_000_000), U128(excess), U128(1_000_000), U128(price), ts, sig);
+        let _ = tv.vault.record_buy(U64(1), U128(1_000_000), U128(excess), U128(1_000_000), U128(price), ts, sig);
     }));
     assert!(rejected, "I2: cost above the risk budget must revert");
 }
@@ -448,7 +467,7 @@ fn pause_blocks_buys_not_deposits() {
     let sig = tv.sign(1, price, ts);
     tv.set_env(USER);
     let rejected = catch_panic(std::panic::AssertUnwindSafe(|| {
-        tv.vault.record_buy(U64(1), U128(1), U128(1), U128(1), U128(price), ts, sig);
+        let _ = tv.vault.record_buy(U64(1), U128(1), U128(1), U128(1), U128(price), ts, sig);
     }));
     assert!(rejected, "ErrPaused: buys must be rejected while paused");
 }
@@ -469,4 +488,72 @@ fn tvl_cap_enforced() {
         );
     }));
     assert!(rejected, "ErrTvlCap must fire above max_tvl");
+}
+
+/// F-08: a secondary price 5% away from the primary must reject the buy.
+#[test]
+fn oracle_disagreement_rejects_buy() {
+    let mut tv = TestVault::new();
+    deposit_open(&mut tv, "deposit");
+    let price = 4_000_000_000_000_000_000u128;
+    let ts = tv.now_ms;
+    let sig = tv.sign(1, price, ts);
+    tv.set_env(USER);
+    let _ = tv.vault.record_buy(U64(1), U128(100), U128(100), U128(100), U128(price), ts, sig);
+    // The secondary oracle reports a price 5% BELOW the primary (bound is 3%).
+    let off = price * 95 / 100;
+    tv.set_env_with_promise(
+        SELF,
+        PromiseResult::Successful(oracle_result_bytes(off, tv.now_ms)),
+    );
+    let rejected = catch_panic(std::panic::AssertUnwindSafe(|| {
+        let _ = tv.vault.on_buy_price_check(U64(1), U128(100), U128(100), U128(100), U128(price), ts);
+    }));
+    assert!(rejected, "ErrOracleDisagreement: a 5%-off secondary price must reject the buy");
+    assert!(
+        tv.vault.get_position(U64(1)).unwrap().risk_units == 0,
+        "the disagreement must not have applied the buy"
+    );
+}
+
+/// F-08 positive: a secondary price within the bound applies the buy.
+#[test]
+fn oracle_agreement_applies_buy() {
+    let mut tv = TestVault::new();
+    deposit_open(&mut tv, "deposit");
+    let price = 4_000_000_000_000_000_000u128;
+    let ts = tv.now_ms;
+    let sig = tv.sign(1, price, ts);
+    tv.set_env(USER);
+    let _ = tv.vault.record_buy(U64(1), U128(100), U128(100), U128(100), U128(price), ts, sig);
+    // 1% above the primary — inside the 3% bound.
+    let near = price * 101 / 100;
+    tv.set_env_with_promise(
+        SELF,
+        PromiseResult::Successful(oracle_result_bytes(near, tv.now_ms)),
+    );
+    tv.vault.on_buy_price_check(U64(1), U128(100), U128(100), U128(100), U128(price), ts);
+    let pos = tv.vault.get_position(U64(1)).unwrap();
+    assert_eq!(pos.risk_units, 100, "an agreeing secondary price applies the buy");
+}
+
+/// F-08: a stale secondary price must reject even when it agrees.
+#[test]
+fn stale_secondary_price_rejects_buy() {
+    let mut tv = TestVault::new();
+    deposit_open(&mut tv, "deposit");
+    let price = 4_000_000_000_000_000_000u128;
+    let ts = tv.now_ms;
+    let sig = tv.sign(1, price, ts);
+    tv.set_env(USER);
+    let _ = tv.vault.record_buy(U64(1), U128(100), U128(100), U128(100), U128(price), ts, sig);
+    tv.set_env_with_promise(
+        SELF,
+        // set_at 120 s ago — past the 60 s freshness window.
+        PromiseResult::Successful(oracle_result_bytes(price, tv.now_ms - 120_000)),
+    );
+    let rejected = catch_panic(std::panic::AssertUnwindSafe(|| {
+        let _ = tv.vault.on_buy_price_check(U64(1), U128(100), U128(100), U128(100), U128(price), ts);
+    }));
+    assert!(rejected, "ErrOracleStale: a stale secondary price must reject");
 }

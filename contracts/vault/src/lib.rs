@@ -13,6 +13,7 @@ use near_sdk::{env, ext_contract, near, json_types::U64, AccountId, Gas, NearTok
 pub mod math;
 pub mod types;
 
+use primitive_types::U256;
 use types::{Position, PositionState, PositionView, VaultConfig};
 
 const NO_DEPOSIT: u128 = 0;
@@ -27,6 +28,14 @@ const GAS_SETTLE: Gas = Gas::from_tgas(80);
 /// Vault-side completion callbacks (ack / settle payout: own work + a 15
 /// TGas child transfer).
 const GAS_ESCROW_CALLBACK: Gas = Gas::from_tgas(30);
+/// Secondary-oracle cross-check: the view call + the applying callback.
+const GAS_ORACLE_CHECK: Gas = Gas::from_tgas(15);
+const GAS_ORACLE_CALLBACK: Gas = Gas::from_tgas(20);
+
+#[ext_contract(ext_oracle)]
+trait PriceOracle {
+    fn get_price(&self, asset_id: String) -> (U128, U64);
+}
 
 #[ext_contract(ext_escrow)]
 trait Escrow {
@@ -328,7 +337,7 @@ impl Vault {
         price_1e18: U128,
         quote_timestamp_ms: Timestamp,
         quote_signature: String,
-    ) {
+    ) -> PromiseOrValue<U128> {
         self.verify_oracle_quote(
             position_id.0,
             price_1e18.0,
@@ -354,6 +363,56 @@ impl Vault {
             env::panic_str("ErrRiskBudgetExceeded");
         }
 
+        // F-08: cross-check the primary (oracle-signed) price against the
+        // secondary oracle's stored price BEFORE applying the buy. The
+        // mutation happens in the callback (the cross-contract answer is
+        // only available there).
+        ext_oracle::ext(self.secondary_oracle.clone())
+            .with_static_gas(GAS_ORACLE_CHECK)
+            .get_price(self.config.risk_asset_id.clone())
+            .then(
+                Self::ext(env::current_account_id())
+                    .with_static_gas(GAS_ORACLE_CALLBACK)
+                    .on_buy_price_check(
+                        position_id,
+                        actual_out,
+                        cost,
+                        min_out,
+                        price_1e18,
+                        quote_timestamp_ms,
+                    ),
+            )
+            .into()
+    }
+
+    /// Private callback: apply the buy after the secondary-oracle
+    /// disagreement check passes (F-08). State is re-checked here so a race
+    /// between two buys cannot break I2.
+    #[private]
+    pub fn on_buy_price_check(
+        &mut self,
+        position_id: U64,
+        actual_out: U128,
+        cost: U128,
+        min_out: U128,
+        price_1e18: U128,
+        quote_timestamp_ms: Timestamp,
+    ) -> PromiseOrValue<U128> {
+        self.assert_secondary_price_agrees(price_1e18.0);
+
+        let mut position = self
+            .positions
+            .get(&position_id)
+            .unwrap_or_else(|| env::panic_str("ErrPositionNotFound"));
+        if position.state == PositionState::Settled {
+            env::panic_str("ErrAlreadySettled");
+        }
+        // Re-check I2 under the race window.
+        let new_cost = position.cost_basis.checked_add(cost.0).unwrap_or(u128::MAX);
+        if new_cost > position.risk_budget {
+            env::panic_str("ErrRiskBudgetExceeded");
+        }
+
         position.risk_units += actual_out.0;
         position.cost_basis = new_cost;
         position.state = PositionState::Active;
@@ -364,6 +423,31 @@ impl Vault {
             "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"BuySettled\",\"data\":{{\"position_id\":{},\"actual_out\":\"{}\",\"min_out\":\"{}\"}}}}",
             position_id.0, actual_out.0, min_out.0
         ));
+        PromiseOrValue::Value(U128(0))
+    }
+
+    /// F-08: the primary price must sit within `oracle_disagreement_bps` of
+    /// the secondary oracle's stored price, and that price must be fresh.
+    fn assert_secondary_price_agrees(&self, primary_1e18: u128) {
+        let (secondary, set_at_ms) = match env::promise_result(0) {
+            PromiseResult::Successful(bytes) => serde_json::from_slice::<(U128, U64)>(&bytes)
+                .unwrap_or_else(|_| env::panic_str("ErrOracleBadData")),
+            PromiseResult::Failed => env::panic_str("ErrOracleUnreachable"),
+        };
+        if secondary.0 == 0 {
+            env::panic_str("ErrOracleUnready: the secondary oracle has no price for the risk asset");
+        }
+        let now_ms = env::block_timestamp_ms();
+        if now_ms.saturating_sub(set_at_ms.0) > self.config.price_max_age_sec * 1_000 {
+            env::panic_str("ErrOracleStale: the secondary price is stale");
+        }
+        let bound = u128::from(self.config.oracle_disagreement_bps);
+        let upper = U256::from(secondary.0) * U256::from(10_000u128 + bound) / U256::from(10_000);
+        let lower = U256::from(secondary.0) * U256::from(10_000u128 - bound) / U256::from(10_000);
+        let primary = U256::from(primary_1e18);
+        if primary > upper || primary < lower {
+            env::panic_str("ErrOracleDisagreement: the primary and secondary prices diverge beyond the bound");
+        }
     }
 
     // ─── De-risk (formula 6, single-shot I6) ───
@@ -377,7 +461,7 @@ impl Vault {
         price_1e18: U128,
         quote_timestamp_ms: Timestamp,
         quote_signature: String,
-    ) {
+    ) -> PromiseOrValue<U128> {
         self.verify_oracle_quote(
             position_id.0,
             price_1e18.0,
@@ -407,6 +491,53 @@ impl Vault {
             env::panic_str("ErrTriggerNotReached");
         }
 
+        // F-08: cross-check against the secondary oracle before mutating.
+        ext_oracle::ext(self.secondary_oracle.clone())
+            .with_static_gas(GAS_ORACLE_CHECK)
+            .get_price(self.config.risk_asset_id.clone())
+            .then(
+                Self::ext(env::current_account_id())
+                    .with_static_gas(GAS_ORACLE_CALLBACK)
+                    .on_de_risk_price_check(position_id, realised_quote, price_1e18),
+            )
+            .into()
+    }
+
+    /// Private callback: apply the de-risk after the disagreement check.
+    /// The I6 latch is re-checked under the race window.
+    #[private]
+    pub fn on_de_risk_price_check(
+        &mut self,
+        position_id: U64,
+        realised_quote: U128,
+        price_1e18: U128,
+    ) -> PromiseOrValue<U128> {
+        self.assert_secondary_price_agrees(price_1e18.0);
+        self.apply_de_risk(position_id, realised_quote, price_1e18.0)
+    }
+
+    /// The de-risk mutation, shared by the synchronous re-check path.
+    fn apply_de_risk(&mut self, position_id: U64, realised_quote: U128, price_1e18: u128) -> PromiseOrValue<U128> {
+        let mut position = self
+            .positions
+            .get(&position_id)
+            .unwrap_or_else(|| env::panic_str("ErrPositionNotFound"));
+        if position.de_risked {
+            env::panic_str("ErrAlreadyDeRisked");
+        }
+        if position.state == PositionState::Settled {
+            env::panic_str("ErrAlreadySettled");
+        }
+        let unit_value = math::unit_value_quote(position.risk_units, price_1e18, self.config.risk_decimals, self.config.quote_decimals);
+        if !math::de_risk_triggered_at(
+            unit_value,
+            position.cost_basis,
+            position.de_risked,
+            self.config.de_risk_trigger_bps,
+        ) {
+            env::panic_str("ErrTriggerNotReached");
+        }
+
         // The whole bucket is sold; realised proceeds are locked (I6).
         env::log_str(&format!(
             "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"DeRiskTriggered\",\"data\":{{\"position_id\":{},\"cost_basis\":\"{}\",\"value_now\":\"{}\"}}}}",
@@ -423,13 +554,14 @@ impl Vault {
         position.realised_quote = realised_quote.0;
         position.de_risked = true;
         position.state = PositionState::DeRisked;
-        position.nav_quote = math::nav(&position, price_1e18.0, self.config.risk_decimals, self.config.quote_decimals);
+        position.nav_quote = math::nav(&position, price_1e18, self.config.risk_decimals, self.config.quote_decimals);
         self.positions.insert(&position_id, &position);
 
         env::log_str(&format!(
             "EVENT_JSON:{{\"standard\":\"floorline\",\"event\":\"DeRiskSettled\",\"data\":{{\"position_id\":{},\"realised_quote\":\"{}\"}}}}",
             position_id.0, realised_quote.0
         ));
+        PromiseOrValue::Value(U128(0))
     }
 
     // ─── Cross-chain settlement (I5 / F-14) ───
