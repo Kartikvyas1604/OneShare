@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["escrow", "vault"]
+members = ["escrow", "vault", "nvda-token"]
 
 [workspace.dependencies]
 near-sdk = "5"

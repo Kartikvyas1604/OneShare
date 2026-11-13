@@ -7,7 +7,7 @@ import { NearRpcError, viewContract } from "./near";
  */
 
 export const VAULT_CONTRACT_ID =
-  process.env.VAULT_CONTRACT_ID ?? "vault2.floorline-escrow.testnet";
+  process.env.VAULT_CONTRACT_ID ?? "vault3.floorline-escrow.testnet";
 
 /** u128 values arrive as strings from the contract; normalize to numbers. */
 function u128(v: unknown): number {

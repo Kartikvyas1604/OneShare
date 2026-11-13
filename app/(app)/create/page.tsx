@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/components/Button";
 import { Input } from "@/app/components/Input";
-import { Badge } from "@/app/components/Badge";
 import { Slider } from "@/app/components/Slider";
 import { ErrorState } from "@/app/components/ErrorState";
 import { TokenPicker, type LiveToken } from "@/app/components/TokenPicker";
@@ -27,11 +26,6 @@ const QUOTE_ASSET = "wrap.testnet";
 const WNEAR_ID = "nep141:wrap.near";
 const STORAGE_DEPOSIT = BigInt("1250000000000000000000"); // 0.00125 NEAR
 
-interface DepositRecord {
-  depositAddress: string;
-  chainDepositAddresses: Array<{ blockchain?: string; depositAddress?: string; memo?: string }>;
-}
-
 export default function CreatePage() {
   const router = useRouter();
   const { accountId, showConnect, signCall } = useWallet();
@@ -43,13 +37,11 @@ export default function CreatePage() {
   const [error, setError] = useState<string | null>(null);
   const [stepNote, setStepNote] = useState<string | null>(null);
   const [mintedId, setMintedId] = useState<number | null>(null);
-  const [record, setRecord] = useState<DepositRecord | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [payWithOpen, setPayWithOpen] = useState(false);
 
   const [tokens, setTokens] = useState<LiveToken[]>([]);
   const [tokensLoading, setTokensLoading] = useState(true);
   const [payToken, setPayToken] = useState<LiveToken | null>(null);
+  const [riskToken, setRiskToken] = useState<LiveToken | null>(null);
 
   // Live token list — the pay-with picker's data.
   useEffect(() => {
@@ -61,27 +53,15 @@ export default function CreatePage() {
         if (!cancelled && body.tokens) {
           setTokens(body.tokens);
           const wnear = body.tokens.find((t) => t.assetId === WNEAR_ID);
-          if (wnear && !payToken) setPayToken(wnear);
+          if (wnear) setPayToken((prev) => prev ?? wnear);
+          // Risk leg: BTC by default (the largest non-quote asset live on 1Click).
+          const btc = body.tokens.find(
+            (t) => t.symbol.toUpperCase() === "BTC" && t.blockchain === "near"
+          );
+          if (btc) setRiskToken((prev) => prev ?? btc);
         }
       } catch { /* the picker stays empty; the deposit still works on-chain */ }
       finally { if (!cancelled) setTokensLoading(false); }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // Live price for the risk-asset estimate.
-  const [riskPrice, setRiskPrice] = useState<number | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/prices");
-        const body = (await res.json()) as { prices?: Array<{ assetId: string; price: number }> };
-        if (!cancelled) {
-          const usdc = (body.prices ?? []).find((p) => p.assetId === "usdc.fakes.testnet");
-          setRiskPrice(usdc?.price ?? null);
-        }
-      } catch { /* estimate shows "—" */ }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -204,19 +184,20 @@ export default function CreatePage() {
             </p>
           </div>
 
-          {/* Risk asset note */}
+          {/* Risk asset — live picker over every 1Click asset */}
           <fieldset className="space-y-2 p-4">
-            <legend className="eyebrow">Risk asset</legend>
-            <div className="flex items-center justify-between rounded-lg border border-border bg-input px-3.5 py-2.5">
-              <span className="flex items-center gap-2.5">
-                <span className="num flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-[11px] font-semibold text-foreground">US</span>
-                <span>
-                  <span className="block text-[13px] font-medium text-foreground">USDC.fakes<span className="ml-1.5 font-normal text-muted-foreground">testnet</span></span>
-                  <span className="block text-[11px] text-muted-foreground">The risk budget buys this asset</span>
-                </span>
-              </span>
-              <Badge variant="up">Live on testnet</Badge>
-            </div>
+            <legend className="eyebrow">Risk asset — what the risk budget buys</legend>
+            <TokenPicker
+              tokens={tokens}
+              selectedAssetId={riskToken?.assetId ?? ""}
+              onSelect={setRiskToken}
+              loading={tokensLoading}
+            />
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Any of the 231 live assets — BTC, ETH, SOL, gold-backed tokens. The keeper swaps the
+              risk budget into your pick through 1Click. Tokenized equities (NVDAon…) list here
+              automatically the moment they appear on 1Click — the gate is live-checked, never hardcoded.
+            </p>
           </fieldset>
 
           {/* Amount */}
@@ -312,13 +293,13 @@ export default function CreatePage() {
             <Row label="Reserve (escrowed)" value={`${floorDisplay} Ⓦ`} />
             <Row label="Risk budget" value={`${((100 - floorBps / 100) / 100 * Number(amount)).toFixed(4)} Ⓦ`} />
             <Row
-              label="Est. USDC.fakes @ live"
+              label={`Est. ${riskToken?.symbol ?? "risk"} @ live`}
               value={
-                riskPrice !== null
+                riskToken
                   ? `${formatTokenAmount(
-                      (Number(amount) * ((100 - floorBps / 100) / 100)) / riskPrice,
-                      2
-                    )} USDC`
+                      (Number(amount) * ((100 - floorBps / 100) / 100)) / riskToken.price,
+                      4
+                    )} ${riskToken.symbol}`
                   : "—"
               }
             />
@@ -396,8 +377,6 @@ export default function CreatePage() {
     </div>
   );
 }
-
-const TERMINAL_STATUS_BADGE: Record<string, string> = {};
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
