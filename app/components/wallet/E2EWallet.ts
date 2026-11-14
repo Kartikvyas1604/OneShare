@@ -77,9 +77,16 @@ function behaviourFactory(params: E2EParams) {
       });
 
       // broadcast_tx_commit — the raw signed borsh bytes go on the real chain.
-      const outcome = (await rpcCall("broadcast_tx_commit", [
-        Buffer.from(signedTx.encode()).toString("base64"),
-      ])) as {
+      const payloadB64 = Buffer.from(signedTx.encode()).toString("base64");
+      // E2E debug surface: the test reads the payload from the DOM and
+      // replays it to diagnose wire-format drift.
+      if (typeof document !== "undefined") {
+        const dbg = document.createElement("div");
+        dbg.setAttribute("data-e2e-tx", "1");
+        dbg.textContent = "E2EB64=" + payloadB64;
+        document.body.appendChild(dbg);
+      }
+      const outcome = (await rpcCall("broadcast_tx_commit", [payloadB64])) as {
         status: { Failure?: unknown };
         transaction_outcome: { id: string };
       };

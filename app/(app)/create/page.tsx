@@ -98,7 +98,14 @@ export default function CreatePage() {
   const depositYocto = useMemo(() => {
     const n = Number(amount) || 0;
     if (!Number.isFinite(n) || n <= 0) return BigInt(0);
-    return BigInt(Math.round(n * 10 ** 12) * 10 ** 12);
+    // Exact integer path: the whole part and the fraction are handled
+    // separately — 1e24 overflows f64's exact range (a float multiply here
+    // corrupts the deposit amount to 999999999999999983222784).
+    const [whole, frac = ""] = amount.split(".");
+    const fracPadded = (frac + "000000000000000000000000").slice(0, 24);
+    const wholeYocto = BigInt(whole || "0") * BigInt("1000000000000000000000000");
+    const fracYocto = BigInt(fracPadded || "0");
+    return wholeYocto + fracYocto;
   }, [amount]);
 
   const floorDisplay = useMemo(() => {
@@ -122,13 +129,32 @@ export default function CreatePage() {
     if (!accountId) { showConnect(); return; }
     try {
       setState("wrapping");
-      // 1. Register the user on wrap.testnet (idempotent storage deposit).
-      setStepNote("Registering on the token contract…");
-      await signCall(QUOTE_ASSET, "storage_deposit", { account_id: accountId }, 10, STORAGE_DEPOSIT);
+      // 0. If the wallet already holds enough wNEAR, skip wrapping entirely —
+      //    no NEAR leaves the wallet (an account with a contract's storage
+      //    stake often cannot spare the full deposit in NEAR).
+      let wrapped = BigInt(0);
+      try {
+        const balRes = await fetch(`/api/wrap-balance?account=${encodeURIComponent(accountId)}`);
+        if (balRes.ok) {
+          const bal = (await balRes.json()) as { balance?: string };
+          wrapped = BigInt(bal.balance ?? "0");
+        }
+      } catch {
+        /* balance unknown → wrap normally */
+      }
 
-      // 2. Wrap NEAR → wNEAR (near_deposit attaches the NEAR).
-      setStepNote(`Wrapping ${amount} NEAR…`);
-      await signCall(QUOTE_ASSET, "near_deposit", {}, 10, depositYocto);
+      if (wrapped >= depositYocto) {
+        setStepNote(`Using your existing ${amount} wNEAR — no wrapping needed.`);
+      } else {
+        // 1. Register the user on wrap.testnet (idempotent storage deposit).
+        setStepNote("Registering on the token contract…");
+        await signCall(QUOTE_ASSET, "storage_deposit", { account_id: accountId }, 10, STORAGE_DEPOSIT);
+
+        // 2. Wrap NEAR → wNEAR (near_deposit attaches the NEAR).
+        const shortfall = depositYocto - wrapped;
+        setStepNote(`Wrapping ${Number(shortfall) / 1e24} NEAR…`);
+        await signCall(QUOTE_ASSET, "near_deposit", {}, 10, shortfall);
+      }
 
       // 3. ft_transfer_call to the vault — msg "deposit" splits + escrows + mints.
       setState("depositing");
@@ -141,11 +167,21 @@ export default function CreatePage() {
 
       // The contract emits Deposited + mints the NFT. Fetch the newest id.
       setStepNote("Reading your position…");
-      await sleep(1_500);
-      const res = await fetch(`/api/vault/positions?account=${encodeURIComponent(accountId)}`);
-      const body = (await res.json()) as { positions?: Array<{ id: number }> };
-      const ids = body.positions ?? [];
-      setMintedId(ids.length > 0 ? ids[ids.length - 1].id : null);
+      // The escrow-ack chain finalizes a beat after the token's transfer
+      // resolves — poll briefly instead of a fixed sleep.
+      let numericId: number | null = null;
+      for (let attempt = 0; attempt < 8 && numericId === null; attempt++) {
+        await sleep(1_500);
+        const res = await fetch(`/api/vault/positions?account=${encodeURIComponent(accountId)}`);
+        const body = (await res.json()) as {
+          positions?: Array<{ id: number | { position_id: number } }>;
+        };
+        const ids = body.positions ?? [];
+        const newest = ids[ids.length - 1];
+        const rawId = newest?.id as number | { position_id: number } | undefined;
+        numericId = typeof rawId === "number" ? rawId : rawId?.position_id ?? null;
+      }
+      setMintedId(numericId);
       setState("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Deposit failed");

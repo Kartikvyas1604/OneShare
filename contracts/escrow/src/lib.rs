@@ -184,7 +184,11 @@ impl Escrow {
         } else {
             self.locks.insert(&position_id, &remaining);
         }
-        self.total_locked -= amount;
+        // The aggregate is kept saturating: the per-position lock (already
+        // clamped above) is the release source of truth, so a drift in the
+        // aggregate must never panic a legitimate release (the underflow
+        // here once blocked a live owner exit).
+        self.total_locked = self.total_locked.saturating_sub(amount);
 
         // NEP-141 transfer back to the vault (which pays out to the owner):
         // the call goes to the TOKEN CONTRACT with the release target as

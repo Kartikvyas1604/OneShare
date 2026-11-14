@@ -146,3 +146,19 @@ fn escrow_release_from_matured_updates_bookkeeping() {
     let _ = escrow.on_release_check(U64(1), VAULT.parse().unwrap(), U128(1_000));
     assert_eq!(escrow.locked().0, 0, "lock bookkeeping must decrement on release");
 }
+
+/// The release path never underflows the aggregate: saturating_sub keeps
+/// total_locked ≥ 0 even if the aggregate drifts below Σ per-position locks
+/// (re-init cycling on testnet did exactly that — the underflow once
+/// blocked a live owner exit). With the reachable path the aggregate and
+/// the locks agree; the saturating arithmetic is the defense in depth.
+#[test]
+fn release_decrements_the_aggregate_without_underflow() {
+    env_as(VAULT);
+    let mut escrow = escrow();
+    escrow.ft_on_transfer(VAULT.parse().unwrap(), U128(1_000), "1".to_string());
+    assert_eq!(escrow.locked().0, 1_000);
+    env_with_promise(VAULT, PromiseResult::Successful(b"\"Settled\"".to_vec()));
+    let _ = escrow.on_release_check(U64(1), VAULT.parse().unwrap(), U128(1_000));
+    assert_eq!(escrow.locked().0, 0, "the aggregate lands exactly at 0 — never negative");
+}

@@ -53,6 +53,52 @@ test("wallet flow: connect → live position → wallet-signed exit", async ({ p
   });
 });
 
+test("wallet flow: deposit through the UI → position → exit (all wallet-signed)", async ({ page }) => {
+  test.setTimeout(240_000);
+  test.skip(!E2E_ACCOUNT || !E2E_SECRET, "E2E wallet credentials not provisioned");
+  await injectWallet(page);
+
+  // 1. Connect + deposit 1 wNEAR through the REAL wallet signing path.
+  //    The account already holds wNEAR — the UI skips wrapping (no NEAR
+  //    leaves the wallet) and ft_transfer_call's the deposit to the vault.
+  await page.goto("/create");
+  await expect(page.getByText(E2E_ACCOUNT).first()).toBeVisible({ timeout: 45_000 });
+  const amount = page.locator("#amount").first();
+  await amount.fill("1");
+  await page.getByRole("button", { name: /deposit on-chain/i }).first().click();
+
+  // 2. The real chain mints the position — the page shows the done state.
+  await expect(page.getByText(/Position minted on-chain/i).first()).toBeVisible({
+    timeout: 120_000,
+  });
+
+  // 3. The minted position id polls through the app's live position API
+  //    (the chain's ack chain may trail the UI by a couple of seconds).
+  let posId: number | undefined;
+  for (let attempt = 0; attempt < 10 && !posId; attempt++) {
+    await page.waitForTimeout(2_000);
+    const posRes = await page.request.get(`/api/vault/positions?account=${E2E_ACCOUNT}`);
+    const posBody = await posRes.json();
+    const rawId = posBody.positions?.[0]?.id as
+      | number
+      | { position_id: number }
+      | undefined;
+    posId = typeof rawId === "number" ? rawId : rawId?.position_id;
+  }
+  expect(posId).toBeTruthy();
+
+  // 4. The vault page renders the LIVE position from the chain.
+  await page.goto(`/vault/${posId}`);
+  await expect(page.getByText(E2E_ACCOUNT).first()).toBeVisible({ timeout: 45_000 });
+  await expect(page.locator("body")).toContainText(/floor/i);
+
+  // 5. Exit early through the REAL wallet: escrow release + payout on-chain.
+  await page.getByRole("button", { name: /exit early/i }).first().click();
+  await expect(page.getByText(/confirmed on-chain/i).first()).toBeVisible({
+    timeout: 120_000,
+  });
+});
+
 test("wallet rejection state: a below-minimum deposit is blocked before the chain", async ({ page }) => {
   test.setTimeout(180_000);
   test.skip(!E2E_ACCOUNT || !E2E_SECRET, "E2E wallet credentials not provisioned");
