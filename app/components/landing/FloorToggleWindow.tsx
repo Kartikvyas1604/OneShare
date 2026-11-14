@@ -116,7 +116,7 @@ export function FloorToggleWindow() {
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            The contract's own arithmetic — same split, same worst case, for any deposit.
+            The contract&apos;s own arithmetic — same split, same worst case, for any deposit.
           </p>
           <Link
             href="/create"
