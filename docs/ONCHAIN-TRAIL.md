@@ -44,3 +44,13 @@ Contracts: `vault3.floorline-escrow.testnet` (quote `wrap.testnet`, risk
 
 - `/api/v1/equity-price` — NVDA via Yahoo Finance chart API (30 s cache).
 - `/api/prices` — wNEAR/USDC via the 1Click token list.
+
+## Keeperless degraded recovery (F-15, live)
+
+| Step | What happened | Tx |
+| --- | --- | --- |
+| Settlement timeout | The real 1200 s elapsed with no buy settled on position 10 | — |
+| `mark_degraded` | Permissionless: anyone marks the position Degraded after the timeout (`PositionDegraded{reason:settlement_timeout}`) | `G4dx57YXaQ34nzyrqgBdmheuzg5ekKaseFXnoVGuNx4x` |
+| `emergency_recover` | The escrow releases the reserve, the vault returns the unswapped risk budget, the position is removed — 18 receipts, 0 failures | `AKPCf6eZpWx6wh4Uwn3vZHcsxyM3RZcGLucHmFtcSFiL` |
+
+No keeper required — NF-06 holds on-chain.
