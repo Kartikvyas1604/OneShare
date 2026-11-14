@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { LandingNavbar } from "@/app/components/landing/LandingNavbar";
-import { LandingFooter } from "@/app/components/landing/LandingFooter";
 
 export const metadata: Metadata = {
   title: "Legal — Floorline",
@@ -20,7 +18,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function LegalPage() {
   return (
     <>
-      <LandingNavbar />
+      {/* Navbar + footer come from the (marketing) layout — the page only
+          renders its content. */}
       <main className="flex-1">
         <div className="mx-auto max-w-2xl space-y-10 px-4 py-16 md:py-24">
           <header>
@@ -93,11 +92,10 @@ export default function LegalPage() {
           <p className="text-[11px] leading-relaxed text-faint">
             This document is a starting-point template, not legal advice. Before public launch with
             real deposits, have qualified counsel review it for the jurisdictions you serve
-            (regulatory exposure is the largest open risk — T-08 in the build spec).
+            (regulatory exposure is the largest open risk).
           </p>
         </div>
       </main>
-      <LandingFooter />
     </>
   );
 }
