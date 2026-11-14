@@ -2,32 +2,33 @@
 
 > Set your own worst case. The floor holds.
 
-## Logo — the bank facade
+## Logo — the bank facade, monochrome
 
 A classical bank building — pediment, three columns, two base steps — with
-the entablature beam in the brand accent. **That beam is the floor line your
-money stands on**: the product's namesake, drawn into the building.
-Lockup rules: single centered emblem over the wordmark, pure white
-background, exactly two colors.
+the entablature beam as the product's namesake: **the floor line your money
+stands on.** The logo is strictly monochrome. The brand accent never
+appears in it: in this product, color means money semantics (gains/losses),
+and a logo is not a money state.
 
 - **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box:
-  pediment `M32 6 L56 19 H8 Z`; beam `rect (9,22,46,5.5) rx 1.6` (accent);
-  three columns `7×17 rx 2.4` at x 14 / 28.5 / 43; steps `(10,51,44,5)` and
+  pediment `M32 6 L56 19 H8 Z`; beam `rect (9,22,46,5.5) rx 1.6`; three
+  columns `7×17 rx 2.4` at x 14 / 28.5 / 43; steps `(10,51,44,5)` and
   `(6,58,52,5)` rx 2.
 - **Wordmark:** "Floorline" outlined from Geist SemiBold (SIL OFL,
   `assets/brand/Geist[wght].ttf`), 30px em, GPOS-kerned, centered below the
   emblem. No font dependency in the shipped assets.
-- **Assets:** `public/logo.svg` (official lockup, white) ·
-  `public/logo-emblem.svg` (emblem only, white) ·
-  `public/logo-mark-dark.svg` (emblem only, ivory facade, transparent — for
-  dark surfaces) · `app/icon.svg` + `app/favicon.ico` (white rounded tile).
-- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor`
-  facade + `var(--accent)` beam, adapts to light/dark automatically.
+- **Assets:** `public/logo.svg` — official lockup, ivory on the near-black
+  canvas (matches the product UI theme) · `public/logo-light.svg` — ink on
+  white, for print/light surfaces · `public/logo-emblem.svg` — ivory
+  emblem, transparent · `app/icon.svg` + `app/favicon.ico` — near-black
+  rounded tile, ivory facade.
+- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — pure `currentColor`,
+  so it inherits the surface automatically. No accent, ever.
 - **Regenerate:** `python3 scripts/make-logo.py` (then re-render
   `app/favicon.ico` per the script's docstring).
-- **Rules:** the accent appears only in the beam; never recolor the facade;
-  the lockup always sits on white (use `logo-mark-dark.svg` on dark);
-  clear space = one column height (17 units) on all sides.
+- **Rules:** one color per surface — ivory on dark, ink on white; never mix
+  the accent into the logo; clear space = one column height (17 units) on
+  all sides.
 
 ## Direction
 

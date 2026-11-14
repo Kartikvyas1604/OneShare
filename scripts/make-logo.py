@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Generate the Floorline logo assets — the bank facade.
+"""Generate the Floorline logo assets — the bank facade, monochrome.
 
 The mark: a classical bank building — pediment, three columns, two base
-steps — with the entablature beam in the brand accent. That beam is the
-product's namesake: the floor line your money stands on.
+steps. The entablature beam is the product's namesake: the floor line your
+money stands on. The logo is strictly monochrome — the brand accent never
+appears in it; color in this product means money semantics (gains/losses),
+and a logo is not a money state.
 
 Assets written:
-  public/logo.svg            official lockup — emblem + wordmark on white
-  public/logo-emblem.svg     emblem only on white (avatars, stamps)
-  public/logo-mark-dark.svg  emblem only, ivory strokes, for dark surfaces
-  app/icon.svg               favicon tile (white rounded tile, facade)
+  public/logo.svg         official lockup — ivory facade + wordmark on the
+                          near-black canvas (matches the product UI theme)
+  public/logo-light.svg   ink facade + wordmark on white (print/light use)
+  public/logo-emblem.svg  ivory facade only, transparent (dark surfaces)
+  app/icon.svg            favicon tile (near-black rounded tile, ivory)
 
 Favicon: app/favicon.ico is a rendered snapshot of app/icon.svg (16/32/48).
 Regenerate it manually after changing the geometry:
@@ -32,15 +35,14 @@ WORDMARK = "Floorline"
 WORDMARK_WEIGHT = 600
 
 # ─── Brand palette (brand.md) ────────────────────────────────────────────
-INK = "#0E0E10"       # --background — facade + text on white
-IVORY = "#EDEBE4"     # --foreground — facade on dark surfaces
-ACCENT = "#3DDC97"    # --up / --accent — the beam (the floorline)
-WHITE = "#FFFFFF"
+INK = "#0E0E10"       # --background — the product canvas (dark theme)
+IVORY = "#EDEBE4"     # --foreground — facade + wordmark on the dark canvas
+WHITE = "#FFFFFF"     # light-context canvas (logo-light only)
 
 # ─── Emblem geometry (defined once; 64×64 box) ───────────────────────────
-PEDIMENT = "M32 6 L56 19 H8 Z"           # the roof
-BEAM = dict(x=9, y=22, w=46, h=5.5, rx=1.6)   # the entablature — the accent
-COLUMNS = [(14, 31), (28.5, 31), (43, 31)]    # x, y — each 7×17, rx 2.4
+PEDIMENT = "M32 6 L56 19 H8 Z"                 # the roof
+BEAM = dict(x=9, y=22, w=46, h=5.5, rx=1.6)    # the entablature — the floorline
+COLUMNS = [(14, 31), (28.5, 31), (43, 31)]     # x, y — each 7×17, rx 2.4
 STEP1 = dict(x=10, y=51, w=44, h=5, rx=2)
 STEP2 = dict(x=6, y=58, w=52, h=5, rx=2)
 
@@ -113,21 +115,22 @@ def _kern_map(font: TTFont) -> dict[tuple[str, str], float]:
     return kern
 
 
-def emblem_group(ink: str, accent: str) -> str:
+def emblem_group(fg: str) -> str:
+    """The facade in a single color. `fg` = ink on white, ivory on dark."""
     b, s1, s2 = BEAM, STEP1, STEP2
     columns = "\n    ".join(
-        f'<rect x="{x}" y="{y}" width="7" height="17" rx="2.4" fill="{ink}"/>'
+        f'<rect x="{x}" y="{y}" width="7" height="17" rx="2.4" fill="{fg}"/>'
         for x, y in COLUMNS
     )
     return (
-        f'  <path d="{PEDIMENT}" fill="{ink}"/>\n'
+        f'  <path d="{PEDIMENT}" fill="{fg}"/>\n'
         f'  <rect x="{b["x"]}" y="{b["y"]}" width="{b["w"]}" height="{b["h"]}" '
-        f'rx="{b["rx"]}" fill="{accent}"/>\n'
+        f'rx="{b["rx"]}" fill="{fg}"/>\n'
         f'  {columns}\n'
         f'  <rect x="{s1["x"]}" y="{s1["y"]}" width="{s1["w"]}" height="{s1["h"]}" '
-        f'rx="{s1["rx"]}" fill="{ink}"/>\n'
+        f'rx="{s1["rx"]}" fill="{fg}"/>\n'
         f'  <rect x="{s2["x"]}" y="{s2["y"]}" width="{s2["w"]}" height="{s2["h"]}" '
-        f'rx="{s2["rx"]}" fill="{ink}"/>'
+        f'rx="{s2["rx"]}" fill="{fg}"/>'
     )
 
 
@@ -148,42 +151,39 @@ def main() -> None:
     ex = (W - 64) / 2
     H = WORDMARK_BASELINE + 18
 
-    # Official lockup on white
-    write(ROOT / "public/logo.svg", (
-        '<svg xmlns="http://www.w3.org/2000/svg" '
-        f'viewBox="0 0 {W:.1f} {H}">\n'
-        f'  <rect width="{W:.1f}" height="{H}" fill="{WHITE}"/>\n'
-        f'  <g transform="translate({ex:.1f} {EMBLEM_TOP})">\n'
-        f'    {emblem_group(INK, ACCENT)}\n'
-        '  </g>\n'
-        f'  <g transform="translate({LOCKUP_PAD} {WORDMARK_BASELINE})">\n'
-        f'    <path d="{word_d}" fill="{INK}"/>\n'
-        '  </g>\n'
-        '</svg>\n'
-    ))
+    def lockup(canvas: str, fg: str) -> str:
+        return (
+            '<svg xmlns="http://www.w3.org/2000/svg" '
+            f'viewBox="0 0 {W:.1f} {H}">\n'
+            f'  <rect width="{W:.1f}" height="{H}" fill="{canvas}"/>\n'
+            f'  <g transform="translate({ex:.1f} {EMBLEM_TOP})">\n'
+            f'    {emblem_group(fg)}\n'
+            '  </g>\n'
+            f'  <g transform="translate({LOCKUP_PAD} {WORDMARK_BASELINE})">\n'
+            f'    <path d="{word_d}" fill="{fg}"/>\n'
+            '  </g>\n'
+            '</svg>\n'
+        )
 
-    # Emblem only, on white
+    # Official lockup — the product's own dark canvas
+    write(ROOT / "public/logo.svg", lockup(INK, IVORY))
+
+    # Light-context lockup (print, invoices, light surfaces)
+    write(ROOT / "public/logo-light.svg", lockup(WHITE, INK))
+
+    # Emblem only, transparent — for dark surfaces
     write(ROOT / "public/logo-emblem.svg", (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
         'width="64" height="64">\n'
-        f'  <rect width="64" height="64" fill="{WHITE}"/>\n'
-        f'  {emblem_group(INK, ACCENT)}\n'
+        f'  {emblem_group(IVORY)}\n'
         '</svg>\n'
     ))
 
-    # Emblem only, for dark surfaces (transparent background, ivory facade)
-    write(ROOT / "public/logo-mark-dark.svg", (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
-        'width="64" height="64">\n'
-        f'  {emblem_group(IVORY, ACCENT)}\n'
-        '</svg>\n'
-    ))
-
-    # Favicon tile: white rounded square, facade centered
+    # Favicon tile: the product's dark canvas, ivory facade
     write(ROOT / "app/icon.svg", (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">\n'
-        f'  <rect width="64" height="64" rx="14" fill="{WHITE}"/>\n'
-        f'  {emblem_group(INK, ACCENT)}\n'
+        f'  <rect width="64" height="64" rx="14" fill="{INK}"/>\n'
+        f'  {emblem_group(IVORY)}\n'
         '</svg>\n'
     ))
 

@@ -121,3 +121,12 @@ Log: date · ambiguity · choice · reason. Newest last.
    financial emblem, and the entablature beam in the accent color IS the
    product's namesake — the floor line the money stands on. Same two-color
    system and lockup format; the safe v4 assets are retired.
+
+## 2026-11-15 — logo v6
+
+1. **The logo went monochrome.** The mint beam read as decoration inside
+   the mark, which fought the brand rule that color means money semantics.
+   The facade is now one color per surface (ivory on the dark canvas, ink
+   on white); the accent stays reserved for gains/losses in the UI. The
+   primary lockup now sits on the product's own near-black canvas so the
+   brand asset and the UI share one theme.

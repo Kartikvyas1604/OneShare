@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#FFFFFF"/>
-    <path d="M32 6 L56 19 H8 Z" fill="#0E0E10"/>
-  <rect x="9" y="22" width="46" height="5.5" rx="1.6" fill="#3DDC97"/>
-  <rect x="14" y="31" width="7" height="17" rx="2.4" fill="#0E0E10"/>
-    <rect x="28.5" y="31" width="7" height="17" rx="2.4" fill="#0E0E10"/>
-    <rect x="43" y="31" width="7" height="17" rx="2.4" fill="#0E0E10"/>
-  <rect x="10" y="51" width="44" height="5" rx="2" fill="#0E0E10"/>
-  <rect x="6" y="58" width="52" height="5" rx="2" fill="#0E0E10"/>
+  <rect width="64" height="64" rx="14" fill="#0E0E10"/>
+    <path d="M32 6 L56 19 H8 Z" fill="#EDEBE4"/>
+  <rect x="9" y="22" width="46" height="5.5" rx="1.6" fill="#EDEBE4"/>
+  <rect x="14" y="31" width="7" height="17" rx="2.4" fill="#EDEBE4"/>
+    <rect x="28.5" y="31" width="7" height="17" rx="2.4" fill="#EDEBE4"/>
+    <rect x="43" y="31" width="7" height="17" rx="2.4" fill="#EDEBE4"/>
+  <rect x="10" y="51" width="44" height="5" rx="2" fill="#EDEBE4"/>
+  <rect x="6" y="58" width="52" height="5" rx="2" fill="#EDEBE4"/>
 </svg>

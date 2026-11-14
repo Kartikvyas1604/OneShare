@@ -1,8 +1,9 @@
 /**
- * Floorline emblem — the bank facade. Pediment, three columns, two base
- * steps, and the entablature beam in the brand accent: that beam is the
- * floor line the product is named for. Geometry is single-sourced in
- * scripts/make-logo.py (public/logo.svg).
+ * Floorline emblem — the bank facade, monochrome. Pediment, three columns,
+ * two base steps; the entablature beam is the floor line the product is
+ * named for. The logo never uses the brand accent — color in this product
+ * means money semantics (gains/losses), and a logo is not a money state.
+ * Geometry is single-sourced in scripts/make-logo.py (public/logo.svg).
  */
 export function Logo({ className, size = 24 }: { className?: string; size?: number }) {
   return (
@@ -15,7 +16,7 @@ export function Logo({ className, size = 24 }: { className?: string; size?: numb
       className={className}
     >
       <path d="M32 6 L56 19 H8 Z" fill="currentColor" />
-      <rect x={9} y={22} width={46} height={5.5} rx={1.6} fill="var(--accent, #3DDC97)" />
+      <rect x={9} y={22} width={46} height={5.5} rx={1.6} fill="currentColor" />
       <rect x={14} y={31} width={7} height={17} rx={2.4} fill="currentColor" />
       <rect x={28.5} y={31} width={7} height={17} rx={2.4} fill="currentColor" />
       <rect x={43} y={31} width={7} height={17} rx={2.4} fill="currentColor" />
