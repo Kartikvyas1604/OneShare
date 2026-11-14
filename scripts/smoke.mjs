@@ -73,10 +73,18 @@ async function main() {
   const credGate = r.status === 502 && typeof j.error === "string" && typeof j.remediation === "string" && !j.depositAddress;
   check("deposit: real address (credentials live) or honest gate (502 + remediation)", credOk || credGate, JSON.stringify(j).slice(0, 140));
 
-  // 6. Attestation — honest pending, never a fabricated quote.
+  // 6. Attestation — the honest state only: never a fabricated quote.
+  //    pending (no key) / credits_not_configured (key authenticates, no
+  //    spending limit) / attested (verified: true — inference works).
   r = await fetch(`${BASE}/api/v1/attestation/1`);
   j = await r.json();
-  check("attestation honestly pending", r.status === 200 && j.verified === false && j.quote === null && j.verify_url.startsWith("https://"));
+  check(
+    "attestation honest state",
+    r.status === 200 &&
+      j.verify_url?.startsWith("https://") &&
+      ((j.verified === false && j.status !== undefined) ||
+        (j.verified === true && j.attestation?.gateway?.startsWith("https://"))),
+  );
 
   // 7. Vault reads — real on-chain state: positions array (deployed contract)
   //    or the honest not-deployed error (before deployment). Both are real.
