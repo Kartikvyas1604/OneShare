@@ -94,7 +94,12 @@ All endpoints are Next.js Route Handlers under `/api`. Consistent error shape: `
 
 **Deploy (Vercel).** Set the env vars from `.env.example` in the project settings; `vercel deploy --prod`. Rollback: `vercel rollback <deployment>` — under 1 minute.
 
-**Deploy (self-host).** `npm run build && npm run start` (or `docker compose up` with a mounted volume for `DEPOSITS_STORE_PATH`). Rollback: redeploy the previous git tag.
+**Deploy (self-host).** `npm run build && npm run start` (or `docker compose up`). Rollback: redeploy the previous git tag.
+
+**Database (Supabase in 3 steps).** The deposit and policy stores auto-dispatch: with `DATABASE_URL` set they persist to Postgres/Supabase; without it, a durable local JSON store (same interface, zero config).
+1. Create a project at [supabase.com](https://supabase.com) → Settings → Database → Connection string → URI (use the **Connection pooling** string for serverless deploys).
+2. Paste it as `DATABASE_URL` in your env (`postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres`).
+3. Restart — the tables auto-migrate on first use. Nothing else changes; the reconcile sweep and every route read/write through the same interface.
 
 **Contracts.** `scripts/deploy-contracts.sh` deploys vault + escrow; testnet is live today, mainnet is the same command with a funded account.
 

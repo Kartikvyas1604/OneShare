@@ -11,6 +11,15 @@ import { Pool } from "pg";
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5,
+  // Managed Postgres (Supabase, Neon, RDS) requires TLS. The docker/local
+  // instance does not. Supabase URLs always get SSL; anything else opts in
+  // via sslmode=require in the URL.
+  ssl:
+    /supabase\.(co|com)|sslmode=require|neon\.tech|render\.com|amazonaws/i.test(
+      process.env.DATABASE_URL ?? ""
+    )
+      ? { rejectUnauthorized: false }
+      : undefined,
 });
 
 // Surface a real message when the DB is down (an empty "" error helps nobody).
