@@ -73,7 +73,7 @@ running it, it is not REAL."
 | K-6.3.6 | **REAL (honest)** | `/api/v1/attestation/:id` → `verified:false, pending` (U5 removal honored) |
 | K-6.3.7 | **REAL** | `/api/v1/crash-sim` deterministic, three arms; smoke-verified |
 | K-6.3.8 | **PARTIAL** | deposit store + policy store: durable JSON files (`.data/`); Postgres swap documented (LIMITATIONS #14) |
-| K-6.3.9 | **PARTIAL** | CLI-failure recovery in the deposit path (tx-found logic); keeper daemon retries per tick; no reconcile-on-restart sweep for stuck swaps |
+| K-6.3.9 | **REAL** | POST /api/v1/deposits/reconcile + the keeper daemon boot sweep — every non-terminal deposit row reconciled against the live 1Click /v0/status (617 real rows checked, 617 updated, 0 failures); batch-capped per run |
 | K-6.3.10 | **REAL** | rate-limit lib wired on every route (crash-sim, agent-*, rebalance, equity-price…) |
 | K-6.3.11 | **REAL** | `scripts/keeper.mjs` bought position 2 autonomously (live); `app/lib/keeper.ts` powers the HTTP path |
 
@@ -110,7 +110,7 @@ running it, it is not REAL."
 | F-05 | **REAL** | escrow test: Active-state release reverts (injected promise) |
 | F-06 | **PARTIAL** | the venue swap is faucet-simulated on testnet (LIMITATIONS #9); the contract enforces slippage/freshness/caps; a real ≤$2 mainnet swap needs a funded mainnet account (NEEDS_FROM_ME) |
 | F-07 | **REAL** | live ErrPriceStale (pre-fix rejection) + fuzz stale-quote test |
-| F-08 | **PARTIAL** | on-chain ed25519 signature gate live (stronger than the spec's original); the multi-oracle DISAGREEMENT bound is keeper-layer only (LIMITATIONS #5) |
+| F-08 | **REAL** | on-chain ed25519 signature gate + the on-chain secondary-oracle DISAGREEMENT bound: record_buy/record_de_risk cross-call `oracle.floorline-escrow.testnet` and reject beyond 300 bps — live ErrOracleDisagreement (tx 5SvSFQAw…), ErrOracleStale live, agreement path live (tx F4mZ1ygx…); 3 fuzz tests |
 | F-09 | **REAL** | I2 enforced live (ErrRiskBudgetExceeded) + fuzz |
 | F-10 | **REAL** | live DeRiskTriggered at −55% |
 | F-11 | **REAL** | live ErrAlreadyDeRisked + I6 latch fuzz |
@@ -160,8 +160,8 @@ running it, it is not REAL."
 | T-4 | **REAL** | escrow tests: foreign caller, wrong state, over-release, lock bookkeeping |
 | T-5 | **PARTIAL** | live testnet IS the integration environment (all flows proven by txs); near-workspaces sandbox not used |
 | T-6 | **REAL** | golden parity Rust↔TS |
-| T-7 | **REAL** | Playwright E2E added: read-only flows (landing/create/crash/vault live-chain) — see tests/e2e |
-| T-8 | **REAL** | tsc clean, clippy warnings only, npm audit non-blocking dev advisories |
+| T-7 | **REAL** | Playwright: 7 E2E tests — read-only flows PLUS the wallet-signed flow (E2E Test Wallet signs real txs: connect → position → exit → 'confirmed on-chain' → escrow cleared) + the rejection state |
+| T-8 | **REAL** | tsc clean, eslint 0 problems, npm audit gate, secrets scan, copy rules |
 | T-9 | **REAL** | make sim twice → identical SHA-256 |
 | T-10 | **REAL** | the attack sweep table in docs/THREAT_MODEL.md |
 | T-MUT | **REAL** | mutation checks: break_escrow build fails the invariant test (proven); oracle-gate mutation and payout-restore mutation recorded in docs/MUTATION.md |
@@ -191,8 +191,8 @@ account, every tx id in docs/ is a real tx.
 
 | Class | Count |
 |---|---|
-| REAL | 82 |
-| PARTIAL | 11 |
+| REAL | 84 |
+| PARTIAL | 9 |
 | MOCK | 0 |
 | MISSING | 1 (F-18 DCA — a permitted cut per the spec's cut-list) |
 
