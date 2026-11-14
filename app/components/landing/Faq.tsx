@@ -28,7 +28,7 @@ const FAQS = [
   },
   {
     q: "What about the tokenized-equity route?",
-    a: "Gated. Tokenized equities are not on 1Click's verified token list yet, so the demo runs the verified fallback asset with the identical mechanism. The gap is disclosed in the README, not implied.",
+    a: "On the roadmap. Tokenized equities are not on 1Click's verified token list yet, so positions today run on the verified fallback asset with the identical mechanism. The gap is disclosed in the README, not implied.",
   },
 ];
 

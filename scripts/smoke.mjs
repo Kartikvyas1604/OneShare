@@ -73,26 +73,12 @@ async function main() {
   const credGate = r.status === 502 && typeof j.error === "string" && typeof j.remediation === "string" && !j.depositAddress;
   check("deposit: real address (credentials live) or honest gate (502 + remediation)", credOk || credGate, JSON.stringify(j).slice(0, 140));
 
-  // 6. Crash sim — deterministic: same request twice, byte-identical payload.
-  const body = JSON.stringify({ shock_pct: -45 });
-  r = await smartFetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
-  const a = await r.json();
-  r = await smartFetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
-  const b = await r.json();
-  check("crash-sim 200 + deterministic (NF-03)", r.status === 200 && JSON.stringify(a) === JSON.stringify(b));
-  check("crash-sim shape per keeper spec", typeof a.floorline_loss_pct === "number" && typeof a.naive_loss_pct === "number" && Array.isArray(a.path));
-  check("crash-sim demo-script invariant: -45% shock ~ -45% naive", a.naive_loss_pct > -46 && a.naive_loss_pct < -44, String(a.naive_loss_pct));
-
-  // 7. Crash sim validation.
-  r = await smartFetch(`${BASE}/api/v1/crash-sim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shock_pct: 500 }) });
-  check("crash-sim rejects shock > 90 with 400", r.status === 400);
-
-  // 8. Attestation — honest pending, never a fabricated quote.
+  // 6. Attestation — honest pending, never a fabricated quote.
   r = await fetch(`${BASE}/api/v1/attestation/1`);
   j = await r.json();
   check("attestation honestly pending", r.status === 200 && j.verified === false && j.quote === null && j.verify_url.startsWith("https://"));
 
-  // 9. Vault reads — real on-chain state: positions array (deployed contract)
+  // 7. Vault reads — real on-chain state: positions array (deployed contract)
   //    or the honest not-deployed error (before deployment). Both are real.
   r = await fetch(`${BASE}/api/vault/positions?account=priya.near`);
   j = await r.json();
@@ -100,16 +86,16 @@ async function main() {
   const notDeployedRead = r.status === 502 && j.notDeployed === true && typeof j.error === "string";
   check("vault read surfaces real on-chain state", deployedRead || notDeployedRead, JSON.stringify(j).slice(0, 140));
 
-  // 10. Vault validation.
+  // 8. Vault validation.
   r = await fetch(`${BASE}/api/vault/position/not-a-number`);
   check("vault position rejects a non-numeric id", r.status === 400 || r.status === 502);
 
-  // 11. Activity — real indexer txs.
+  // 9. Activity — real indexer txs.
   r = await fetch(`${BASE}/api/activity?account=wrap.near`);
   j = await r.json();
   check("activity returns real indexer txs", r.status === 200 && (j.txns ?? []).length > 0 && typeof j.txns[0].hash === "string");
 
-  // 12. Security headers present.
+  // 10. Security headers present.
   r = await fetch(`${BASE}/`);
   check(
     "security headers present",
@@ -117,13 +103,13 @@ async function main() {
     `xfo=${r.headers.get("x-frame-options")}`
   );
 
-  // 13. Rate limiting — hammer a small-bucket route until 429.
+  // 11. Rate limiting — hammer a small-bucket route until 429 (deposit allows 5/min).
   let saw429 = false;
   for (let i = 0; i < 12; i++) {
-    const rr = await fetch(`${BASE}/api/v1/crash-sim`, {
+    const rr = await fetch(`${BASE}/api/deposit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ shock_pct: -1 }),
+      body: JSON.stringify({ amountMicro: 1, ownerAccountId: "rate-limit-probe.testnet" }),
     });
     if (rr.status === 429) saw429 = true;
   }

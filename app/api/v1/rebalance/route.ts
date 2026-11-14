@@ -4,7 +4,7 @@ import { log, requestIdOf } from "@/app/lib/log";
 import { runKeeperAction, type KeeperAction } from "@/app/lib/keeper";
 
 /**
- * POST /v1/rebalance (§6.3) — run ONE keeper action for a position.
+ * POST /api/v1/rebalance — run ONE keeper action for a position.
  * Idempotent per (position, epoch): re-running for a position that was
  * already bought / already de-risked in this epoch is a no-op (the on-chain
  * state is checked before acting — the same idempotence the keeper loop has).

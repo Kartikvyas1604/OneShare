@@ -18,7 +18,7 @@ const PRESETS = [
   { amount: 10_000, label: "$10,000 · Desk" },
 ] as const;
 
-/** Interactive loss-limit calculator — the spec's "/" screen carries one (§6.5). */
+/** Interactive loss-limit calculator — the hero preview. */
 export function LossLimitPreview() {
   const [deposit, setDeposit] = useState(1_000);
   const [floorBps, setFloorBps] = useState<number>(VAULT_CONFIG.floorRatioBps);

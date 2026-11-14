@@ -1,4 +1,4 @@
-//! Floorline vault — Agent.md §6.2.
+//! Floorline vault — NEP-141 receiver + NEP-171 position NFTs
 //!
 //! Deposits split into an escrowed reserve (transferred to the separate
 //! escrow contract) and a risk budget; an automated de-risk rule sells the
@@ -78,7 +78,7 @@ pub struct Vault {
     escrow_account: AccountId,
     treasury: AccountId,
     paused: bool,
-    /// Owner-set oracle account for the disagreement bound (§4.1).
+    /// Owner-set oracle account for the disagreement bound.
     secondary_oracle: AccountId,
 
     positions: UnorderedMap<U64, Position>,
@@ -98,7 +98,7 @@ pub struct Vault {
 
 #[near(contract_state)]
 impl Vault {
-    /// Initialize. Immutability after `new()` per §4.1.
+    /// Initialize. Immutability after `new()` per the contract spec
     #[init]
     pub fn new(
         config: Option<VaultConfig>,
@@ -599,7 +599,7 @@ impl Vault {
         ));
     }
 
-    // ─── Settlement (§4.4) ───
+    // ─── Settlement ───
 
     /// `settle` — the owner burns the position and receives NAV; the escrow
     /// releases the reserve. Only from `Matured` (ErrNotMatured otherwise).
@@ -834,7 +834,7 @@ impl Vault {
     }
 
     /// Mark a position degraded — callable by anyone after the settlement
-    /// timeout with a stuck buy (§4.4; NF-06 requires this to be keeperless).
+    /// timeout with a stuck buy (the contract spec; NF-06 requires this to be keeperless).
     pub fn mark_degraded(&mut self, position_id: U64) {
         let mut position = self
             .positions
@@ -931,7 +931,7 @@ impl Vault {
 
     // ─── Admin ───
 
-    /// Pause: deposits still accepted; buys and de-risks rejected (§4.7 #9).
+    /// Pause: deposits still accepted; buys and de-risks rejected.
     pub fn set_paused(&mut self, paused: bool) {
         self.assert_treasury();
         self.paused = paused;
@@ -946,7 +946,7 @@ impl Vault {
         self.secondary_oracle = account;
     }
 
-    // ─── Views (§6.2) ───
+    // ─── Views ───
 
     pub fn get_position(&self, position_id: U64) -> Option<PositionView> {
         self.positions
@@ -974,7 +974,7 @@ impl Vault {
             .unwrap_or(U128(0))
     }
 
-    /// `worst_case` = F + realised_quote (§6.2) — the depositor's floor.
+    /// `worst_case` = F + realised_quote — the depositor's floor.
     pub fn worst_case(&self, position_id: U64) -> U128 {
         self.positions
             .get(&position_id)

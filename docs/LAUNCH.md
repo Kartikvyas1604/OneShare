@@ -7,12 +7,12 @@ _Date: 13 Nov 2026 · Verdict: **the web product is launch-ready as a real-data 
 | Category | Status | Evidence |
 |---|---|---|
 | **Build** | ✅ | `next build` passes — 16 routes, static + PPR + dynamic split (output above) |
-| **Testing** | ✅ | 29 unit tests (formula golden vector §4.5, de-risk boundary strictness, I6 latch, crash-sim byte-determinism NF-03, demo-script invariant) + 15-check smoke suite **run against the production build** |
+| **Testing** | ✅ | 48 unit tests (formula golden vectors, de-risk boundary strictness, I6 latch, agent-policy clamp) + smoke suite **run against the production build** |
 | **CI** | ✅ | GitHub Actions: lint → typecheck → tests → copy hygiene → production build → critical audit → boots prod server → smoke suite |
 | **Security** | ✅ | Security headers (XFO/nosniff/referrer/permissions/HSTS), per-IP token-bucket rate limits on every public route (429 + Retry-After verified), input validation on every endpoint (verified by smoke), no secrets in repo, `.env.example` documents every variable, `npm audit` clean at high/critical (7 moderate dev-only lint findings documented below) |
-| **Reliability/Observability** | ✅ | `/api/healthz` probes both dependencies with real latency; structured JSON logs with correlation ids; error boundaries + typed error states on every surface |
-| **Performance** | ✅ | Load-tested (`docs/LOAD.md`): static page sustains **926 req/s** at p95 56ms with zero errors at 50 concurrent; crash-sim costs **~185ms CPU** per 10,000-path run; the per-IP rate limiter (quote 30/min, crash-sim 10/min) is the designed first bottleneck for public traffic |
-| **Real data (no mocks)** | ✅ | grep across `app/` for every former fixture symbol returns zero matches. Prices/quotes/addresses from 1Click (live), positions from NEAR JSON-RPC, history from the nearblocks indexer, sim computed at runtime |
+| **Reliability/Observability** | ✅ | `/api/healthz` probes dependencies with real latency; structured JSON logs with correlation ids; error boundaries + typed error states on every surface |
+| **Performance** | ✅ | Load-tested (`docs/LOAD.md`): static page sustains **926 req/s** at p95 56ms with zero errors at 50 concurrent; the per-IP rate limiter is the designed first bottleneck for public traffic |
+| **Real data (no mocks)** | ✅ | grep across `app/` for every former fixture symbol returns zero matches. Prices/quotes/addresses from 1Click (live), positions from NEAR JSON-RPC, history from the nearblocks indexer |
 | **Honest degraded states** | ✅ | Contract not deployed → the chain's real error surfaced; deposit-address creation without the partner key → upstream rejection + remediation; attestation → `verified: false` pending. Nothing faked |
 | **Legal** | ✅ | `/legal` ToS + Privacy (non-US, no-audit, third-party rails, retention/deletion) — marked for counsel review before public launch |
 | **SEO** | ✅ | robots.txt, sitemap.xml, OG metadata, launch surfaces |

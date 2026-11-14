@@ -1,13 +1,13 @@
 import { Button } from "@/app/components/Button";
 import { FloorToggleWindow } from "@/app/components/landing/FloorToggleWindow";
 
-/** Integration status — the honest rails strip (obligor-style). */
+/** Integration status — the honest rails strip. */
 const RAILS = [
   { name: "1Click funding", status: "live", note: "30+ chains" },
   { name: "Chain Signatures", status: "live", note: "derived accounts" },
   { name: "NEP-171 positions", status: "live", note: "transferable" },
-  { name: "Deterministic de-risk", status: "live", note: "formula 6, single-shot" },
-  { name: "Equity route", status: "gated", note: "G-2 · verified fallback" },
+  { name: "Deterministic de-risk", status: "live", note: "single-shot, on-chain" },
+  { name: "Equity route", status: "pending", note: "roadmap · fallback live" },
 ] as const;
 
 const statusStyle: Record<string, string> = {
@@ -40,8 +40,8 @@ export function Hero() {
           <Button size="lg" href="/create" className="w-full sm:w-auto">
             Create a position
           </Button>
-          <Button size="lg" variant="secondary" href="/crash" className="w-full sm:w-auto">
-            Run the crash test
+          <Button size="lg" variant="secondary" href="#how" className="w-full sm:w-auto">
+            See how it works
           </Button>
         </div>
 

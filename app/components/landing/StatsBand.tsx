@@ -3,8 +3,8 @@ import { CountUp } from "@/app/components/motion/CountUp";
 const stats = [
   { value: 10, prefix: "$", label: "Minimum deposit" },
   { value: 30, suffix: "+", label: "Funding chains via 1Click" },
-  { value: 10, suffix: "k", label: "Backtest paths · seed 20261112" },
-  { value: 0, suffix: "%", label: "Fees for the hackathon" },
+  { value: 90, suffix: "%", label: "Reserve escrowed by default" },
+  { value: 0, suffix: "%", label: "Fees at launch" },
 ];
 
 export function StatsBand() {

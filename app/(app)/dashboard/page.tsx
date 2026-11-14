@@ -246,8 +246,8 @@ export default function DashboardPage() {
       </section>
 
       <p className="text-[11px] leading-relaxed text-faint">
-        Vault {VAULT_CONFIG.vaultAccount} · reserve at {VAULT_CONFIG.escrowAccount} · fees off for
-        the hackathon.
+        Vault {VAULT_CONFIG.vaultAccount} · reserve at {VAULT_CONFIG.escrowAccount} · fees 0% at
+        launch.
       </p>
     </div>
   );

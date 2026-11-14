@@ -4,7 +4,7 @@ import { VAULT_CONFIG } from "@/app/lib/floorline";
 
 /**
  * Real NEAR Intents quote (1Click /v0/quote). dry:true is unauthenticated
- * (verified Agent.md §1.2 / G-1). The raw real response is passed through —
+ * live-verified). The raw real response is passed through —
  * including its real errors when a parameter is rejected.
  */
 interface QuoteRequestBody {

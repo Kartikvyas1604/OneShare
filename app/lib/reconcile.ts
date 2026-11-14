@@ -10,7 +10,7 @@ export interface ReconcileResult {
 }
 
 /**
- * Keeper restart sweep (§6.3): reconcile every non-terminal deposit row
+ * Keeper restart sweep: reconcile every non-terminal deposit row
  * against the live 1Click status before anything else runs. Terminal rows
  * (SUCCESS / REFUNDED / FAILED / INCOMPLETE_DEPOSIT) are skipped; rows that
  * changed status get their durable record updated.

@@ -4,7 +4,7 @@ import { ShieldCheck } from "lucide-react";
 const VERIFY_URL = "https://cloud.near.ai/verify";
 
 /**
- * De-risk enforcement status for the keeper's decision (§8.4).
+ * De-risk enforcement status for the keeper's decision.
  * "pending" is the honest fallback label (R3): the local rule runs until the
  * attestation flow is verified — the badge is never faked.
  */

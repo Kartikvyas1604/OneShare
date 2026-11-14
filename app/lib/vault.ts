@@ -1,7 +1,7 @@
 import { NearRpcError, viewContract } from "./near";
 
 /**
- * Real vault reads over NEAR JSON-RPC. Method names follow Agent.md §6.2.
+ * Real vault reads over NEAR JSON-RPC.
  * Today the configured contract is usually not deployed yet — callers get
  * NearRpcError with the chain's real message and the UI shows that honestly.
  */

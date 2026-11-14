@@ -1,23 +1,22 @@
 /**
  * Floorline core — single source of truth for the web app.
- * Spec: agent/Agent.md §4 (objects, formulas, invariants), §16 (env defaults).
  *
  * NO fixture data lives here: positions, events, and prices all come from real
  * sources (NEAR RPC view calls, the 1Click token list) via app/lib/vault.ts and
  * app/api/prices. What remains are contract parameters and pure formula code —
- * the same constants the on-chain contract will encode.
+ * the same constants the on-chain contract encodes.
  *
- * All money math here is f64 and display-only (§4.5 allows this for display;
- * on-chain math is u128 with checked ops in contracts/vault/src/math.rs).
- * Quote amounts are micro-USDC (1e6 = $1.00), matching the 6-decimal quote asset.
+ * All money math here is f64 and display-only (on-chain math is u128 with
+ * checked ops in contracts/vault/src/math.rs). Quote amounts are micro-USDC
+ * (1e6 = $1.00), matching the 6-decimal quote asset.
  */
 
-/* ─── Vault config (§4.1 VaultConfig defaults) ─── */
+/* ─── Vault config (contract VaultConfig defaults) ─── */
 
 export const VAULT_CONFIG = {
   quoteAssetId:
     "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1" as const, // USDC on NEAR, 6 dec
-  riskAssetId: "nep141:wrap.near" as const, // wNEAR, 24 dec — verified fallback (G-2)
+  riskAssetId: "nep141:wrap.near" as const, // wNEAR, 24 dec — live fallback route
   floorRatioBps: 9_000, // 90.00% of deposit escrowed as reserve
   floorRatioMinBps: 5_000, // 50%
   floorRatioMaxBps: 9_800, // 98%
@@ -32,7 +31,7 @@ export const VAULT_CONFIG = {
   oracleDisagreementBps: 300, // 3%
   settlementTimeoutSec: 1_200, // 20 min
   earlyExitFeeBps: 100, // 1%
-  mgmtFeeBps: 0, // fees off for the hackathon build
+  mgmtFeeBps: 0, // fees 0% at launch
   perfFeeBps: 0,
   vaultAccount: "floorline-demo.near",
   escrowAccount: "floor.vault-demo.near",
@@ -41,7 +40,7 @@ export const VAULT_CONFIG = {
 
 export const QUOTE_DECIMALS = 6; // USDC
 
-/* ─── Risk assets (§8.3 candidates, G-2 gate) ─── */
+/* ─── Risk assets (venue candidates) ─── */
 
 export interface RiskAsset {
   assetId: string;
@@ -49,7 +48,7 @@ export interface RiskAsset {
   name: string;
   decimals: number;
   venue: "fallback-near" | "1click-rwa" | "solana-dex";
-  /** Verified against 1Click /v0/tokens on 12 Nov 2026. */
+  /** Verified against the live 1Click /v0/tokens list. */
   verified: boolean;
   note: string;
 }
@@ -62,7 +61,7 @@ export const RISK_ASSETS: RiskAsset[] = [
     decimals: 24,
     venue: "fallback-near",
     verified: true,
-    note: "Verified 1Click route — the demo asset",
+    note: "Live 1Click route",
   },
   {
     assetId: "nep141:nvdaon.omft.near",
@@ -71,7 +70,7 @@ export const RISK_ASSETS: RiskAsset[] = [
     decimals: 6,
     venue: "1click-rwa",
     verified: false,
-    note: "Not on 1Click yet — the equity wedge is roadmap (G-2)",
+    note: "Not on 1Click yet — the equity route is roadmap",
   },
   {
     assetId: "nvda-xstock-sol",
@@ -80,7 +79,7 @@ export const RISK_ASSETS: RiskAsset[] = [
     decimals: 6,
     venue: "solana-dex",
     verified: false,
-    note: "Route unverified from the build environment (G-2)",
+    note: "Route unverified — roadmap",
   },
 ];
 
@@ -88,7 +87,7 @@ export function riskAsset(assetId: string): RiskAsset {
   return RISK_ASSETS.find((a) => a.assetId === assetId) ?? RISK_ASSETS[0];
 }
 
-/* ─── Formulas (§4.2) — copy-verbatim semantics ─── */
+/* ─── Formulas — identical semantics to contracts/vault/src/math.rs ─── */
 
 /** Structural subset the formulas need — satisfied by real on-chain positions. */
 export interface PositionMoney {
@@ -118,7 +117,7 @@ export function navQuote(
   return p.floor_amount + unitValueQuote(p.risk_units, priceUsdc) + p.realised_quote;
 }
 
-/** §6.2 worst_case(): F + realised_quote — the number the depositor keeps. */
+/** worst_case(): F + realised_quote — the number the depositor keeps. */
 export function worstCaseQuote(
   p: Pick<PositionMoney, "floor_amount" | "realised_quote">
 ): number {
@@ -130,7 +129,7 @@ export function cushionQuote(p: PositionMoney, priceUsdc: number): number {
   return navQuote(p, priceUsdc) - p.floor_amount;
 }
 
-/** (6): de_risk_triggered = cost_basis > 0 AND unit_value × 10⁴ < cost_basis × (10⁴ − trigger). Strict < — the boundary does not fire (§4.7 #3). */
+/** (6): de_risk_triggered = cost_basis > 0 AND unit_value × 10⁴ < cost_basis × (10⁴ − trigger). Strict < — the boundary does not fire (covered by tests). */
 export function deRiskTriggered(
   p: Pick<PositionMoney, "cost_basis" | "risk_units" | "de_risked">,
   priceUsdc: number,

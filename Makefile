@@ -1,12 +1,11 @@
 # Floorline — reproducible builds & checks
-# make sim        → regenerate artifacts/sim-baseline.json (10,000 paths, seed 20261112)
 # make test       → TS unit tests + Rust tests (unit + invariants)
 # make test-rust  → Rust only, including the break_escrow teeth proof
-# make check      → types + full test suite + copy rules + sim parity
+# make check      → types + full test suite + copy rules
 
 SHELL := /bin/bash
 
-.PHONY: setup test test-rust sim check check-copy build build-contracts lint
+.PHONY: setup test test-rust check check-copy build build-contracts lint
 
 setup:
 	npm ci
@@ -20,11 +19,7 @@ test:
 test-rust:
 	cd contracts && cargo test
 	cd contracts && cargo test -p floorline-escrow --features break_escrow || \
-	  echo "break_escrow build FAILED the invariant test — that failure is the proof (K-5)"
-
-sim:
-	python3 sim/make_sim.py --shock -45 --paths 10000 --seed 20261112 \
-	  --write artifacts/sim-baseline.json
+	  echo "break_escrow build FAILED the invariant test — that failure is the proof"
 
 check: test
 	node scripts/check-copy.mjs

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * keeper.mjs — the Floorline keeper loop (Agent.md §6.3, F-10/F-11).
+ * keeper.mjs — the Floorline keeper loop.
  *
  * Real automation, no human in the loop:
  *   1. Polls tracked accounts' positions on-chain (RPC).
@@ -216,7 +216,7 @@ const log = (m) => console.log(`[keeper ${new Date().toISOString()}] ${m}`);
 
 log(`keeper start: vault=${VAULT} signer=${SIGNER} accounts=${accounts.join(",")}`);
 
-// §6.3: reconcile every unsettled deposit row against /v0/status at boot.
+// Reconcile every unsettled deposit row against /v0/status at boot.
 try {
   const res = await fetch(
     `${process.env.APP_BASE_URL || "http://localhost:3000"}/api/v1/deposits/reconcile`,

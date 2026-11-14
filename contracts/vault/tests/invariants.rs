@@ -1,4 +1,4 @@
-//! Vault invariant fuzz suite (Agent.md §10 — R1; I1–I6; edge cases §4.7).
+//! Vault invariant fuzz suite — I1–I6 checked after every operation.
 //!
 //! Deterministic: seed 20261112 (the spec's Monte-Carlo seed). Runs a
 //! configurable number of randomised operation sequences (default 2,000,
@@ -173,7 +173,7 @@ fn invariants_hold_under_random_sequences() {
     let mut open_position: Option<u64> = None;
     let mut ops = 0usize;
 
-    // The spec asks for 20,000 sequences (§10). Default 2,000 keeps the CI
+    // CI default 2,000 keeps the pipeline fast
     // fast; INVARIANTS_SEQUENCES=20000 runs the full suite (~90 s).
     let seqs: u64 = std::env::var("INVARIANTS_SEQUENCES")
         .ok()

@@ -1,4 +1,4 @@
-# On-chain demo trail — Floorline testnet (vault3)
+# On-chain verification trail — Floorline testnet (vault3)
 
 Every step below is a real transaction on NEAR testnet with live market data.
 Contracts: `vault3.floorline-escrow.testnet` (quote `wrap.testnet`, risk

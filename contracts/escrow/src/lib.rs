@@ -1,4 +1,4 @@
-//! Floorline escrow — Agent.md §6.1.
+//! Floorline escrow — the reserve contract whose only door is the vault's settle path
 //!
 //! The separate reserve contract (invariant I1): the vault transfers each
 //! position's reserve here at deposit, and `release` is gated on BOTH

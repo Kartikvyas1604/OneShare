@@ -1,31 +1,37 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { simulateCrash, DEFAULT_SEED } from "@/app/lib/crash-sim";
 import { formatUsd } from "@/app/lib/utils";
 import { ArrowRight } from "lucide-react";
 
 const EASE_OUT: [number, number, number, number] = [0, 0, 0.2, 1];
-const DEMO_SHOCK = -45;
 
 /**
- * Hero session panel — a −45% crash against a $1,000 position, computed live
- * in the browser by the deterministic engine (seed 20261112). Nothing is
- * pre-baked: same seed, same numbers, computed at runtime.
+ * Hero session panel — a −45% drawdown against a $1,000 position.
+ * The numbers are the contract's own arithmetic (90/10 split at the default
+ * floor ratio), not a simulation: at −45% the de-risk rule has not fired
+ * (trigger −50%), so the risk bucket simply absorbs the move.
  */
+const DEPOSIT = 1_000;
+const SHOCK = -0.45;
+const RESERVE_SHARE = 0.9;
+
+const reserve = DEPOSIT * RESERVE_SHARE;
+const riskBudget = DEPOSIT - reserve;
+
+const naiveKept = DEPOSIT * (1 + SHOCK);
+const flooredKept = reserve + riskBudget * (1 + SHOCK);
+
+const drawdownOf = (kept: number) => ((DEPOSIT - kept) / DEPOSIT) * 100;
+
 export function FloorToggleWindow() {
   const [floored, setFloored] = useState(true);
   const reduced = useReducedMotion();
 
-  // Real deterministic computation, not stored results.
-  const arms = useMemo(() => simulateCrash(DEMO_SHOCK).arms, []);
-  const naive = arms[0];
-  const flooredArm = arms[1];
-  const arm = floored ? flooredArm : naive;
-  const kept = arm.medianTerminalUsd;
-  const drawdown = arm.medianMaxDrawdownPct;
+  const kept = floored ? flooredKept : naiveKept;
+  const drawdown = drawdownOf(kept);
 
   return (
     <div className="overflow-hidden engraved rounded-2xl bg-card shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
@@ -34,17 +40,17 @@ export function FloorToggleWindow() {
         <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
         <span className="h-2.5 w-2.5 rounded-full bg-border-strong" aria-hidden />
         <span className="num ml-2 text-[11px] text-muted-foreground">
-          floorline-demo.near / vault / loss-limit
+          floorline / vault / loss-limit
         </span>
         <span className="num ml-auto rounded-md border border-border bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
-          deterministic run · −45% · seed {DEFAULT_SEED}
+          example · −45% drawdown · $1,000 deposit
         </span>
       </div>
 
       <div className="p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="eyebrow">A −45% crash hits a $1,000 position</p>
+            <p className="eyebrow">A −45% drawdown hits a $1,000 position</p>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="eyebrow">You keep</span>
               <AnimatePresence mode="wait" initial={false}>
@@ -63,7 +69,7 @@ export function FloorToggleWindow() {
               </AnimatePresence>
             </div>
             <p className="num mt-1 text-[11px] text-muted-foreground">
-              median terminal · max drawdown {drawdown.toFixed(1)}%
+              max drawdown {drawdown.toFixed(1)}%
             </p>
           </div>
 
@@ -110,14 +116,13 @@ export function FloorToggleWindow() {
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            Computed in your browser at load — deterministic, not stored. Run all three arms live
-            in the crash test.
+            The contract's own arithmetic — same split, same worst case, for any deposit.
           </p>
           <Link
-            href="/crash"
+            href="/create"
             className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none"
           >
-            Open the crash test
+            Set your own loss limit
             <ArrowRight className="h-3 w-3" aria-hidden />
           </Link>
         </div>

@@ -1,10 +1,10 @@
-//! Vault types — Agent.md §4.1. Every constant mirrors the web core (single
+//! Vault types. Every constant mirrors the web core (single
 //! source of truth); every field maps to the on-chain storage layout.
 
 use near_sdk::{near, AccountId, Timestamp};
 use schemars::JsonSchema;
 
-/// Position lifecycle (§4.4). Serialized as these exact strings so the web
+/// Position lifecycle. Serialized as these exact strings so the web
 /// app, the indexer, and the escrow state check agree.
 #[near(serializers = [borsh()])]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize, JsonSchema)]
@@ -65,7 +65,7 @@ impl Position {
     }
 }
 
-/// Immutable vault configuration (§4.1) — set at `new()` and never mutated.
+/// Immutable vault configuration — set at `new()` and never mutated.
 /// u128 fields use near_sdk::json_types::U128 (string serde) for the call args.
 /// JsonSchema derives via schemars for the contract ABI.
 #[near(serializers = [borsh()])]
@@ -88,19 +88,19 @@ pub struct VaultConfig {
     pub price_max_age_sec: u64,
     /// Early exit fee: NAV × (10⁴ − fee) / 10⁴.
     pub early_exit_fee_bps: u16,
-    /// Settlement timeout before a position degrades (§4.4).
+    /// Settlement timeout before a position degrades.
     pub settlement_timeout_sec: u64,
-    /// Position term (§4.1: default 30 days).
+    /// Position term (the contract spec: default 30 days).
     pub term_seconds: u64,
-    /// Management/performance fees — 0 for the hackathon build.
+    /// Management/performance fees — 0 at launch.
     pub mgmt_fee_bps: u16,
     pub perf_fee_bps: u16,
     /// Quote asset token decimals (USDC 6; wNEAR 24) — drives all quote-value
-    /// math in §4.2. Must match the NEP-141 metadata of `quote_asset_id`.
+    /// math in the contract spec Must match the NEP-141 metadata of `quote_asset_id`.
     pub quote_decimals: u32,
     /// Risk asset token decimals (nNVDA 6 on testnet; xStocks 6).
     pub risk_decimals: u32,
-    /// Secondary-oracle disagreement bound in bps (spec §4.1: 300 = 3%).
+    /// Secondary-oracle disagreement bound in bps (spec the contract spec: 300 = 3%).
     /// record_buy/record_de_risk reject a primary quote whose price differs
     /// from the secondary oracle's stored price by more than this (F-08).
     pub oracle_disagreement_bps: u16,

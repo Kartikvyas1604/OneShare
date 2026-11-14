@@ -1,4 +1,4 @@
-# Agent treasury policy (U1)
+# Agent treasury policy
 
 Floorline reframes the product for the agent economy: **an autonomous treasury
 can write its own loss limit, and the escrow contract enforces it — prompt
@@ -24,17 +24,14 @@ de_risk_trigger_bps}` — it never sets or moves the floor beyond the clamp.
   loss-limit percentage is found)
 - `POST /api/agent/deposit` `{policy, amount, account}` → the exact unsigned
   on-chain instruction (201); re-validates every field server-side
-- `POST /api/agent/jailbreak` `{mandate, floor_ratio_bps}` → the clamped policy
-  **and** the contract's independent decision (rate-limited 6/min/IP)
 
 ## Live evidence (testnet, all real txs)
 
-- `artifacts/agent-jailbreak.json` — both curl beats + the on-chain rejection:
+- Live on-chain rejection (testnet txs, `ErrStepExceeded`):
   `msg: "deposit:10000"` → **ErrStepExceeded** (tx `2LaXnBED…`,
   `5gKKCCKq…`)
 - A 85%-floor position deposited live: 2 wNEAR → floor 1.7 (F-22 accepted the
   in-range ratio)
-- `scripts/agent-jailbreak.mjs` regenerates the artifact with one command.
 
 ## What the agent may never do
 

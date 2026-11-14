@@ -1,7 +1,8 @@
 {
-  "name": "oneshare",
+  "name": "floorline",
   "version": "0.1.0",
   "private": true,
+  "description": "Deposit USDC from any of 30+ chains, set your own worst case, and own a self-managing tokenized position as a NEAR NFT.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

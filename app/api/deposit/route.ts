@@ -12,7 +12,7 @@ import { log, requestIdOf } from "@/app/lib/log";
  * user's session JWT. The addresses come back on quote.chainDepositAddresses
  * — one per chain — and every later deposit to them is tracked by /v0/status.
  *
- * Without the partner key (spec task G-4: partners.near-intents.org) the
+ * Without the partner key (partners.near-intents.org) the
  * endpoint returns the API's real rejection plus the remediation — it never
  * fabricates an address.
  */
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         {
           error: upstream,
           remediation: needsPartnerKey
-            ? "Deposit-address creation needs the 1Click partner X-API-Key from partners.near-intents.org (spec task G-4). Set ONE_CLICK_API_KEY to enable the real flow — no address is ever simulated."
+            ? "Deposit-address creation needs the 1Click partner X-API-Key from partners.near-intents.org. Set ONE_CLICK_API_KEY to enable the real flow — no address is ever simulated."
             : undefined,
           request: { owner, swapType: payload.swapType },
         },

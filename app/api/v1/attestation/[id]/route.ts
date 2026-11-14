@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { log, requestIdOf } from "@/app/lib/log";
 
 /**
- * Keeper API §6.3 — GET /v1/attestation/:id
+ * GET /api/v1/attestation/:id
  *
  * The real contract: the keeper's de-risk decision is deterministic (formula 6)
  * and this endpoint returns the attestation quote + verification URL for it.

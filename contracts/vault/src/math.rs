@@ -1,5 +1,5 @@
-//! Vault math — Agent.md §4.2 formulas, integer-only (u128, checked).
-//! The golden vector (§4.5) must match packages/core byte-for-byte.
+//! Vault math — integer-only (u128, checked ops). Mirrored in app/lib/floorline.ts.
+//! The golden vector must match packages/core byte-for-byte.
 
 use crate::types::{Position, VaultConfig};
 use primitive_types::U256;
@@ -42,7 +42,7 @@ pub fn nav(position: &Position, price_1e18: u128, dec_r: u32, dec_q: u32) -> u12
         .unwrap_or_else(|| panic!("overflow"))
 }
 
-/// §6.2 worst_case = F + realised_quote — the depositor's guaranteed floor.
+/// the contract spec worst_case = F + realised_quote — the depositor's guaranteed floor.
 pub fn worst_case_quote(position: &Position) -> u128 {
     position
         .floor_amount
@@ -58,7 +58,7 @@ pub fn cushion(position: &Position, price_1e18: u128, dec_r: u32, dec_q: u32) ->
 }
 
 /// (6): fires iff `unit_value × 10⁴ < cost_basis × (10⁴ − trigger)` —
-/// strict `<` so the exact boundary does not fire (§4.7 #3). Single-shot via
+/// strict `<` so the exact boundary does not fire. Single-shot via
 /// the `de_risked` latch (I6).
 pub fn de_risk_triggered_at(
     unit_value_quote: u128,

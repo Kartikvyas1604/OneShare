@@ -1,10 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * E2E — the user flows a judge walks. Read-only flows run against the LIVE
- * app + LIVE chain (no mocks): the create page pulls the real 1Click token
- * list, the vault page reads real on-chain positions, the crash page
- * computes the deterministic sim at runtime.
+ * E2E — the user flows. Read-only flows run against the LIVE app + LIVE chain
+ * (no mocks): the create page pulls the real 1Click token list, the vault page
+ * reads real on-chain positions.
  */
 
 test("landing: pitch + loss-limit slider preview renders", async ({ page }) => {
@@ -26,16 +25,6 @@ test("create: live 1Click token list + worst-case readout", async ({ page }) => 
   await amount.fill("5");
   await expect(page.getByText(/Risk budget/i).first()).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/\.0000|\d+ Ⓦ/).first()).toBeVisible();
-});
-
-test("crash: three deterministic arms appear and react to the shock", async ({ page }) => {
-  await page.goto("/crash");
-  await expect(page.getByText(/naive/i).first()).toBeVisible({ timeout: 20_000 });
-  // Drag to −45% if a slider exists; otherwise the default demo shock is −45%.
-  await expect(page.getByText(/−45|−50|45%|50%/).first()).toBeVisible();
-  // Arms: naive red, static amber, de-risk green — labels come from the engine.
-  await expect(page.getByText(/100% exposed|Naive/i).first()).toBeVisible();
-  await expect(page.getByText(/de-risk/i).first()).toBeVisible();
 });
 
 test("vault: a real on-chain position renders from the chain", async ({ page }) => {

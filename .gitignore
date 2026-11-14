@@ -45,3 +45,7 @@ agent/
 contracts/target/
 .data/
 contracts/vault/target/
+
+# local keys — never commit
+scripts/.e2e-wallet.json
+*.local.json

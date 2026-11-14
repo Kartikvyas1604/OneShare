@@ -7,7 +7,7 @@ import { log, requestIdOf } from "@/app/lib/log";
 /**
  * Real deposit status (1Click /v0/status?depositAddress=).
  * Statuses: PENDING_DEPOSIT | KNOWN_DEPOSIT_TX | PROCESSING | SUCCESS |
- * INCOMPLETE_DEPOSIT | REFUNDED | FAILED (Agent.md §1.2).
+ * INCOMPLETE_DEPOSIT | REFUNDED | FAILED.
  */
 export async function GET(request: Request) {
   const __rl = rateLimit("deposit", clientIp(request));

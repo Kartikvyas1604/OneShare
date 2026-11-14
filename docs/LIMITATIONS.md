@@ -11,20 +11,19 @@ for a real deployment, and what closes it.
    formal third-party audit is the production answer before the contracts
    hold real value. Residual risk: a bug the fuzzer's operation alphabet
    misses.
-2. **Contract size.** The vault wasm is 256 KB after `wasm-opt -Oz` — above
-   the spec's 160 KB target. near-sdk 5's baseline. No functional impact;
-   disclosed rather than hidden.
+2. **Contract size.** The vault wasm is 256 KB after `wasm-opt -Oz`. near-sdk 5's
+   baseline. No functional impact; disclosed rather than hidden.
 3. **Admin keys are single-signer on testnet.** `set_paused` /
    `set_secondary_oracle` / `set_treasury` are treasury-account-gated. In
-   production these belong behind a multisig (spec §6.2 access table).
+   production these belong behind a multisig.
 4. **Oracle is single-key.** Quotes must be ed25519-signed by one configured
    oracle key (verified live). A compromised oracle key can feed bad prices —
    bounded by the risk-budget cap (I2) and the single-shot de-risk (I6), but
-   production needs multiple independent oracles + a TWAP (spec T-02).
+   production needs multiple independent oracles + a TWAP (THREAT_MODEL T-02).
 5. **No on-chain secondary-oracle disagreement check.** The
    `secondary_oracle` field exists; the disagreement bound is enforced at the
-   keeper layer (two independent feeds), not on-chain. Disclosed; the spec's
-   `ErrOracleDisagreement` needs a second on-chain price source.
+   keeper layer (two independent feeds), not on-chain. Disclosed; a full
+   on-chain disagreement check needs a second on-chain price source.
 6. **Default config is mainnet-USDC-framed.** `VaultConfig::default()` uses a
    hex USDC id as the quote asset; the testnet deployment overrides it with
    `wrap.testnet`. Deposits on mainnet must set the real USDC contract id.
@@ -35,9 +34,9 @@ for a real deployment, and what closes it.
 
 ## Product layer
 
-8. **Tokenized equities: not live (G-2 closed).** 1Click lists 231 tokens,
+8. **Tokenized equities: not live (verified 12–13 Nov).** 1Click lists 231 tokens,
    zero equities (verified 12–13 Nov 2026); `nvdaon.near` is an empty
-   mainnet account. The demo runs a real NEP-141 stand-in on testnet — real
+   mainnet account. Testnet runs a real NEP-141 stand-in — real
    contract paths, real live prices (Yahoo + 1Click), but the equity
    exposure is a labeled stand-in with no external market. When Ondo stocks
    list on 1Click, the vault points at them with zero contract change.

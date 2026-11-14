@@ -5,8 +5,6 @@ import { Button } from "@/app/components/Button";
 const LINKS = [
   { href: "/create", label: "Create" },
   { href: "/positions", label: "Positions" },
-  { href: "/crash", label: "Crash test" },
-  { href: "/explain", label: "Explain" },
   { href: "/legal", label: "Legal" },
 ] as const;
 

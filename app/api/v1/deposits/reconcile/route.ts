@@ -5,7 +5,7 @@ import { requestIdOf, log } from "@/app/lib/log";
 
 /**
  * POST /api/v1/deposits/reconcile — the keeper's restart sweep, callable on
- * demand (§6.3: "Keeper restart → reconcile every unsettled swap row against
+ * Keeper restart: reconcile every unsettled swap row against
  * /v0/status before anything else"). The keeper daemon also runs it at boot.
  */
 export async function POST(request: Request) {

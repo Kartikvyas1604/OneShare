@@ -15,8 +15,7 @@ export interface RateLimitOptions {
 }
 
 const DEFAULTS: Record<string, RateLimitOptions> = {
-  quote: { limit: 30, windowMs: 60_000 }, // §6.3: /v1/quote 30/min/IP
-  "crash-sim": { limit: 10, windowMs: 60_000 }, // §6.3: /v1/crash-sim 10/min/IP
+  quote: { limit: 30, windowMs: 60_000 }, // /api/quote 30/min/IP
   deposit: { limit: 5, windowMs: 60_000 },
   prices: { limit: 60, windowMs: 60_000 },
   activity: { limit: 60, windowMs: 60_000 },

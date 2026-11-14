@@ -5,8 +5,8 @@ const REPO_URL = "https://github.com/Kartikvyas1604/OneShare";
 
 const links = [
   { label: "Create", href: "/create" },
-  { label: "Crash test", href: "/crash" },
-  { label: "Explain", href: "/explain" },
+  { label: "Positions", href: "/positions" },
+  { label: "Legal", href: "/legal" },
   { label: "GitHub", href: REPO_URL },
 ] as const;
 
@@ -36,9 +36,8 @@ export function LandingFooter() {
           <p className="max-w-3xl">
             Floorline splits every deposit into an escrowed reserve and a bounded risk budget, then
             automates the de-risk rule. Not a brokerage, exchange, or investment advisor; tokenized
-            equities carry issuer, custody, oracle, and smart-contract risks. The demo runs a
-            verified fallback asset — the equity route is gated (G-2), disclosed rather than
-            implied.
+            equities carry issuer, custody, oracle, and smart-contract risks. The equity route is a
+            documented roadmap item — disclosed rather than implied.
           </p>
           <nav aria-label="Footer" className="num flex shrink-0 gap-5 text-xs">
             {links.map((l) => (
@@ -55,8 +54,8 @@ export function LandingFooter() {
 
         {/* Row 3 — legal */}
         <div className="mt-6 flex flex-col justify-between gap-2 border-t border-border pt-5 text-[11px] text-faint sm:flex-row sm:items-center">
-          <p>© 2026 Floorline · Built at NEAR Hackathon 2026</p>
-          <p className="num">Not audited · Non-US only · Fees off for the hackathon</p>
+          <p>© 2026 Floorline Labs</p>
+          <p className="num">Not audited · Non-US only · Fees 0% at launch</p>
         </div>
       </div>
     </footer>

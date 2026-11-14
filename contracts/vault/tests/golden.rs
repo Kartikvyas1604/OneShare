@@ -1,4 +1,4 @@
-//! Golden vector test — Agent.md §4.5. The SAME numbers the TypeScript core
+//! Golden vector test. The SAME numbers the TypeScript core
 //! and the web app compute. Rust must produce identical integers.
 
 use floorline_vault::math;
@@ -13,7 +13,7 @@ fn golden_vector() {
     assert_eq!(r, 100_000_000);
 
     // q* = floor(R × 10^24 × 10¹⁸ / (P × 10⁶)) = 27_932_960_893_854_748_603_351_955
-    // (the exact scaled integer from §4.5)
+    // (the exact scaled integer from the golden vector)
     let q = math::target_units(r, 3_580_000_000_000_000_000, 24, 6);
     assert_eq!(q, 27_932_960_893_854_748_603_351_955u128);
 
@@ -47,7 +47,7 @@ fn split_identity_holds_for_random_amounts() {
 
 #[test]
 fn de_risk_boundary_is_strict() {
-    // §4.7 #3: exactly the boundary does NOT fire.
+    // Exactly the boundary does NOT fire (strict <).
     let config = VaultConfig::default();
     assert_eq!(config.de_risk_trigger_bps, 5_000);
     assert!(!math::de_risk_triggered_at(50_000_000, 100_000_000, false, 5_000));
@@ -57,7 +57,7 @@ fn de_risk_boundary_is_strict() {
 
 #[test]
 fn worst_case_is_floor_plus_realised() {
-    // worst_case = F + realised_quote (§6.2)
+    // worst_case = F + realised_quote
     let nav = 948_310_000;
     let realised = 48_310_000;
     let floor = 900_000_000;

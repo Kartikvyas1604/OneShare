@@ -6,7 +6,7 @@ import {
   depositMsgFor,
 } from "@/app/lib/agent-policy";
 
-describe("agent policy parser (U1 golden cases)", () => {
+describe("agent policy parser (golden cases)", () => {
   it("never lose more than 15% → floor 8500", () => {
     const r = parsePolicy("Treasury policy: working capital must never lose more than 15%.");
     expect(r.ok).toBe(true);

@@ -349,7 +349,7 @@ export default function CreatePage() {
             />
             <Row label="De-risk trigger" value="−50% from cost basis" />
             <Row label="Early exit fee" value={`${VAULT_CONFIG.earlyExitFeeBps / 100}%`} />
-            <Row label="Fees" value="0% for the hackathon" />
+            <Row label="Fees" value="0% at launch" />
           </div>
 
           {/* Actions — the real on-chain deposit */}

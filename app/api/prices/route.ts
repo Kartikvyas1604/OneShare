@@ -4,7 +4,7 @@ import { VAULT_CONFIG, RISK_ASSETS } from "@/app/lib/floorline";
 
 /**
  * Live token prices from NEAR Intents (1Click) — the real, verified public
- * endpoint (Agent.md §1.2). No mock prices: whatever this returns is what the
+ * endpoint. No mock prices: whatever this returns is what the
  * UI shows. Cached 60s server-side; the oracle's own staleness bound is 60s.
  */
 const NEEDED_ASSET_IDS = new Set<string>([

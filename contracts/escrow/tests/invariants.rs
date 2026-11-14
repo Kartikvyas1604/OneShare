@@ -1,4 +1,4 @@
-//! Escrow invariant suite (Agent.md §10, R1, K-5).
+//! Escrow invariant suite.
 //!
 //! The escrow's `release` is the ONLY door to the reserve. This suite proves:
 //!   F-04  a foreign caller cannot release;

@@ -1,6 +1,6 @@
 import { Badge } from "@/app/components/Badge";
 
-/** On-chain position states — the contract enum (Agent.md §4.1), lowercased. */
+/** On-chain position states — the contract enum, lowercased. */
 const labels: Record<string, string> = {
   open: "Open",
   active: "Active",

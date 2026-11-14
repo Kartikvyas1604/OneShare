@@ -173,7 +173,7 @@ export async function runKeeperAction(
     const { primary: price, secondary } = await livePrices();
     await submitOraclePrice(secondary);
     const unitValue = riskUnits * BigInt(price);
-    // unit_value × 10⁴ < cost × (10⁴ − trigger) — strict < (spec §4.2 #6)
+    // unit_value × 10⁴ < cost × (10⁴ − trigger) — strict <
     const triggered = unitValue * 10_000n < costBasis * (10_000n - 5_000n);
     if (!triggered) {
       return {

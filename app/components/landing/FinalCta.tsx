@@ -23,14 +23,14 @@ export function FinalCta() {
             Create a position
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
-          <Button size="lg" variant="secondary" href="/crash" className="w-full sm:w-auto">
-            Watch the crash test
+          <Button size="lg" variant="secondary" href="#how" className="w-full sm:w-auto">
+            See how it works
           </Button>
         </Reveal>
         <Reveal delay={STAGGER.dense * 3}>
           <p className="mt-8 text-[11px] leading-relaxed text-muted-foreground">
-            Not available to US persons. Not investment advice. Not audited. The demo runs a verified
-            fallback asset — the tokenized-equity route is disclosed in the README, not implied.
+            Not available to US persons. Not investment advice. Not audited. The tokenized-equity
+            route is a documented roadmap item — disclosed, not implied.
           </p>
         </Reveal>
       </div>

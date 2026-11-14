@@ -175,7 +175,7 @@ export function VaultDetail({ rawId }: { rawId: string }) {
   const wnearUsd = prices.get("nep141:wrap.near")?.price;
   const hasPrice = typeof price === "number" && typeof wnearUsd === "number" && wnearUsd > 0;
   // price_1e18 = whole-quote (wNEAR) per whole-risk-unit, scaled 1e18 — the
-  // contract's own convention (§4.2).
+  // the contract's own convention.
   const price1e18 = hasPrice
     ? BigInt(Math.floor((price / wnearUsd) * 1e18)).toString()
     : "0";
@@ -427,8 +427,8 @@ export function VaultDetail({ rawId }: { rawId: string }) {
       </section>
 
       <p className="text-[11px] leading-relaxed text-faint">
-        Demo build · vault {VAULT_CONFIG.vaultAccount} · escrow {VAULT_CONFIG.escrowAccount} · fees
-        off for the hackathon. No leverage, no liquidation — the reserve caps the loss.
+        Early access · vault {VAULT_CONFIG.vaultAccount} · escrow {VAULT_CONFIG.escrowAccount} ·
+        fees 0% at launch. No leverage, no liquidation — the reserve caps the loss.
       </p>
     </div>
   );

@@ -15,8 +15,8 @@ import {
 } from "@/app/lib/floorline";
 
 /**
- * Formula tests per Agent.md §4.2/§4.5 — the same numbers the Rust contract
- * tests must produce (golden vector pinned by §4.5).
+ * Formula tests — the same numbers the Rust contract tests must produce
+ * (the golden vector is pinned identically in both).
  */
 
 describe("splitDeposit (1)/(2)", () => {
@@ -47,7 +47,7 @@ describe("splitDeposit (1)/(2)", () => {
   });
 });
 
-describe("unitValueQuote (3) and targetUnits (10) — golden vector §4.5", () => {
+describe("unitValueQuote and targetUnits — golden vector", () => {
   // D = 1,000 USDC, floor 90%, P = $3.58 ⇒ q* ≈ 27.932960893854748 wNEAR
   it("computes the golden-vector target units", () => {
     const q = targetUnits(100_000_000, 3.58);
@@ -94,7 +94,7 @@ describe("de-risk trigger (6) — strict <, single-shot (I6)", () => {
     de_risked: false,
   };
 
-  it("does not fire at exactly the boundary (§4.7 #3)", () => {
+  it("does not fire at exactly the boundary", () => {
     // unit value exactly == cost × (1 − 50%) → 50_000_000
     const boundary = { ...base, risk_units: 50_000_000 / 1e6 / 3.58 };
     expect(deRiskTriggered(boundary, 3.58)).toBe(false);
@@ -154,7 +154,7 @@ describe("entry price", () => {
   });
 });
 
-describe("config invariants (§4.1)", () => {
+describe("config invariants", () => {
   it("floor ratio range and step match the spec", () => {
     expect(VAULT_CONFIG.floorRatioMinBps).toBe(5_000);
     expect(VAULT_CONFIG.floorRatioMaxBps).toBe(9_800);

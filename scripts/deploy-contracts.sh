@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Floorline contract deployment — Agent.md §12 (testnet deploy, then mainnet).
+# Floorline contract deployment (testnet first, then mainnet).
 #
 # Prerequisites:
 #   1. The `near` CLI (cargo install near-cli-rs, or the JS near CLI via

@@ -1,120 +1,128 @@
 # Floorline
 
-**Deposit from any of 30+ chains, set the worst case, own a self-managing tokenized position as a NEAR NFT.**
+> Deposit USDC from any of 30+ chains, set your own worst case, and own a self-managing tokenized position as a NEAR NFT.
 
-The reserve sits in a **separate escrow contract whose only door is the vault's settle path**. The risk bucket is capped at the share you chose, the de-risk rule is a single-shot formula the contract enforces, and the position is a transferable NEP-171 NFT. We take zero leverage — there is no liquidation because there is no borrowing.
+Floorline splits every deposit at the contract level: a **reserve** (90% by default) moves to a separate escrow contract whose only door is the vault's settle path, and a **risk budget** is swapped into the risk asset. An automated de-risk rule sells the whole risk bucket if it falls 50% below what it cost — once, with no keeper discretion. At maturity the payout equals NAV: the reserve plus whatever the risk bucket kept. The worst case is the pre-committed risk budget — a number the depositor set, not one the market sets.
 
-Built for the agent economy: an autonomous treasury can write its own loss limit and the escrow contract enforces it — prompt guardrails are advisory, custody is not ([agent policy](docs/AGENT_POLICY.md)).
+**Status.** The web product reads only real sources: live prices, quotes and deposit addresses from the NEAR Intents 1Click API; on-chain positions via NEAR JSON-RPC view calls; transaction history from the nearblocks indexer. The Rust vault + escrow contracts are deployed on **testnet** (`vault3.floorline-escrow.testnet`, `floorline-escrow.testnet`) and the full deposit → buy → de-risk → settle loop has been exercised on-chain with live market prices — see [`docs/ONCHAIN-TRAIL.md`](docs/ONCHAIN-TRAIL.md) for the transaction trail. Mainnet deployment is the same one command once a funded mainnet account exists.
 
-- **Contracts (testnet, live):** vault `vault3.floorline-escrow.testnet` · escrow `floorline-escrow.testnet`
-- **Risk asset (testnet stand-in):** `nvda.floorline-escrow.testnet` — a real NEP-141 so the loop executes end-to-end; when tokenized equities list on 1Click, the vault's `risk_asset_id` points at them with **zero contract change**
-- **Quote asset:** `wrap.testnet` (24 dec) · deposits accept a per-position loss limit (`msg = "deposit:<ratio>"`, contract-clamped to [5000, 9800])
+This repository is the Next.js web app; the contracts, the keeper loop and the deployment scripts live under `contracts/` and `scripts/`.
 
-## Do X → see Y (verification steps for judges)
+## Verification steps
 
-1. Open `/` → read the pitch and drag the **loss-limit preview** slider — the worst case updates in dollars live.
-2. Open `/create` → set a deposit and a loss limit → the **worst case, risk budget, and estimated units** update before you send anything; unverified equity routes are visibly gated with live market quotes.
-3. Connect a wallet on `/create` → deposit → the vault splits 90/10 on-chain and **escrows the floor at `floorline-escrow.testnet`** (tx trail: [docs/ONCHAIN-TRAIL.md](docs/ONCHAIN-TRAIL.md)).
-4. Open `/vault/<your-account>` → the position NFT: floor, NAV, risk bucket, de-risk meter, on-chain state.
-5. Open `/crash` → drag the shock to −45% → **three arms** with median terminal, worst-1% in dollars, and max drawdown — computed at runtime by the deterministic engine, seed 20261112.
-6. Run `make test-rust` → 19 Rust tests pass, **including the invariant fuzz (2,000 sequences, I1–I6 checked after every operation)**.
-7. Run `cd contracts && cargo test -p floorline-escrow --features break_escrow` → **the test FAILS** — that failure is the proof the escrow gate has teeth (spec K-5). Without the flag it passes.
-8. Run `node scripts/keeper.mjs --once` → the keeper **polls positions, fetches live prices, signs with the oracle key, and records buys/de-risks on-chain with no human** (live tx in the trail).
-9. Run `node scripts/agent-jailbreak.mjs` → the agent-policy clamp output **and** the contract's independent on-chain rejection of `deposit:10000` (`ErrStepExceeded`) — evidence in `artifacts/agent-jailbreak.json`.
-10. Run `npm test` → 48 TypeScript tests: formula core, crash engine, agent policy golden cases, **and the TS↔Python sim parity (F-16)**.
-11. Run `make sim` → regenerates `artifacts/sim-baseline.json` (10,000 paths, seed 20261112) — numbers below.
-12. Run `node scripts/check-copy.mjs` → banned-words + asset-name rules pass.
-13. `npm run build && npm run start`, then `node scripts/smoke.mjs http://localhost:3000` → 15 production checks against the real server.
+1. `npm run build && npm run start`, then `npm run smoke` — production checks against the real server: live prices, a real quote, honest deposit/attestation states, real on-chain error semantics, security headers, rate limiting.
+2. Open `/` — read the pitch and drag the loss-limit preview; the worst case updates in dollars live.
+3. Open `/create` — set a deposit and a loss limit; the worst case, risk budget and estimated units update before you send anything. Unverified equity routes are visibly marked.
+4. Open `/vault/<position-id>` — the reserve, NAV, risk bucket, de-risk status, attestation state and the contract-event log, all read from the chain.
+5. `npx tsc --noEmit` — the whole app type-checks clean.
+6. `npm test` — the unit suite on the formula core passes.
+7. `make test-rust` — contract unit + invariant tests, including the deliberately broken escrow build the invariant suite catches.
 
-## The Monte-Carlo (deterministic, seed 20261112, 10,000 paths, −45% shock)
+## What it is NOT
 
-| Arm | Median loss | Worst 1% |
-|---|---|---|
-| Naive · 100% exposed | **−44.56%** | worse |
-| Static floor · no de-risk | **−4.46%** | bounded |
-| Floorline · de-risk armed | **−5.17%** | bounded |
-
-Regenerate: `make sim`. Parity with the web engine is asserted in CI (±0.5 pp, F-16). Raw construction: median-neutral GBM, σ = 0.80 annualized, one instantaneous shock at step 30/90, three arms share the same paths.
+Not a brokerage. Not a custodial exchange. Not a perp DEX. Not a lending protocol. Not a yield farm. Not an "AI trading agent". No leverage — there is no liquidation because there is no borrowing. Not a stop-loss product (a stop on thin equity liquidity gaps cannot be promised; the escrowed reserve is the guarantee instead). Not investment advice. Not available to US persons.
 
 ## Architecture
 
 ```
-user (any chain) ──1Click deposit──▶ vault3.floorline-escrow.testnet
-                                        │ ft_on_transfer: split D → F + R (per-deposit ratio, F-22)
-                                        │ I1: F ──ft_transfer_call──▶ floorline-escrow.testnet (locked per position)
-                                        │ position = NEP-171 NFT (token_id == position_id)
-keeper (scripts/keeper.mjs — automated, oracle-signed quotes)
-                                        │ record_buy (slippage, freshness, T-02 signature, I2 cap)
-                                        │ record_de_risk (formula 6, single-shot I6)
-owner ─────────────────────────────────│ settle / exit_early → escrow.release (state cross-check) → payout
+ USER (any of 30+ chains)
+      │ USDC via NEAR Intents (1Click), recipient = vault
+      ▼
+ ┌──────────────────────────────────────────────────────────────────────────────┐
+ │ vault (Rust, near-sdk)                                                       │
+ │  deposit(): F ──ft_transfer──► escrow (only settle/recover can release it)    │
+ │              R stays in vault; the keeper swaps R → risk asset                │
+ │  de-risk(): single-shot rule sells the whole bucket past the trigger          │
+ │  settle(): payout = NAV; Escrow.release(F); burn the NFT                      │
+ └───────┬───────────────────────────────────────────────────────────────────────┘
+         │ events / view calls
+         ▼
+ ┌──────────────────────┐      ┌──────────────────────────────┐
+ │ keeper loop          │      │ Next.js app (this repo)      │
+ │ (scripts/keeper.mjs) │ ───► │ /create · /vault/[id] · /api │
+ └──────────────────────┘      └──────────────────────────────┘
 ```
 
-**Oracle trust model (T-02):** every price quote must carry an **ed25519 signature over `floorline-quote:{position_id}:{price_1e18}:{ts}`** from the configured oracle key (`env::ed25519_verify` on-chain). A forged, replayed, or unsigned quote reverts before any state change — proven live (unsigned → `ErrBadQuoteSignature`, forged → same, signed → accepted; trail in `docs/ONCHAIN-TRAIL.md`).
+- **`contracts/vault`** — NEP-141 receiver + NEP-171 vault logic; positions are NFTs bound to their owner.
+- **`contracts/escrow`** — the separate reserve contract; `release` is gated on `predecessor == vault` and a terminal position state.
+- **`contracts/oracle`** — quote-signature verification; every keeper price must be ed25519-signed on-chain.
+- **`app/lib/`** — the same formulas in TypeScript (display-only f64; on-chain math is u128 with checked ops).
 
-## Limitations (honest — full list in [docs/LIMITATIONS.md](docs/LIMITATIONS.md))
+## Getting started
 
-- **Tokenized equities: NOT live (G-2 closed).** 1Click lists 231 tokens, zero equities (verified 12–13 Nov 2026); `nvdaon.near` on mainnet is an empty account. The demo runs a real NEP-141 stand-in on testnet so every contract path executes with real prices from Yahoo Finance + 1Click. The wedge is a parameter, not a promise.
-
-**Roadmap — tokenized equities.** The vault's risk asset is a parameter. When Ondo stocks (live on near.com since 22 Sep 2026) appear in the 1Click token list — access was announced 31 Oct 2026 — `assets.json` gains `nep141:<nvdaon-asset-id>` and the same vault, the same escrow, and the same de-risk rule hold tokenized equities with zero contract change. Verified blocker today: the 1Click API lists 231 tokens, none tokenized; `nvdaon.near` on mainnet is an empty account.
-
-- **Not audited.** The invariant suites (2,000-sequence fuzz + the `break_escrow` failing build) are this build's answer; a formal third-party audit is the production answer before the contracts hold real value.
-- **Testnet key custody.** The testnet oracle seed and the demo signer key live in `.env.local`/keychain (gitignored). Production needs KMS/HSM custody and a funded mainnet account.
-- **TEE attestation deferred.** The de-risk rule runs as a local deterministic rule (formula 6); the attestation surface returns honest `pending` state and was removed from the demo per the spec's hour-20 deadline.
-- **Contract size.** The vault wasm is 256 KB after `wasm-opt -Oz` (spec target 160 KB) — a near-sdk 5 baseline cost, disclosed rather than hidden.
-
-## v2 — the paired-floor market
-
-v1 is single-sided: every depositor funds their own floor with their own risk budget. v2 pairs two depositors with complementary loss limits: the conservative side's reserve funds the floor, the aggressive side's risk budget harvests everything above it and absorbs everything below. Each pair is zero-sum, spot-collateralized, and needs no liquidation engine and no oracle-dependent margin call — a perpetual made of paired loss limits, which is exactly the "never-liquidated" primitive on Illia's wishlist, generalized into a market. Protocol fee: 10 bps per pairing. **Not built in this event**; the escrow's `release` gating is the primitive it composes with.
-
-```
-   conservative agent ── floor F, wants ≥ F back ──┐
-                                                   ├─ PAIR ── zero-sum · no liquidation engine
-   aggressive agent ──── risk budget R ────────────┘
-        reserve (escrow, I1) ── owned by the pair ── settle splits NAV:
-              F → conservative · surplus → aggressive · shortfall → aggressive
+```bash
+npm ci                 # install
+npm run dev            # develop
+make setup             # + build the Rust contracts (wasm target)
+make test              # TypeScript + Rust test suites
+npm run check:copy     # copy hygiene (banned marketing phrases, asset-name rule)
+npm run build && npm run start
+npm run smoke          # production smoke suite against the running server
 ```
 
-## API reference (Next Route Handlers — the keeper backend)
+Environment: copy `.env.example` to `.env.local`. Every variable is documented there; nothing is required for read-only surfaces — the deposit-address flow activates when `ONE_CLICK_API_KEY` is set.
 
-| Route | What it does | Real source |
-|---|---|---|
-| `GET /api/healthz` | version + dependency checks | live RPC + adapters |
-| `GET /api/prices` | quote-asset prices | 1Click `/v0/tokens` |
-| `GET /api/v1/equity-price` | NVDA equity quote | Yahoo Finance (30 s cache) |
-| `GET /api/quote` | real 1Click dry quote (JWT-aware) | 1Click `/v0/quote` |
-| `POST /api/deposit` · `GET /api/deposit/status` | deposit address + status | 1Click deposit API |
-| `GET /api/vault/positions` · `/api/vault/[id]` | on-chain positions | NEAR JSON-RPC view calls |
-| `GET /api/tokens` | 231 live assets | 1Click `/v0/tokens` |
-| `GET /api/activity` | on-chain events | nearblocks |
-| `POST /api/v1/crash-sim` | deterministic three-arm sim | runtime engine (seed) |
-| `GET /api/v1/attestation/:id` | honest `pending` state | — |
-| `POST /api/agent/policy` | mandate → clamped policy | parser (+ optional NEAR AI) |
-| `POST /api/agent/deposit` | policy → on-chain instruction | server-side re-validation |
-| `POST /api/agent/jailbreak` | clamp + contract decision | — |
+## API reference
+
+All endpoints are Next.js Route Handlers under `/api`. Consistent error shape: `{ error: string, ...context }` with proper HTTP status codes. Rate limited per IP (429 + `Retry-After`). Correlation id: send `x-request-id`, or read it from the JSON logs.
+
+| Endpoint | Method | Source | Notes |
+|---|---|---|---|
+| `/api/healthz` | GET | probes NEAR RPC + 1Click | 5s timeouts; wire your uptime monitor here |
+| `/api/prices` | GET | 1Click `/v0/tokens` | live prices; filtered to configured assets |
+| `/api/quote` | POST | 1Click `/v0/quote` (dry) | `{amountMicro, destinationAsset?}`; validated |
+| `/api/deposit` | POST | 1Click reusable-address flow | needs `ONE_CLICK_API_KEY`; returns the real per-chain address set or the upstream rejection + remediation |
+| `/api/deposit/status` | GET | 1Click `/v0/status` | `?address=`; live status enum |
+| `/api/agent/policy` | POST | deterministic parser (+ optional LLM leg) | `{mandate}` → `{policy}`; clamped to contract ranges — see [`docs/AGENT_POLICY.md`](docs/AGENT_POLICY.md) |
+| `/api/agent/deposit` | POST | — | `{policy, amount, account}` → the unsigned on-chain instruction; every field re-validated server-side |
+| `/api/vault/positions` | GET | NEAR JSON-RPC `positions_of` | `?account=`; real "not deployed" state |
+| `/api/vault/position/[id]` | GET | NEAR JSON-RPC `get_position` | numeric NEP-171 token id |
+| `/api/v1/equity-price` | GET | Yahoo Finance | live reference price for the equity wedge |
+| `/api/v1/rebalance` | POST | keeper | one keeper action, idempotent per epoch |
+| `/api/v1/attestation/:id` | GET | — | honestly `verified: false` until the TEE flow is wired |
+| `/api/activity` | GET | nearblocks indexer | `?account=`; real tx history |
 
 ## Runbook
 
-```
-npm ci && npm run build && npm run start        # app on :3000
-node scripts/keeper.mjs                          # automated keeper loop
-cd contracts && cargo test                       # 19 Rust tests
-make sim                                         # regenerate the baseline
-```
+**Health.** `GET /api/healthz` returns per-dependency ok/latency for NEAR RPC and 1Click. Alert when `dependencies[].ok = false` for 3 consecutive minutes.
 
-Deployment, env vars, and rollback: `.env.example`, `Dockerfile` (non-root, HEALTHCHECK), CI on every push.
+**Logs.** Every route logs structured JSON with a correlation id (`x-request-id` honoured).
+
+**Deploy (Vercel).** Set the env vars from `.env.example` in the project settings; `vercel deploy --prod`. Rollback: `vercel rollback <deployment>` — under 1 minute.
+
+**Deploy (self-host).** `npm run build && npm run start` (or `docker compose up` with a mounted volume for `DEPOSITS_STORE_PATH`). Rollback: redeploy the previous git tag.
+
+**Contracts.** `scripts/deploy-contracts.sh` deploys vault + escrow; testnet is live today, mainnet is the same command with a funded account.
+
+**Known limits (honest).**
+- Contracts are live on **testnet**. Mainnet costs are not reimbursed by anyone — it is a funded-account decision.
+- Rate limiting is per-process in-memory. Multi-instance production needs a shared store (swap `app/lib/rate-limit.ts`'s bucket for Redis — one file).
+- The TEE attestation is honestly pending (`verified: false`) until `NEAR_AI_API_KEY` is set and the verify flow is wired. Badges are never faked.
+- The equity route is a **documented roadmap item**: tokenized equities are not yet on the 1Click token list (verified 12–13 Nov 2026). The demo runs the verified fallback asset with the identical mechanism.
+
+## Limitations
+
+- **Not audited.** The escrow invariant suite and its deliberately broken build (`--features break_escrow`) are the pre-audit answer; see the threat model. Do not point real value at these contracts before a third-party audit.
+- **Equity route pending.** See above — disclosed, not implied.
+- **No fixtures, no simulated data.** The frontend reads only real sources; pages show the chain's real error state and real empty states.
+
+Full lists: [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) · [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) · [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md).
+
+## Security
+
+- Reserve custody is enforced by a **separate escrow contract**: `release` reverts for any caller except the vault, and only in a terminal position state. The invariant suite runs randomized operation sequences after every action, and a `break_escrow` feature build is caught by the tests (see [`docs/MUTATION.md`](docs/MUTATION.md)).
+- Every keeper price is **ed25519-verified on-chain**; unsigned, forged, replayed or stale quotes revert.
+- Payout failure restores the position (no stranded claims); settlement is idempotent; de-risk is single-shot.
+- Threat model with residual risks: [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 
 ## Decision log
 
-Every ambiguity and its resolution: [`docs/DECISIONS.md`](docs/DECISIONS.md). Security model: [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md). The demo's raw on-chain evidence: [`docs/ONCHAIN-TRAIL.md`](docs/ONCHAIN-TRAIL.md).
+Every ambiguity and its resolution lives in [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## Tech stack
 
-- **Frontend:** Next.js 16 App Router, React 19, Tailwind CSS 4, TypeScript, Recharts
-- **Contracts:** near-sdk 5, NEP-141 receiver + NEP-171, ed25519 oracle verification
-- **Keeper:** Next Route Handlers + `scripts/keeper.mjs` (oracle-signed, automated)
-- **Sponsors:** NEAR Intents (1Click) · NEAR Chain Signatures · NEP-171 · NEAR AI Cloud
-
-## Sources
-
-- Judged-wishlist alignment (R6): [Illia Polosukhin's "never-liquidated" post](https://x.com/ilblackdragon/status/2118027843980366222)
-- [NEAR Intents / 1Click docs](https://docs.near-intents.org) · [NEAR Chain Signatures](https://docs.near.org/chain-abstraction/chain-signatures)
+- **Frontend:** Next.js 16 App Router, React 19, Tailwind CSS 4, TypeScript, Recharts, Framer Motion
+- **Type:** Instrument Serif (display) + Geist (UI) + Geist Mono (tabular data) via `next/font`
+- **Design system:** [`brand.md`](brand.md) — warm near-black surfaces, ivory text, one semantic accent
+- **Contracts:** Rust, `near-sdk`; NEP-141 + NEP-171
+- **Rails:** NEAR Intents (1Click) · NEAR Chain Signatures · nearblocks indexer

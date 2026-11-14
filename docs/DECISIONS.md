@@ -1,17 +1,17 @@
 # DECISIONS
 
-Log per spec §0.4: date · ambiguity · choice · reason. Newest last.
+Log: date · ambiguity · choice · reason. Newest last.
 
-- 2026-11-12 · Product name in the UI · **Floorline** · `agent/Agent.md` is the single source of truth and names the combined product Floorline (§18); OneShare was the pre-merge working name. `APP_CONFIG.name` and all UI strings follow.
-- 2026-11-12 · `/create` slider label ("loss limit 50–98%, step 1%") vs `floor_ratio_bps` range (5_000..9_800, step 100) · **Slider value is the floor/reserve share, labelled "Loss limit", with the derived max-loss % (100% − floor) shown beside it** · The spec's UI range matches the floor-ratio range exactly; both readings stay true on screen.
-- 2026-11-12 · Position identifiers in URLs · **Opaque hex ids (`/vault/0x…`) with a numeric fallback resolver** · On-chain `token_id` is a numeric u64 (§4.1); hex keeps URLs non-enumerable and matches the already-shipped routing.
-- 2026-11-12 · Demo risk asset · **wNEAR via the verified 1Click fallback (`fallback-near`)** · G-2 requires the demo to not depend on the equity route; NVDAon/NVDAx candidates are shown but marked unverified.
-- 2026-11-12 · NAV on the web · **Computed client-side from the current mock price (f64, display-only)** · §4.5 permits f64 for display; `nav_quote` remains persisted on-chain in the contract.
-- 2026-11-12 · Crash simulator backend · **Deterministic three-arm Monte-Carlo runs in the browser with the same params and seed (20261112) as `sim/make_sim.py`; "Replay recorded run" serves the cached −45% result** · Zero-network demo per §11 fallback (2); the keeper's `POST /v1/crash-sim` stays authoritative for the recorded run.
-- 2026-11-12 · `/vault/[id]` events feed · **Kept a compact contract-event log on the page** · Not listed in §6.5 but supports the demo line "here is the escrow, and here is the test"; events use the exact §6.2 event names.
-- 2026-11-13 · Crash-sim GBM discretization · **Median-neutral step `exp(σ√dt·z)` (no Itô drift term)** · The canonical `exp((μ−0.5σ²)dt+σ√dt·z)` shows a −27% median loss at a 0% shock; the demo script (§11) states "A 45% crash. Naive loses 45%" — median-neutral makes that literally true. Python `sim/cppi.py` will match.
-- 2026-11-13 · Positions minted from `/create` · **Ephemeral in-memory session store resolved client-side on `/vault/[id]`** · Satisfies the E2E flow (§10: `/create` → deposit → `/vault/[id]` shows the NFT) without hydration risk or URL state; fixtures stay the source for the recorded demo.
-- 2026-11-13 · Real-data objective · **Every fixture removed; the app reads only real sources** · Live prices + quotes + deposit addresses from 1Click (verified unauthenticated endpoints), on-chain positions via JSON-RPC view calls (`positions_of` / `get_position`, §6.2) against `VAULT_CONTRACT_ID`, tx history from the nearblocks indexer. Until the vault contract is deployed, the UI shows the chain's real error ("account does not exist on NEAR mainnet yet") and real empty states — nothing simulated. Crash-sim numbers are computed at runtime by the deterministic engine (no stored results). Position ids in URLs are the on-chain numeric token ids; the earlier hex URL scheme was fixture-only and is retired.
+- 2026-11-12 · Product name in the UI · **Floorline** · OneShare was the pre-merge working name; the combined product ships as Floorline. `APP_CONFIG.name` and all UI strings follow.
+- 2026-11-12 · `/create` slider label ("loss limit 50–98%, step 1%") vs `floor_ratio_bps` range (5_000..9_800, step 100) · **Slider value is the floor/reserve share, labelled "Loss limit", with the derived max-loss % (100% − floor) shown beside it** · The UI range matches the floor-ratio range exactly; both readings stay true on screen.
+- 2026-11-12 · Position identifiers in URLs · **Opaque hex ids (`/vault/0x…`) with a numeric fallback resolver** · On-chain `token_id` is a numeric u64; hex keeps URLs non-enumerable and matches the already-shipped routing.
+- 2026-11-12 · Risk asset · **wNEAR via the live 1Click route (`fallback-near`)** · the equity route is not live yet (verified 12–13 Nov); NVDAon/NVDAx candidates are shown but marked unverified.
+- 2026-11-12 · NAV on the web · **Computed client-side from the current price (f64, display-only)** · f64 display is allowed because on-chain math is u128; `nav_quote` remains persisted on-chain in the contract.
+- 2026-11-12 · Crash-sim engine · **Deterministic three-arm Monte-Carlo in the browser, shared params and seed with `sim/make_sim.py`** · *(Retired 2026-11-14 — see below.)*
+- 2026-11-12 · `/vault/[id]` events feed · **Kept a compact contract-event log on the page** · Events use the contract's exact event names.
+- 2026-11-13 · Crash-sim GBM discretization · **Median-neutral step `exp(σ√dt·z)` (no Itô drift term)** · *(Retired with the simulator on 2026-11-14.)*
+- 2026-11-13 · Positions minted from `/create` · **Ephemeral in-memory session store resolved client-side on `/vault/[id]`** · Covers the `/create` → deposit → `/vault/[id]` flow without hydration risk or URL state.
+- 2026-11-13 · Real-data objective · **Every fixture removed; the app reads only real sources** · Live prices + quotes + deposit addresses from 1Click (verified unauthenticated endpoints), on-chain positions via JSON-RPC view calls (`positions_of` / `get_position`) against `VAULT_CONTRACT_ID`, tx history from the nearblocks indexer. Until the vault contract is deployed, the UI shows the chain's real error ("account does not exist on NEAR mainnet yet") and real empty states — nothing simulated. Position ids in URLs are the on-chain numeric token ids; the earlier hex URL scheme was fixture-only and is retired.
 - 2026-11-13 · Production hardening · **Keeper API versioned under `/api/v1`, healthz with dependency probes, per-IP token buckets, security headers, vitest + 15-check smoke suite in CI, Dockerfile + compose, ToS/Privacy at /legal** · Remaining known gaps are external dependencies (contract deployment, 1Click partner key, TEE credentials) surfaced honestly rather than simulated; the 7 moderate npm-audit findings are dev-lint-only (typescript-eslint/minimatch) and deferred with the major-bump risk documented.
 - 2026-11-13 · Wallet connection · **Official Wallet Selector v10 (`my-near-wallet` module + modal) replaces the injected-wallet probe** · Real connect modal, real signed `functionCall` transactions for Settle / Exit early / Emergency recover (30 TGas, near-js actions), on-chain state re-read after confirmation. Transaction failures while the vault contract is undeployed surface the chain's real errors — the honest state until deployment.
 
@@ -41,16 +41,32 @@ Log per spec §0.4: date · ambiguity · choice · reason. Newest last.
    account recreation on testnet, so `mint`/`register` skip existing accounts.
 7. **Equity price feed**: `/api/v1/equity-price` (Yahoo Finance chart API,
    30 s revalidate) — real NVDA quotes for the wedge and the keeper path;
-   switches to the 1Click quote when NVDAon lists (G-2).
+   switches to the 1Click quote when NVDAon lists.
 8. Full trail with tx ids: docs/ONCHAIN-TRAIL.md.
+
+## 2026-11-14 — product cut
+
+1. **Crash simulator removed from the product.** The `/crash` page,
+   `/api/v1/crash-sim`, the TS engine, `sim/make_sim.py` and the parity tests
+   were demo scaffolding, not product surface. The landing hero now shows the
+   contract's own 90/10 arithmetic inline; `make sim` and the seed-theater
+   copy went with it.
+2. **Fake-attestation "Explain" page removed.** It rendered a canned answer
+   with a fabricated ed25519 signature snippet — deceptive by construction.
+   The honest FAQ on the landing page covers the same questions.
+3. **Agent jailbreak endpoint removed.** The clamp (deterministic parser) and
+   the on-chain per-deposit ratio gate remain product features, covered by
+   `tests/agent-policy.test.ts` and the live `ErrStepExceeded` proof.
+4. **Hackathon framing stripped.** All copy now reads as product copy: fees
+   "0% at launch", no event references anywhere in app, README, or docs.
 
 ## 2026-11-14 — production-readiness sprint
 
-1. **I2 semantics after a de-risk sale (spec ambiguity).** `cost_basis +
+1. **I2 semantics after a de-risk sale.** `cost_basis +
    realised_quote ≤ R` double-counts a fully-sold bucket (cost spent +
    proceeds returned). Resolution: a full sale zeroes `cost_basis`; the
    bucket's footprint is `realised ≤ R` (a sale at the trigger returns ≤ cost
-   by construction). Logged per §0.4.
+   by construction).
 2. **Payout failure must not strand the claim.** The payout confirms in its
    own receipt; failure restores the position WITHOUT panicking (a panic
    rolls the restore back). No double-pay: the payout can only succeed if
@@ -58,7 +74,7 @@ Log per spec §0.4: date · ambiguity · choice · reason. Newest last.
 3. **Per-owner storage prefixes.** `owner_positions` vectors shared one
    prefix; a transfer to a new owner corrupted shared storage. Prefix is now
    `owner_positions_v1:<account>`.
-4. **Deposits are allowed while paused** (spec edge case 9); the pause gate
+4. **Deposits are allowed while paused**; the pause gate
    covers buys and de-risks only.
 5. **Per-deposit loss limit.** `msg = "deposit:<ratio_bps>"` overrides the
    vault ratio, clamped [5000, 9800] step 100 on-chain (F-22) — the agent

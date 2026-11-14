@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * check-copy.mjs — the banned-words rule (§0.5) + the asset-name rule (U2).
+ * check-copy.mjs — copy hygiene: banned marketing phrases + the asset-name
+ * rule (asset names may appear only where factual/roadmap context is allowed).
  * Exits 1 with the offending file:line list on any hit.
  */
 import { execFileSync } from "node:child_process";
@@ -21,7 +22,7 @@ function grep(pattern, args) {
 
 let bad = [];
 
-const bannedHits = grep(banned.source, ["README.md", "app/", "docs/", "scripts/", "sim/", "--exclude=check-copy.mjs"]);
+const bannedHits = grep(banned.source, ["README.md", "app/", "docs/", "scripts/", "--exclude=check-copy.mjs"]);
 if (bannedHits) bad.push(...bannedHits.split("\n").filter(Boolean).map((l) => `banned-word: ${l}`));
 
 const assetHits = grep("NVIDIA|NVDAon|TSLAON", ["README.md", "app/", "docs/", "scripts/", "--exclude=check-copy.mjs"]);
