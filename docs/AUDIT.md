@@ -165,15 +165,13 @@ account, every tx id in docs/ is a real tx.
 
 | Class | Count |
 |---|---|
-| REAL | 88 |
-| PARTIAL | 5 |
+| REAL | 89 |
+| PARTIAL | 4 |
 | MOCK | 0 |
 | MISSING | 1 (F-18 DCA — deferred to a later release) |
 
 Remaining PARTIALs, honestly:
 - NF-08 — the vault wasm is 256 KB (near-sdk 5 baseline; target 160 KB).
-- F-15 — the degraded path is fuzz-proven; waiting 20 minutes live was not
-  spent.
-- W-deposit-through-UI — proven: the browser wallet signed the deposit
-  (position minted on-chain) AND the exit (settled) in the E2E; the
-  below-minimum rejection blocks pre-chain as designed.
+- The remote CI green run — the workflow is complete and every step passes
+  locally; the runner itself is user-blocked (GitHub billing lock,
+  NEEDS_FROM_ME #5).
