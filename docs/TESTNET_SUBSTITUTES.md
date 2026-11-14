@@ -12,3 +12,11 @@ keeps the production interface so moving to mainnet is config-only.
 | **TEE attestation (NEAR AI Cloud)** | Needs NEAR_AI_API_KEY (not configured) | The de-risk rule runs as the deterministic on-chain rule (single-shot latch); every attestation surface returns honest `pending` | Set `NEAR_AI_API_KEY` + wire the verifier flow; the `/api/v1/attestation/:id` contract stays |
 | **Multi-oracle disagreement bound** | One oracle key configured | The on-chain ed25519 signature gate (T-02, live-proven) + keeper-layer two-feed agreement (Yahoo vs 1Click) | Add a second on-chain oracle contract + the on-chain `ErrOracleDisagreement` check |
 | **Postgres** | — (shipped single-instance) | Durable JSON stores (`app/lib/deposit-store.ts`, `app/lib/policy-store.ts`) with the same read/write interface | Swap the two store modules to a DB client (one file each) |
+
+## Contract verification (explorers)
+
+- Vault: https://testnet.nearblocks.io/address/vault3.floorline-escrow.testnet
+- Escrow: https://testnet.nearblocks.io/address/floorline-escrow.testnet
+- Price oracle: https://testnet.nearblocks.io/address/oracle.floorline-escrow.testnet
+- Risk-asset stand-in: https://testnet.nearblocks.io/address/nvda.floorline-escrow.testnet
+- The full on-chain tx trail with hashes: docs/ONCHAIN-TRAIL.md
