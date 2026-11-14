@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""Generate the Floorline logo assets — the anchor lockup.
+"""Generate the Floorline logo assets — the safe.
 
-The mark: an anchor dropped at the sea floor. The storm moves the surface;
-the anchor holds the seabed — the "floor line" the product is named for.
-One mint accent on the stock bar; the wordmark is real Geist SemiBold
-outlined to paths (no font dependency in the shipped assets).
+The mark: a rounded safe with a mint dial and cross-handle. It tells the
+whole product loop in one object: money goes in, the floor locks the worst
+case, the depositor gets it back. The dial is the one brand accent.
 
 Assets written:
-  public/logo.svg          official lockup — emblem + wordmark on white
-  public/logo-emblem.svg   emblem only on white (avatars, stamps)
-  public/logo-mark-dark.svg  emblem only, ivory strokes, for dark surfaces
-  app/icon.svg             favicon tile (white rounded tile, emblem)
+  public/logo.svg            official lockup — emblem + wordmark on white
+  public/logo-emblem.svg     emblem only on white (avatars, stamps)
+  public/logo-mark-dark.svg  emblem only, ivory body, for dark surfaces
+  app/icon.svg               favicon tile (white rounded tile, safe emblem)
 
 Favicon: app/favicon.ico is a rendered snapshot of app/icon.svg (16/32/48).
-Regenerate it manually after changing the geometry (see the repo runbook):
-  qlmanage -t -s 1024 -o <tmp> app/icon.svg  → resize 48/32/16 with Pillow.
-
+Regenerate it manually after changing the geometry:
+  qlmanage -t -s 1024 -o <tmp> app/icon.svg
+  → Pillow: crop, resize 48/32/16, save app/favicon.ico.
 Run:  python3 scripts/make-logo.py
 """
 
@@ -33,23 +32,23 @@ WORDMARK = "Floorline"
 WORDMARK_WEIGHT = 600
 
 # ─── Brand palette (brand.md) ────────────────────────────────────────────
-INK = "#0E0E10"       # --background — emblem + text on white
-IVORY = "#EDEBE4"     # --foreground — emblem strokes on dark surfaces
-ACCENT = "#3DDC97"    # --up / --accent — the stock bar; the only color
+INK = "#0E0E10"       # --background — safe body + text on white
+IVORY = "#EDEBE4"     # --foreground — safe body on dark surfaces
+ACCENT = "#3DDC97"    # --up / --accent — the dial and handle
 WHITE = "#FFFFFF"
 
 # ─── Emblem geometry (defined once; 64×64 box) ───────────────────────────
-RING = dict(cx=32, cy=9, r=5, w=4.5)
-SHANK = "M32 16 V50"                    # stroke 5.5
-STOCK = "M20 26 H44"                    # accent, stroke 5.5
-ARMS = "M12 36 A22 22 0 0 0 52 36"      # stroke 5.5
-FLUKE_L = "M12 36 L3.5 29.5 L12.5 29 Z"  # solid
-FLUKE_R = "M52 36 L60.5 29.5 L51.5 29 Z"
-EMBLEM_STROKE = 5.5
+BODY = dict(x=8, y=12, w=48, h=44, rx=9)
+DIAL = dict(cx=32, cy=34, r=13.5, w=3.5)
+HANDLE = "M32 25 V43 M23 34 H41"
+HUB_R = 3.2
+BOLTS = [(15.5, 19.5), (48.5, 19.5), (15.5, 48.5), (48.5, 48.5)]
+BOLT_R = 1.9
+KNOCKOUT = WHITE          # bolt fill on the white emblem; INK on dark
 
 WORDMARK_EM_PX = 30
 LOCKUP_PAD = 14
-EMBLEM_TOP = 8
+EMBLEM_TOP = 6
 WORDMARK_BASELINE = 96
 
 
@@ -116,17 +115,20 @@ def _kern_map(font: TTFont) -> dict[tuple[str, str], float]:
     return kern
 
 
-def emblem_group(ink: str, accent: str) -> str:
+def emblem_group(body: str, accent: str, bolt: str) -> str:
+    b = BODY
+    bolts = "\n    ".join(
+        f'<circle cx="{x}" cy="{y}" r="{BOLT_R}" fill="{bolt}"/>' for x, y in BOLTS
+    )
     return (
-        f'<circle cx="{RING["cx"]}" cy="{RING["cy"]}" r="{RING["r"]}" stroke="{ink}" '
-        f'stroke-width="{RING["w"]}"/>\n'
-        f'    <path d="{SHANK}" stroke="{ink}" stroke-width="{EMBLEM_STROKE}"/>\n'
-        f'    <path d="{STOCK}" stroke="{accent}" stroke-width="{EMBLEM_STROKE}"/>\n'
-        f'    <path d="{ARMS}" stroke="{ink}" stroke-width="{EMBLEM_STROKE}"/>\n'
-        f'    <g fill="{ink}">\n'
-        f'      <path d="{FLUKE_L}"/>\n'
-        f'      <path d="{FLUKE_R}"/>\n'
-        f'    </g>'
+        f'  <rect x="{b["x"]}" y="{b["y"]}" width="{b["w"]}" height="{b["h"]}" '
+        f'rx="{b["rx"]}" fill="{body}"/>\n'
+        f'  <circle cx="{DIAL["cx"]}" cy="{DIAL["cy"]}" r="{DIAL["r"]}" '
+        f'fill="none" stroke="{accent}" stroke-width="{DIAL["w"]}"/>\n'
+        f'  <path d="{HANDLE}" stroke="{accent}" stroke-width="{DIAL["w"]}" '
+        'stroke-linecap="round"/>\n'
+        f'  <circle cx="{DIAL["cx"]}" cy="{DIAL["cy"]}" r="{HUB_R}" fill="{accent}"/>\n'
+        f'  {bolts}'
     )
 
 
@@ -152,9 +154,8 @@ def main() -> None:
         '<svg xmlns="http://www.w3.org/2000/svg" '
         f'viewBox="0 0 {W:.1f} {H}">\n'
         f'  <rect width="{W:.1f}" height="{H}" fill="{WHITE}"/>\n'
-        f'  <g transform="translate({ex:.1f} {EMBLEM_TOP})" '
-        'fill="none" stroke-linecap="round">\n'
-        f'    {emblem_group(INK, ACCENT)}\n'
+        f'  <g transform="translate({ex:.1f} {EMBLEM_TOP})">\n'
+        f'    {emblem_group(INK, ACCENT, KNOCKOUT)}\n'
         '  </g>\n'
         f'  <g transform="translate({LOCKUP_PAD} {WORDMARK_BASELINE})">\n'
         f'    <path d="{word_d}" fill="{INK}"/>\n'
@@ -167,27 +168,24 @@ def main() -> None:
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
         'width="64" height="64">\n'
         f'  <rect width="64" height="64" fill="{WHITE}"/>\n'
-        '  <g fill="none" stroke-linecap="round">\n'
-        f'    {emblem_group(INK, ACCENT)}\n'
-        '  </g>\n'
+        f'  {emblem_group(INK, ACCENT, KNOCKOUT)}\n'
         '</svg>\n'
     ))
 
-    # Emblem only, for dark surfaces (transparent background)
+    # Emblem only, for dark surfaces (transparent background, ivory body)
     write(ROOT / "public/logo-mark-dark.svg", (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
-        'width="64" height="64" fill="none">\n'
-        f'  {emblem_group(IVORY, ACCENT)}\n'
+        'width="64" height="64">\n'
+        f'  {emblem_group(IVORY, ACCENT, INK)}\n'
         '</svg>\n'
     ))
 
-    # Favicon tile: white rounded square, emblem centered
+    # Favicon tile: white rounded square, safe centered
     write(ROOT / "app/icon.svg", (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">\n'
         f'  <rect width="64" height="64" rx="14" fill="{WHITE}"/>\n'
-        '  <g transform="translate(4.8 7.2) scale(0.85)" fill="none" '
-        'stroke-linecap="round">\n'
-        f'    {emblem_group(INK, ACCENT)}\n'
+        '  <g transform="translate(4.8 3.4) scale(0.85)">\n'
+        f'    {emblem_group(INK, ACCENT, KNOCKOUT)}\n'
         '  </g>\n'
         '</svg>\n'
     ))

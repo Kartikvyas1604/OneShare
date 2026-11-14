@@ -2,31 +2,32 @@
 
 > Set your own worst case. The floor holds.
 
-## Logo — the anchor
+## Logo — the safe
 
-An anchor dropped at the sea floor: **the storm moves the surface; the anchor
-holds the seabed** — the "floor line" the product is named for. Lockup rules:
-single centered emblem over the wordmark, pure white background, exactly two
-colors.
+A rounded safe with a mint dial and cross-handle: **money goes in, the floor
+locks the worst case, the depositor gets it back.** The dial is the one
+brand accent; the corner bolts knock out to the background. Lockup rules:
+single centered emblem over the wordmark, pure white background, exactly
+two colors.
 
-- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box: ring
-  `(32, 9) r 5` (stroke 4.5), shank `M32 16 V50` (5.5), stock
-  `M20 26 H44` in the accent (5.5), arms `M12 36 A22 22 0 0 0 52 36` (5.5),
-  two solid fluke triangles at the arm tips. Round caps everywhere.
+- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box: body
+  `rect (8,12,48,44) rx 9`; dial `(32,34) r 13.5` stroke 3.5; cross handle
+  `M32 25 V43 M23 34 H41`; hub `r 3.2`; four corner bolts `r 1.9`.
 - **Wordmark:** "Floorline" outlined from Geist SemiBold (SIL OFL,
   `assets/brand/Geist[wght].ttf`), 30px em, GPOS-kerned, centered below the
   emblem. No font dependency in the shipped assets.
 - **Assets:** `public/logo.svg` (official lockup, white) ·
   `public/logo-emblem.svg` (emblem only, white) ·
-  `public/logo-mark-dark.svg` (emblem only, ivory strokes, transparent — for
+  `public/logo-mark-dark.svg` (emblem only, ivory body, transparent — for
   dark surfaces) · `app/icon.svg` + `app/favicon.ico` (white rounded tile).
-- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor` strokes +
-  `var(--accent)` stock bar, adapts to light/dark automatically.
+- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor` body +
+  `var(--accent)` dial, bolts knock out to `var(--background)`, adapts to
+  light/dark automatically.
 - **Regenerate:** `python3 scripts/make-logo.py` (then re-render
   `app/favicon.ico` per the script's docstring).
-- **Rules:** never recolor the strokes; the accent appears only on the stock
-  bar; the lockup always sits on white (use `logo-mark-dark.svg` on dark);
-  clear space = the stock-bar length (24 units) on all sides.
+- **Rules:** the accent appears only in the dial and handle; never recolor
+  the body; the lockup always sits on white (use `logo-mark-dark.svg` on
+  dark); clear space = one dial radius (13.5 units) on all sides.
 
 ## Direction
 

@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
-  <circle cx="32" cy="9" r="5" stroke="#EDEBE4" stroke-width="4.5"/>
-    <path d="M32 16 V50" stroke="#EDEBE4" stroke-width="5.5"/>
-    <path d="M20 26 H44" stroke="#3DDC97" stroke-width="5.5"/>
-    <path d="M12 36 A22 22 0 0 0 52 36" stroke="#EDEBE4" stroke-width="5.5"/>
-    <g fill="#EDEBE4">
-      <path d="M12 36 L3.5 29.5 L12.5 29 Z"/>
-      <path d="M52 36 L60.5 29.5 L51.5 29 Z"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+    <rect x="8" y="12" width="48" height="44" rx="9" fill="#EDEBE4"/>
+  <circle cx="32" cy="34" r="13.5" fill="none" stroke="#3DDC97" stroke-width="3.5"/>
+  <path d="M32 25 V43 M23 34 H41" stroke="#3DDC97" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="32" cy="34" r="3.2" fill="#3DDC97"/>
+  <circle cx="15.5" cy="19.5" r="1.9" fill="#0E0E10"/>
+    <circle cx="48.5" cy="19.5" r="1.9" fill="#0E0E10"/>
+    <circle cx="15.5" cy="48.5" r="1.9" fill="#0E0E10"/>
+    <circle cx="48.5" cy="48.5" r="1.9" fill="#0E0E10"/>
 </svg>

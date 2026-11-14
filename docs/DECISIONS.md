@@ -104,3 +104,12 @@ Log: date · ambiguity · choice · reason. Newest last.
    it holds while the storm moves the surface — and carries no clash risk
    (rare symbol in fintech). Wordmark moved to Geist SemiBold outlines;
    the Instrument Serif asset was retired from the brand assets.
+
+## 2026-11-15 — logo v4
+
+1. **The anchor was replaced by the safe.** The anchor said "holding" but
+   not the whole product loop; the user wanted an emblem that reads as the
+   complete story. The safe — money in, the floor locks the worst case,
+   the depositor gets it back — is the classic finance-protection symbol
+   and matches the private-banking tone. Same two-color system, same
+   lockup format (emblem over the Geist wordmark on white).
