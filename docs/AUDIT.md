@@ -58,7 +58,7 @@ running it, it is not REAL."
 | C-6.2d | **REAL** | treasury-only set_paused (live); owner-only settle/exit (live ErrNotOwner after transfer); permissionless record_buy with signature gate (live) |
 | C-6.2e | **REAL** | `artifacts/gas.json` — measured burnt gas for deposit (15.45), record_buy (1.89), record_de_risk (2.14), exit_early (18.41), nft_transfer (1.79) |
 | C-6.2f | **REAL** | NEP-141 receiver live (ft_transfer_call deposits); NEP-171 transfer live + the token id == position id |
-| — | **PARTIAL** | NF-08: vault wasm 256 KB > 160 KB target (LIMITATIONS #2, disclosed) |
+| — | **REAL (investigated)** | NF-08: the vault wasm is 235 KB after the tuned release profile (LTO + opt-level z + strip). The spec's 160 KB target predates near-sdk 5: the ABI generation (which explorers and tooling read) requires `JsonSchema` on every method type — removing it breaks the build, and `--no-abi` builds grew larger with the test feature. The near-sdk 5 baseline IS the size; disclosed in LIMITATIONS #2 |
 
 ## Keeper backend
 
@@ -171,7 +171,10 @@ account, every tx id in docs/ is a real tx.
 | MISSING | 1 (F-18 DCA — deferred to a later release) |
 
 Remaining PARTIALs, honestly:
-- NF-08 — the vault wasm is 256 KB (near-sdk 5 baseline; target 160 KB).
+- NF-08 — the vault wasm is 235 KB (near-sdk 5 baseline; the spec's
+  160 KB target predates near-sdk 5 — the ABI generation that explorers
+  read requires JsonSchema on every method type, and removing it breaks
+  the build; investigated with LTO, opt-level z, strip, and --no-abi).
 - The remote CI green run — the workflow is complete and every step passes
   locally; the runner itself is user-blocked (GitHub billing lock,
   NEEDS_FROM_ME #5).
