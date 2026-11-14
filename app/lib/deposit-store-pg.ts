@@ -13,6 +13,11 @@ const pool = new Pool({
   max: 5,
 });
 
+// Surface a real message when the DB is down (an empty "" error helps nobody).
+pool.on("error", (err) => {
+  console.error("[deposit-store-pg] connection error:", err.message);
+});
+
 let migrated = false;
 
 export interface DepositRow {

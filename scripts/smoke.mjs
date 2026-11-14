@@ -66,7 +66,7 @@ async function main() {
   r = await smartFetch(`${BASE}/api/deposit`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amountMicro: 100_000_000, ownerAccountId: "floorline-demo.near" }),
+    body: JSON.stringify({ amountMicro: 100_000_000, ownerAccountId: "nvda.floorline-escrow.testnet" }),
   });
   j = await r.json();
   const credOk = r.status === 200 && typeof j.depositAddress === "string" && j.depositAddress.length >= 20;

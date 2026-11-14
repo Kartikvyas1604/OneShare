@@ -25,7 +25,15 @@ async function store(): Promise<Store> {
 }
 
 export async function saveDeposit(row: DepositRecord): Promise<void> {
-  return (await store()).saveDeposit(row);
+  try {
+    return await (await store()).saveDeposit(row);
+  } catch (err) {
+    throw new Error(
+      `deposit store (${process.env.DATABASE_URL ? "postgres" : "json"}): ${
+        err instanceof Error ? err.message || String(err) : "unknown"
+      }`
+    );
+  }
 }
 
 export async function getDeposit(depositAddress: string): Promise<DepositRecord | null> {
