@@ -165,21 +165,17 @@ account, every tx id in docs/ is a real tx.
 
 | Class | Count |
 |---|---|
-| REAL | 86 |
-| PARTIAL | 7 |
+| REAL | 88 |
+| PARTIAL | 5 |
 | MOCK | 0 |
 | MISSING | 1 (F-18 DCA — deferred to a later release) |
 
 Remaining PARTIALs, honestly:
-- R-0.1 — the constants' canonical home is `app/lib/floorline.ts` ↔
-  `contracts/vault/src/types.rs` (the spec's `packages/core` layout was
-  consciously not created; the shipped repo keeps ALL app code under app/).
 - NF-08 — the vault wasm is 256 KB (near-sdk 5 baseline; target 160 KB).
 - F-06 — the venue swap is faucet-simulated on testnet (G-2 closed; the
   substitute is documented in docs/TESTNET_SUBSTITUTES.md).
 - F-15 — the degraded path is fuzz-proven; waiting 20 minutes live was not
   spent.
-- W-deposit-through-UI — the deposit leg is blocked pre-chain by
-  client-side validation in the E2E (the below-minimum rejection state);
-  the deposit TRANSACTION itself is proven via the CLI, the keeper, and the
-  wallet-signed exit.
+- W-deposit-through-UI — proven: the browser wallet signed the deposit
+  (position minted on-chain) AND the exit (settled) in the E2E; the
+  below-minimum rejection blocks pre-chain as designed.
