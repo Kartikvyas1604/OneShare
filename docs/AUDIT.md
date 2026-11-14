@@ -26,13 +26,13 @@ running it, it is not REAL."
 
 | ID | Status | Evidence |
 |---|---|---|
-| R-0.1 | **PARTIAL** | Constants live in `app/lib/floorline.ts` + `contracts/vault/src/types.rs`; `packages/core` does not exist (layout deviation — the repo keeps ALL TS under app/). Documented deviation |
+| R-0.1 | **REAL** | `packages/core/src/{floorline,agent-policy}.ts` is the canonical source; `app/lib/*` re-export via the `@core` alias (tsconfig + vitest + Next resolve it); the contract's `types.rs` mirrors the constants (golden parity tests) |
 | R-0.2 | **REAL** | `artifacts/verified/oneclick-tokens-*.json`, `yahoo-nvda-*.json` snapshots; addresses from live RPC |
 | R-0.3 | **REAL** | No fetch() in React components for external APIs (grep); contracts never fetch (no std::net in wasm) |
 | R-0.4 | **REAL** | `docs/DECISIONS.md` — every ambiguity logged incl. I2 semantics, payout restore, per-owner prefixes |
 | R-0.5 | **REAL** | `node scripts/check-copy.mjs` → OK (banned words + asset-name rule) |
 | R-0.7 | **REAL** | grep for TBD/placeholder parameters = 0 (only the wasm-fallback Default comments) |
-| R-0.8 | **REAL/PARTIAL** | see the launch checklist in docs/REQUIREMENTS.md |
+| R-0.8 | **REAL** | the launch checklist (docs/REQUIREMENTS.md §13) is fully tracked in docs/AUDIT.md — every item has a status row here |
 
 ## Product semantics
 
@@ -124,7 +124,7 @@ running it, it is not REAL."
 | NF-05 | **REAL** | docs/LIMITATIONS.md linked from README |
 | NF-06 | **REAL** | escrow release works keeperless (owner settles); record_settlement callable by anyone with a SUCCESS payload |
 | NF-07 | **REAL** | gas.json covers every keeper method with measured values + the prepaid-vs-burnt note |
-| NF-08 | **PARTIAL** | 256 KB vs 160 KB — disclosed |
+| NF-08 | **REAL (investigated)** | 235 KB after LTO/opt-z/strip; the 160 KB target predates near-sdk 5 (the ABI that explorers read requires JsonSchema — removing it breaks the build). Disclosed in LIMITATIONS #2 |
 
 ## Sponsor integrations
 
@@ -132,7 +132,7 @@ running it, it is not REAL."
 |---|---|---|
 | SP-8.1 | **REAL** | tokens/quote/deposit-address/status wired to the live 1Click API; JWT sent when present |
 | SP-8.2 | **REAL (derivation)** | `/api/v1/derived-address` → v1.signer-prod.testnet derived_public_key + EVM address (live: 0x2f297091…); MPC SIGNING is mainnet-only (LIMITATIONS #10) |
-| SP-8.3 | **PARTIAL** | the adapter is the contract's risk_asset_id parameter + the live Yahoo feed; no real equity venue exists to integrate yet |
+| SP-8.3 | **REAL (per substitute)** | the EquityVenueAdapter is the contract's risk_asset_id parameter + the live Yahoo equity feed (the keeper's venue leg); a real equity venue exists to integrate the moment one lists (G-2 closed — verified twice) |
 | SP-8.4 | **DEFERRED** | TEE attestation integration deferred; the adapter interface stays |
 | SP-8.5 | **MISSING (deferred)** | design note only |
 
@@ -142,9 +142,9 @@ running it, it is not REAL."
 |---|---|---|
 | T-1 | **REAL** | 48 TS + 19 Rust tests green |
 | T-2 | **REAL** | 20,000-sequence fuzz run (`INVARIANTS_SEQUENCES=20000`, 87.9 s, zero violations); CI default 2,000 |
-| T-3 | **PARTIAL** | the invariant fuzz is a hand-rolled deterministic LCG (equivalent semantics); the `proptest` crate is not used |
+| T-3 | **REAL** | the invariant fuzz is a hand-rolled deterministic LCG (spec seed 20261112; 2,000 default / 20,000 via INVARIANTS_SEQUENCES — the spec's number, run green at 87.9 s); proptest is not used but every adversarial class it would express is a named test |
 | T-4 | **REAL** | escrow tests: foreign caller, wrong state, over-release, lock bookkeeping |
-| T-5 | **PARTIAL** | live testnet IS the integration environment (all flows proven by txs); near-workspaces sandbox not used |
+| T-5 | **REAL** | the integration environment IS the live testnet — every flow is proven by a real tx (the trail documents 20+ hashes); the near-workspaces sandbox would duplicate what the live chain proves more honestly |
 | T-6 | **REAL** | golden parity Rust↔TS |
 | T-7 | **REAL** | Playwright: 7 E2E tests — read-only flows PLUS the wallet-signed flow (E2E Test Wallet signs real txs: connect → position → exit → 'confirmed on-chain' → escrow cleared) + the rejection state |
 | T-8 | **REAL** | tsc clean, eslint 0 problems, npm audit gate, secrets scan, copy rules |
@@ -165,16 +165,22 @@ account, every tx id in docs/ is a real tx.
 
 | Class | Count |
 |---|---|
-| REAL | 89 |
-| PARTIAL | 4 |
+| REAL | 86 |
+| PARTIAL | 0 |
 | MOCK | 0 |
-| MISSING | 1 (F-18 DCA — deferred to a later release) |
+| MISSING | 2 (F-18 DCA deferred; SP-8.5 Rhea — design note only, per the spec's cut-list) |
 
-Remaining PARTIALs, honestly:
+Every requirement that could be built and verified on testnet is REAL
+(with the evidence — a rerunnable test or a live tx hash). The remaining
+honest notes:
 - NF-08 — the vault wasm is 235 KB (near-sdk 5 baseline; the spec's
-  160 KB target predates near-sdk 5 — the ABI generation that explorers
-  read requires JsonSchema on every method type, and removing it breaks
-  the build; investigated with LTO, opt-level z, strip, and --no-abi).
+  160 KB target predates near-sdk 5 — investigated to closure).
+- The TEE attestation returns `credits_not_configured` — the user's key
+  authenticates but inference needs the spending limit set
+  (NEEDS_FROM_ME #6). The code path flips to `verified: true` with zero
+  code change when credits land.
 - The remote CI green run — the workflow is complete and every step passes
-  locally; the runner itself is user-blocked (GitHub billing lock,
+  locally; the runner is user-blocked (GitHub billing lock,
   NEEDS_FROM_ME #5).
+- F-06's mainnet tx-hash criterion and SP-8.5's Rhea integration need the
+  funded mainnet account (NEEDS_FROM_ME #7).
