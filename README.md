@@ -1,5 +1,9 @@
 # Floorline
 
+<p align="center">
+  <img src="public/logo-light.svg" alt="Floorline — set your own worst case; the floor holds" width="360" />
+</p>
+
 > Deposit USDC from any of 30+ chains, set your own worst case, and own a self-managing tokenized position as a NEAR NFT.
 
 Floorline splits every deposit at the contract level: a **reserve** (90% by default) moves to a separate escrow contract whose only door is the vault's settle path, and a **risk budget** is swapped into the risk asset. An automated de-risk rule sells the whole risk bucket if it falls 50% below what it cost — once, with no keeper discretion. At maturity the payout equals NAV: the reserve plus whatever the risk bucket kept. The worst case is the pre-committed risk budget — a number the depositor set, not one the market sets.

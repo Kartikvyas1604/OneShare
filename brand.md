@@ -1,12 +1,33 @@
-# Brand — OneShare
+# Brand — Floorline
 
-> Own $10 of NVIDIA. In 60 seconds.
+> Set your own worst case. The floor holds.
 
-_Renamed to **Floorline** in the product UI on 12 Nov 2026 (see `docs/DECISIONS.md`); every visual rule below is unchanged._
+## Logo — "the line that holds"
+
+A falling price line lands on a horizontal floor and is held. The wedge between
+the line and the floor is the bounded loss, tinted in the one semantic accent;
+the accent dot marks the point where the floor catches the line. The wordmark's
+baseline sits on the floor line itself.
+
+- **Geometry (single source):** `scripts/make-logo.py` — a 32×32 box, floor
+  `M4 25 H28`, fall `M5 6 L16 25`, wedge `M5 6 L16 25 L5 25 Z` at 16% accent,
+  landing dot `r 2.4` centered at `(16, 25)`. Strokes 3px, round caps.
+- **Wordmark:** "Floorline" outlined from Instrument Serif Regular (SIL OFL,
+  `assets/brand/`) at 26px em, baseline y=25, kerned via GPOS. No font
+  dependency in the assets.
+- **Assets:** `public/logo-mark.svg` (dark surfaces) ·
+  `public/logo-mark-mono.svg` (single currentColor) · `public/logo-dark.svg` /
+  `public/logo-light.svg` (full lockups) · `app/icon.svg` (favicon tile).
+- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — currentColor strokes +
+  `var(--accent)`, so it adapts to light/dark automatically.
+- **Regenerate:** `python3 scripts/make-logo.py`.
+- **Rules:** never recolor the strokes; the accent appears only in the wedge
+  and the landing dot; never place the dark lockup on light backgrounds —
+  use `logo-light.svg`. Clear space = one floor-length (≈ x×0.9) on all sides.
 
 ## Direction
 
-**Private banking, not crypto casino.** OneShare competes for trust the way Mercury and Stripe do: warm near-black surfaces, ivory text, a serif display face for headlines, monospaced tabular numerals for every figure, and exactly one semantic accent. Wealth products earn confidence through restraint — every element either communicates data, hierarchy, or action. Everything else is removed.
+**Private banking, not crypto casino.** Floorline competes for trust the way Mercury and Stripe do: warm near-black surfaces, ivory text, a serif display face for headlines, monospaced tabular numerals for every figure, and exactly one semantic accent. Wealth products earn confidence through restraint — every element either communicates data, hierarchy, or action. Everything else is removed.
 
 ## Typography — the identity move
 
@@ -86,4 +107,4 @@ The serif / sans / mono triad is what makes this look designed:
 - Data prefers tables/rows over card grids. Summary strips are single hairline cards with divide-x.
 
 ---
-_Active as of 2026-11-12 · third generation · supersedes both earlier systems._
+_Active as of 2026-11-14 · fourth generation · supersedes all earlier systems._

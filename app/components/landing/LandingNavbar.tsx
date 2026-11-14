@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowUpRight, Landmark } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { Logo } from "@/app/components/Logo";
 import { Button } from "@/app/components/Button";
 
 const LINKS = [
@@ -17,7 +18,7 @@ export function LandingNavbar() {
           className="flex items-center gap-2.5 focus-visible:outline-none"
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Landmark className="h-3.5 w-3.5" aria-hidden />
+            <Logo size={16} />
           </span>
           <span className="display text-lg text-foreground">Floorline</span>
         </Link>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Landmark } from "lucide-react";
+import { Logo } from "@/app/components/Logo";
 
 const REPO_URL = "https://github.com/Kartikvyas1604/OneShare";
 
@@ -22,7 +22,7 @@ export function LandingFooter() {
             className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Landmark className="h-3.5 w-3.5" aria-hidden />
+              <Logo size={20} />
             </span>
             <span className="display text-lg text-foreground">Floorline</span>
           </Link>

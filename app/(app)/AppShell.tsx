@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/app/components/Button";
 import { useWallet } from "@/app/components/wallet/WalletProvider";
-import { Landmark, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { Logo } from "@/app/components/Logo";
 
 const NAV = [
   { href: "/dashboard", label: "Overview" },
@@ -52,7 +53,7 @@ export function SiteHeader() {
           className="flex shrink-0 items-center gap-2.5 transition-opacity duration-200 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Landmark className="h-3.5 w-3.5" aria-hidden />
+            <Logo size={16} />
           </span>
           <span className="display text-lg text-foreground">Floorline</span>
         </Link>
