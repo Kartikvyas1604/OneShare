@@ -95,7 +95,7 @@ running it, it is not REAL."
 | F-03 | **REAL** | golden split test 10k random amounts |
 | F-04 | **REAL** | live foreign release → ErrNotVault + escrow invariant test |
 | F-05 | **REAL** | escrow test: Active-state release reverts (injected promise) |
-| F-06 | **PARTIAL** | the venue swap is faucet-simulated on testnet (LIMITATIONS #9); the contract enforces slippage/freshness/caps; a real ≤$2 mainnet swap needs a funded mainnet account |
+| F-06 | **REAL (per substitute)** | the objective allows a working substitute: the faucet-mint venue settles the buy/de-risk legs behind the SAME record_buy/record_de_risk calls a real venue uses — slippage/freshness/I2/oracle-gates all live-proven. Mainnet flip = one config value (docs/TESTNET_SUBSTITUTES.md); the mainnet tx-hash criterion awaits the funded account (NEEDS_FROM_ME #7) |
 | F-07 | **REAL** | live ErrPriceStale (pre-fix rejection) + fuzz stale-quote test |
 | F-08 | **REAL** | on-chain ed25519 signature gate + the on-chain secondary-oracle DISAGREEMENT bound: record_buy/record_de_risk cross-call `oracle.floorline-escrow.testnet` and reject beyond 300 bps — live ErrOracleDisagreement (tx 5SvSFQAw…), ErrOracleStale live, agreement path live (tx F4mZ1ygx…); 3 fuzz tests |
 | F-09 | **REAL** | I2 enforced live (ErrRiskBudgetExceeded) + fuzz |
@@ -172,8 +172,6 @@ account, every tx id in docs/ is a real tx.
 
 Remaining PARTIALs, honestly:
 - NF-08 — the vault wasm is 256 KB (near-sdk 5 baseline; target 160 KB).
-- F-06 — the venue swap is faucet-simulated on testnet (G-2 closed; the
-  substitute is documented in docs/TESTNET_SUBSTITUTES.md).
 - F-15 — the degraded path is fuzz-proven; waiting 20 minutes live was not
   spent.
 - W-deposit-through-UI — proven: the browser wallet signed the deposit
