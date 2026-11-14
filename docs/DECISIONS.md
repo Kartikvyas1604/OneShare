@@ -113,3 +113,11 @@ Log: date · ambiguity · choice · reason. Newest last.
    the depositor gets it back — is the classic finance-protection symbol
    and matches the private-banking tone. Same two-color system, same
    lockup format (emblem over the Geist wordmark on white).
+
+## 2026-11-15 — logo v5
+
+1. **The safe was replaced by the bank facade at the user's direction.**
+   The classical building (pediment, columns, steps) is the timeless
+   financial emblem, and the entablature beam in the accent color IS the
+   product's namesake — the floor line the money stands on. Same two-color
+   system and lockup format; the safe v4 assets are retired.

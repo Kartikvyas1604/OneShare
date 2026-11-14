@@ -2,32 +2,32 @@
 
 > Set your own worst case. The floor holds.
 
-## Logo — the safe
+## Logo — the bank facade
 
-A rounded safe with a mint dial and cross-handle: **money goes in, the floor
-locks the worst case, the depositor gets it back.** The dial is the one
-brand accent; the corner bolts knock out to the background. Lockup rules:
-single centered emblem over the wordmark, pure white background, exactly
-two colors.
+A classical bank building — pediment, three columns, two base steps — with
+the entablature beam in the brand accent. **That beam is the floor line your
+money stands on**: the product's namesake, drawn into the building.
+Lockup rules: single centered emblem over the wordmark, pure white
+background, exactly two colors.
 
-- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box: body
-  `rect (8,12,48,44) rx 9`; dial `(32,34) r 13.5` stroke 3.5; cross handle
-  `M32 25 V43 M23 34 H41`; hub `r 3.2`; four corner bolts `r 1.9`.
+- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box:
+  pediment `M32 6 L56 19 H8 Z`; beam `rect (9,22,46,5.5) rx 1.6` (accent);
+  three columns `7×17 rx 2.4` at x 14 / 28.5 / 43; steps `(10,51,44,5)` and
+  `(6,58,52,5)` rx 2.
 - **Wordmark:** "Floorline" outlined from Geist SemiBold (SIL OFL,
   `assets/brand/Geist[wght].ttf`), 30px em, GPOS-kerned, centered below the
   emblem. No font dependency in the shipped assets.
 - **Assets:** `public/logo.svg` (official lockup, white) ·
   `public/logo-emblem.svg` (emblem only, white) ·
-  `public/logo-mark-dark.svg` (emblem only, ivory body, transparent — for
+  `public/logo-mark-dark.svg` (emblem only, ivory facade, transparent — for
   dark surfaces) · `app/icon.svg` + `app/favicon.ico` (white rounded tile).
-- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor` body +
-  `var(--accent)` dial, bolts knock out to `var(--background)`, adapts to
-  light/dark automatically.
+- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor`
+  facade + `var(--accent)` beam, adapts to light/dark automatically.
 - **Regenerate:** `python3 scripts/make-logo.py` (then re-render
   `app/favicon.ico` per the script's docstring).
-- **Rules:** the accent appears only in the dial and handle; never recolor
-  the body; the lockup always sits on white (use `logo-mark-dark.svg` on
-  dark); clear space = one dial radius (13.5 units) on all sides.
+- **Rules:** the accent appears only in the beam; never recolor the facade;
+  the lockup always sits on white (use `logo-mark-dark.svg` on dark);
+  clear space = one column height (17 units) on all sides.
 
 ## Direction
 

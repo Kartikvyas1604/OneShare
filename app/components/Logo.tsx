@@ -1,8 +1,8 @@
 /**
- * Floorline emblem — the safe. Money goes in, the floor locks the worst
- * case, the depositor gets it back: the dial and cross-handle are the one
- * brand accent. Geometry is single-sourced in scripts/make-logo.py
- * (public/logo.svg). Corner bolts knock out to the background color.
+ * Floorline emblem — the bank facade. Pediment, three columns, two base
+ * steps, and the entablature beam in the brand accent: that beam is the
+ * floor line the product is named for. Geometry is single-sourced in
+ * scripts/make-logo.py (public/logo.svg).
  */
 export function Logo({ className, size = 24 }: { className?: string; size?: number }) {
   return (
@@ -14,28 +14,13 @@ export function Logo({ className, size = 24 }: { className?: string; size?: numb
       aria-hidden
       className={className}
     >
-      <rect x={8} y={12} width={48} height={44} rx={9} fill="currentColor" />
-      <circle
-        cx={32}
-        cy={34}
-        r={13.5}
-        fill="none"
-        stroke="var(--accent, #3DDC97)"
-        strokeWidth={3.5}
-      />
-      <path
-        d="M32 25 V43 M23 34 H41"
-        stroke="var(--accent, #3DDC97)"
-        strokeWidth={3.5}
-        strokeLinecap="round"
-      />
-      <circle cx={32} cy={34} r={3.2} fill="var(--accent, #3DDC97)" />
-      <g fill="var(--background, #0E0E10)">
-        <circle cx={15.5} cy={19.5} r={1.9} />
-        <circle cx={48.5} cy={19.5} r={1.9} />
-        <circle cx={15.5} cy={48.5} r={1.9} />
-        <circle cx={48.5} cy={48.5} r={1.9} />
-      </g>
+      <path d="M32 6 L56 19 H8 Z" fill="currentColor" />
+      <rect x={9} y={22} width={46} height={5.5} rx={1.6} fill="var(--accent, #3DDC97)" />
+      <rect x={14} y={31} width={7} height={17} rx={2.4} fill="currentColor" />
+      <rect x={28.5} y={31} width={7} height={17} rx={2.4} fill="currentColor" />
+      <rect x={43} y={31} width={7} height={17} rx={2.4} fill="currentColor" />
+      <rect x={10} y={51} width={44} height={5} rx={2} fill="currentColor" />
+      <rect x={6} y={58} width={52} height={5} rx={2} fill="currentColor" />
     </svg>
   );
 }

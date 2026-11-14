@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Generate the Floorline logo assets — the safe.
+"""Generate the Floorline logo assets — the bank facade.
 
-The mark: a rounded safe with a mint dial and cross-handle. It tells the
-whole product loop in one object: money goes in, the floor locks the worst
-case, the depositor gets it back. The dial is the one brand accent.
+The mark: a classical bank building — pediment, three columns, two base
+steps — with the entablature beam in the brand accent. That beam is the
+product's namesake: the floor line your money stands on.
 
 Assets written:
   public/logo.svg            official lockup — emblem + wordmark on white
   public/logo-emblem.svg     emblem only on white (avatars, stamps)
-  public/logo-mark-dark.svg  emblem only, ivory body, for dark surfaces
-  app/icon.svg               favicon tile (white rounded tile, safe emblem)
+  public/logo-mark-dark.svg  emblem only, ivory strokes, for dark surfaces
+  app/icon.svg               favicon tile (white rounded tile, facade)
 
 Favicon: app/favicon.ico is a rendered snapshot of app/icon.svg (16/32/48).
 Regenerate it manually after changing the geometry:
@@ -32,23 +32,21 @@ WORDMARK = "Floorline"
 WORDMARK_WEIGHT = 600
 
 # ─── Brand palette (brand.md) ────────────────────────────────────────────
-INK = "#0E0E10"       # --background — safe body + text on white
-IVORY = "#EDEBE4"     # --foreground — safe body on dark surfaces
-ACCENT = "#3DDC97"    # --up / --accent — the dial and handle
+INK = "#0E0E10"       # --background — facade + text on white
+IVORY = "#EDEBE4"     # --foreground — facade on dark surfaces
+ACCENT = "#3DDC97"    # --up / --accent — the beam (the floorline)
 WHITE = "#FFFFFF"
 
 # ─── Emblem geometry (defined once; 64×64 box) ───────────────────────────
-BODY = dict(x=8, y=12, w=48, h=44, rx=9)
-DIAL = dict(cx=32, cy=34, r=13.5, w=3.5)
-HANDLE = "M32 25 V43 M23 34 H41"
-HUB_R = 3.2
-BOLTS = [(15.5, 19.5), (48.5, 19.5), (15.5, 48.5), (48.5, 48.5)]
-BOLT_R = 1.9
-KNOCKOUT = WHITE          # bolt fill on the white emblem; INK on dark
+PEDIMENT = "M32 6 L56 19 H8 Z"           # the roof
+BEAM = dict(x=9, y=22, w=46, h=5.5, rx=1.6)   # the entablature — the accent
+COLUMNS = [(14, 31), (28.5, 31), (43, 31)]    # x, y — each 7×17, rx 2.4
+STEP1 = dict(x=10, y=51, w=44, h=5, rx=2)
+STEP2 = dict(x=6, y=58, w=52, h=5, rx=2)
 
 WORDMARK_EM_PX = 30
 LOCKUP_PAD = 14
-EMBLEM_TOP = 6
+EMBLEM_TOP = 2
 WORDMARK_BASELINE = 96
 
 
@@ -115,20 +113,21 @@ def _kern_map(font: TTFont) -> dict[tuple[str, str], float]:
     return kern
 
 
-def emblem_group(body: str, accent: str, bolt: str) -> str:
-    b = BODY
-    bolts = "\n    ".join(
-        f'<circle cx="{x}" cy="{y}" r="{BOLT_R}" fill="{bolt}"/>' for x, y in BOLTS
+def emblem_group(ink: str, accent: str) -> str:
+    b, s1, s2 = BEAM, STEP1, STEP2
+    columns = "\n    ".join(
+        f'<rect x="{x}" y="{y}" width="7" height="17" rx="2.4" fill="{ink}"/>'
+        for x, y in COLUMNS
     )
     return (
+        f'  <path d="{PEDIMENT}" fill="{ink}"/>\n'
         f'  <rect x="{b["x"]}" y="{b["y"]}" width="{b["w"]}" height="{b["h"]}" '
-        f'rx="{b["rx"]}" fill="{body}"/>\n'
-        f'  <circle cx="{DIAL["cx"]}" cy="{DIAL["cy"]}" r="{DIAL["r"]}" '
-        f'fill="none" stroke="{accent}" stroke-width="{DIAL["w"]}"/>\n'
-        f'  <path d="{HANDLE}" stroke="{accent}" stroke-width="{DIAL["w"]}" '
-        'stroke-linecap="round"/>\n'
-        f'  <circle cx="{DIAL["cx"]}" cy="{DIAL["cy"]}" r="{HUB_R}" fill="{accent}"/>\n'
-        f'  {bolts}'
+        f'rx="{b["rx"]}" fill="{accent}"/>\n'
+        f'  {columns}\n'
+        f'  <rect x="{s1["x"]}" y="{s1["y"]}" width="{s1["w"]}" height="{s1["h"]}" '
+        f'rx="{s1["rx"]}" fill="{ink}"/>\n'
+        f'  <rect x="{s2["x"]}" y="{s2["y"]}" width="{s2["w"]}" height="{s2["h"]}" '
+        f'rx="{s2["rx"]}" fill="{ink}"/>'
     )
 
 
@@ -155,7 +154,7 @@ def main() -> None:
         f'viewBox="0 0 {W:.1f} {H}">\n'
         f'  <rect width="{W:.1f}" height="{H}" fill="{WHITE}"/>\n'
         f'  <g transform="translate({ex:.1f} {EMBLEM_TOP})">\n'
-        f'    {emblem_group(INK, ACCENT, KNOCKOUT)}\n'
+        f'    {emblem_group(INK, ACCENT)}\n'
         '  </g>\n'
         f'  <g transform="translate({LOCKUP_PAD} {WORDMARK_BASELINE})">\n'
         f'    <path d="{word_d}" fill="{INK}"/>\n'
@@ -168,25 +167,23 @@ def main() -> None:
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
         'width="64" height="64">\n'
         f'  <rect width="64" height="64" fill="{WHITE}"/>\n'
-        f'  {emblem_group(INK, ACCENT, KNOCKOUT)}\n'
+        f'  {emblem_group(INK, ACCENT)}\n'
         '</svg>\n'
     ))
 
-    # Emblem only, for dark surfaces (transparent background, ivory body)
+    # Emblem only, for dark surfaces (transparent background, ivory facade)
     write(ROOT / "public/logo-mark-dark.svg", (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" '
         'width="64" height="64">\n'
-        f'  {emblem_group(IVORY, ACCENT, INK)}\n'
+        f'  {emblem_group(IVORY, ACCENT)}\n'
         '</svg>\n'
     ))
 
-    # Favicon tile: white rounded square, safe centered
+    # Favicon tile: white rounded square, facade centered
     write(ROOT / "app/icon.svg", (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">\n'
         f'  <rect width="64" height="64" rx="14" fill="{WHITE}"/>\n'
-        '  <g transform="translate(4.8 3.4) scale(0.85)">\n'
-        f'    {emblem_group(INK, ACCENT, KNOCKOUT)}\n'
-        '  </g>\n'
+        f'  {emblem_group(INK, ACCENT)}\n'
         '</svg>\n'
     ))
 
