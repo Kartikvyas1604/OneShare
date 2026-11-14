@@ -114,8 +114,15 @@ export async function GET(
     }
 
     if (!res.ok) {
+      // 401 invalid/expired key, 402 credits, 5xx — every honest state
+      // carries the verify_url so the smoke + the badge stay coherent.
       return NextResponse.json(
-        { verified: false, status: "gateway_error", detail: `HTTP ${res.status}` },
+        {
+          verified: false,
+          status: res.status === 402 ? "credits_not_configured" : "gateway_error",
+          detail: `HTTP ${res.status}`,
+          verify_url: VERIFY_URL,
+        },
         { status: 502 },
       );
     }

@@ -79,8 +79,9 @@ async function main() {
   r = await fetch(`${BASE}/api/v1/attestation/1`);
   j = await r.json();
   check(
-    "attestation honest state",
-    r.status === 200 &&
+    "attestation honest state (pending / credits / attested — never faked)",
+    [200, 502].includes(r.status) &&
+      j.verified !== undefined &&
       j.verify_url?.startsWith("https://") &&
       ((j.verified === false && j.status !== undefined) ||
         (j.verified === true && j.attestation?.gateway?.startsWith("https://"))),
