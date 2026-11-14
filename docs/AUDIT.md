@@ -104,7 +104,7 @@ running it, it is not REAL."
 | F-12 | **REAL** | live payout 1.4033 wNEAR = NAV × 0.99; settle path maturity not waited (exit_early proven; settle-by-maturity fuzz-covered) |
 | F-13 | **REAL** | live transfer + new-owner settle + payout (all receipts green) |
 | F-14 | **REAL** | live SettlementDeduped replay no-op |
-| F-15 | **REAL (fuzz)** | mark_degraded + emergency_recover fuzz-covered; live requires the 20-min timeout to elapse (not waited) |
+| F-15 | **REAL** | degraded path LIVE on testnet: the real 1200s settlement_timeout elapsed, mark_degraded fired (tx G4dx57YX…), emergency_recover released the reserve + returned the unswapped quote (18 receipts, 0 failures, tx AKPCf6eZ…) — keeperless recovery end-to-end |
 | F-17 | **DEFERRED** | honest pending — TEE integration deferred (LIMITATIONS) |
 | F-18 | **MISSING (cut)** | DCA deferred to a later release |
 | F-19 | **REAL** | `tests/agent-policy.test.ts` 12 golden cases |
