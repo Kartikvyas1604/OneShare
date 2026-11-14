@@ -1,8 +1,8 @@
 /**
- * Floorline mark — the lifebuoy. A float ring riding out the sea: when
- * everything sinks, the ring stays afloat — and the ring reads as a coin.
- * Geometry is single-sourced in scripts/make-logo.py (public/logo-mark.svg).
- * The tiled version (with the sea) lives in app/icon.svg.
+ * Floorline emblem — the anchor. Dropped at the sea floor: the storm moves
+ * the surface, the anchor holds the seabed — the "floor line" the product is
+ * named for. Geometry is single-sourced in scripts/make-logo.py
+ * (public/logo.svg). The mint stock bar is the one brand accent.
  */
 export function Logo({ className, size = 24 }: { className?: string; size?: number }) {
   return (
@@ -14,13 +14,15 @@ export function Logo({ className, size = 24 }: { className?: string; size?: numb
       aria-hidden
       className={className}
     >
-      <circle cx={32} cy={27} r={16} fill="currentColor" />
-      <circle cx={32} cy={27} r={7} fill="var(--background, #0E0E10)" />
-      <g stroke="var(--accent, #3DDC97)" strokeWidth={5.2} fill="none">
-        <path d="M41.65 20.74 A11.5 11.5 0 0 0 38.26 17.35" />
-        <path d="M25.74 17.35 A11.5 11.5 0 0 1 22.35 20.74" />
-        <path d="M22.35 33.26 A11.5 11.5 0 0 1 25.74 36.65" />
-        <path d="M38.26 36.65 A11.5 11.5 0 0 0 41.65 33.26" />
+      <g stroke="currentColor" strokeLinecap="round">
+        <circle cx={32} cy={9} r={5} strokeWidth={4.5} />
+        <path d="M32 16 V50" strokeWidth={5.5} />
+        <path d="M12 36 A22 22 0 0 0 52 36" strokeWidth={5.5} />
+      </g>
+      <path d="M20 26 H44" stroke="var(--accent, #3DDC97)" strokeWidth={5.5} strokeLinecap="round" />
+      <g fill="currentColor">
+        <path d="M12 36 L3.5 29.5 L12.5 29 Z" />
+        <path d="M52 36 L60.5 29.5 L51.5 29 Z" />
       </g>
     </svg>
   );

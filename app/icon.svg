@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <clipPath id="tile"><rect width="64" height="64" rx="14"/></clipPath>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="#0E0E10"/>
-  <g clip-path="url(#tile)"><path d="M0 46 C 9 40 18 40 27 46 C 36 52 45 52 54 46 C 58 43.5 61 42.5 64 43 L 64 64 L 0 64 Z" fill="#3DDC97"/></g>
-  <circle cx="32.0" cy="27.0" r="16.0" fill="#EDEBE4"/>
-  <circle cx="32.0" cy="27.0" r="7.0" fill="#0E0E10"/>
-  <path d="M41.64 20.74 A11.50 11.50 0 0 0 38.26 17.36" fill="none" stroke="#3DDC97" stroke-width="5.2"/>
-    <path d="M25.74 17.36 A11.50 11.50 0 0 0 22.36 20.74" fill="none" stroke="#3DDC97" stroke-width="5.2"/>
-    <path d="M22.36 33.26 A11.50 11.50 0 0 0 25.74 36.64" fill="none" stroke="#3DDC97" stroke-width="5.2"/>
-    <path d="M38.26 36.64 A11.50 11.50 0 0 0 41.64 33.26" fill="none" stroke="#3DDC97" stroke-width="5.2"/>
+  <rect width="64" height="64" rx="14" fill="#FFFFFF"/>
+  <g transform="translate(4.8 7.2) scale(0.85)" fill="none" stroke-linecap="round">
+    <circle cx="32" cy="9" r="5" stroke="#0E0E10" stroke-width="4.5"/>
+    <path d="M32 16 V50" stroke="#0E0E10" stroke-width="5.5"/>
+    <path d="M20 26 H44" stroke="#3DDC97" stroke-width="5.5"/>
+    <path d="M12 36 A22 22 0 0 0 52 36" stroke="#0E0E10" stroke-width="5.5"/>
+    <g fill="#0E0E10">
+      <path d="M12 36 L3.5 29.5 L12.5 29 Z"/>
+      <path d="M52 36 L60.5 29.5 L51.5 29 Z"/>
+    </g>
+  </g>
 </svg>

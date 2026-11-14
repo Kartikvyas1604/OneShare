@@ -95,3 +95,12 @@ Log: date · ambiguity · choice · reason. Newest last.
    as a coin. No lettering in the logo. Geometry lives in
    `scripts/make-logo.py`; brand.md documents the rules. The v1 line-mark is
    retired from all surfaces.
+
+## 2026-11-14 — logo v3
+
+1. **The float ring was replaced by the anchor lockup.** The user wanted a
+   pictorial emblem paired with bold typography on a white background. The
+   anchor tells the product story in one object — dropped at the sea floor,
+   it holds while the storm moves the surface — and carries no clash risk
+   (rare symbol in fintech). Wordmark moved to Geist SemiBold outlines;
+   the Instrument Serif asset was retired from the brand assets.

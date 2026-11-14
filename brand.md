@@ -2,28 +2,31 @@
 
 > Set your own worst case. The floor holds.
 
-## Logo — the float ring
+## Logo — the anchor
 
-A lifebuoy riding a green sea: **when everything sinks, your position stays
-afloat** — and the ring reads as a coin. The logo carries no lettering;
-"Floorline" appears only as live text next to the mark in the UI.
+An anchor dropped at the sea floor: **the storm moves the surface; the anchor
+holds the seabed** — the "floor line" the product is named for. Lockup rules:
+single centered emblem over the wordmark, pure white background, exactly two
+colors.
 
-- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box, ring
-  center `(32, 27)`, outer `r 16`, hole `r 7`; four accent stripes as 24°-wide
-  arcs at the 45°/135°/225°/315° diagonals on the `r 11.5` centerline,
-  `stroke-width 5.2`. The sea is the accent filling the tile's lower third
-  (clipped to the rounded tile).
-- **Assets:** `app/icon.svg` + `public/logo-mark.svg` (tiled, with sea) ·
-  `public/logo-mark-mono.svg` (single `currentColor`, no tile) ·
-  `app/favicon.ico` (rendered snapshot of `app/icon.svg`).
-- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor` ring +
-  `var(--accent)` stripes, adapts to light/dark automatically. The sea stays
-  on the tile; the in-app mark is ring + stripes only.
+- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box: ring
+  `(32, 9) r 5` (stroke 4.5), shank `M32 16 V50` (5.5), stock
+  `M20 26 H44` in the accent (5.5), arms `M12 36 A22 22 0 0 0 52 36` (5.5),
+  two solid fluke triangles at the arm tips. Round caps everywhere.
+- **Wordmark:** "Floorline" outlined from Geist SemiBold (SIL OFL,
+  `assets/brand/Geist[wght].ttf`), 30px em, GPOS-kerned, centered below the
+  emblem. No font dependency in the shipped assets.
+- **Assets:** `public/logo.svg` (official lockup, white) ·
+  `public/logo-emblem.svg` (emblem only, white) ·
+  `public/logo-mark-dark.svg` (emblem only, ivory strokes, transparent — for
+  dark surfaces) · `app/icon.svg` + `app/favicon.ico` (white rounded tile).
+- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor` strokes +
+  `var(--accent)` stock bar, adapts to light/dark automatically.
 - **Regenerate:** `python3 scripts/make-logo.py` (then re-render
   `app/favicon.ico` per the script's docstring).
-- **Rules:** the accent appears only in the stripes and the sea; never
-  recolor the ring; the tiled mark works on any background; keep clear space
-  of one ring-radius on all sides.
+- **Rules:** never recolor the strokes; the accent appears only on the stock
+  bar; the lockup always sits on white (use `logo-mark-dark.svg` on dark);
+  clear space = the stock-bar length (24 units) on all sides.
 
 ## Direction
 
