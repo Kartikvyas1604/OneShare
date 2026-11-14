@@ -45,7 +45,6 @@ Log: date · ambiguity · choice · reason. Newest last.
 8. Full trail with tx ids: docs/ONCHAIN-TRAIL.md.
 
 ## 2026-11-14 — product cut
-
 1. **Crash simulator removed from the product.** The `/crash` page,
    `/api/v1/crash-sim`, the TS engine, `sim/make_sim.py` and the parity tests
    were demo scaffolding, not product surface. The landing hero now shows the
@@ -87,3 +86,12 @@ Log: date · ambiguity · choice · reason. Newest last.
 7. **wrap.testnet's 3.1.0 `ft_transfer_call` needs prepaid > 30 TGas** (a
    bare `prepaid_gas() − 30 TGas` in the old standard). GAS_DEPOSIT 45; UI
    deposits attach 150 TGas.
+
+## 2026-11-14 — logo
+
+1. **Logo v2 — the float ring.** The first mark (falling line + floor) read
+   as abstract line-art; replaced with a pictorial lifebuoy riding the accent
+   sea: "when everything sinks, your position stays afloat," the ring reads
+   as a coin. No lettering in the logo. Geometry lives in
+   `scripts/make-logo.py`; brand.md documents the rules. The v1 line-mark is
+   retired from all surfaces.

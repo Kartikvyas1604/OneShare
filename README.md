@@ -1,7 +1,7 @@
 # Floorline
 
 <p align="center">
-  <img src="public/logo-light.svg" alt="Floorline — set your own worst case; the floor holds" width="360" />
+  <img src="public/logo-mark.svg" alt="Floorline — the float ring: when everything sinks, your position stays afloat" width="96" />
 </p>
 
 > Deposit USDC from any of 30+ chains, set your own worst case, and own a self-managing tokenized position as a NEAR NFT.

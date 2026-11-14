@@ -1,29 +1,27 @@
 /**
- * Floorline mark — "the line that holds."
- * A falling price line lands on a horizontal floor and is held; the wedge
- * between them is the bounded loss, tinted in the one semantic accent. The
- * geometry is the single source in scripts/make-logo.py (public/logo*.svg).
+ * Floorline mark — the lifebuoy. A float ring riding out the sea: when
+ * everything sinks, the ring stays afloat — and the ring reads as a coin.
+ * Geometry is single-sourced in scripts/make-logo.py (public/logo-mark.svg).
+ * The tiled version (with the sea) lives in app/icon.svg.
  */
 export function Logo({ className, size = 24 }: { className?: string; size?: number }) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 64 64"
       fill="none"
       aria-hidden
       className={className}
     >
-      <path d="M5 6 L16 25 L5 25 Z" fill="var(--accent, #3DDC97)" opacity={0.16} />
-      <path
-        d="M5 6 L16 25"
-        stroke="currentColor"
-        strokeWidth={3}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M4 25 H28" stroke="currentColor" strokeWidth={3} strokeLinecap="round" />
-      <circle cx={16} cy={25} r={2.4} fill="var(--accent, #3DDC97)" />
+      <circle cx={32} cy={27} r={16} fill="currentColor" />
+      <circle cx={32} cy={27} r={7} fill="var(--background, #0E0E10)" />
+      <g stroke="var(--accent, #3DDC97)" strokeWidth={5.2} fill="none">
+        <path d="M41.65 20.74 A11.5 11.5 0 0 0 38.26 17.35" />
+        <path d="M25.74 17.35 A11.5 11.5 0 0 1 22.35 20.74" />
+        <path d="M22.35 33.26 A11.5 11.5 0 0 1 25.74 36.65" />
+        <path d="M38.26 36.65 A11.5 11.5 0 0 0 41.65 33.26" />
+      </g>
     </svg>
   );
 }

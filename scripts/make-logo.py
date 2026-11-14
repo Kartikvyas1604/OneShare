@@ -1,126 +1,76 @@
 #!/usr/bin/env python3
-"""Generate the Floorline logo assets from the mark geometry + the real
-Instrument Serif wordmark (outlined to paths, so the assets carry no font
-dependency).
+"""Generate the Floorline logo assets — the lifebuoy mark.
+
+The mark: a float ring riding a green sea. When everything sinks, the ring
+stays afloat — and the ring itself reads as a coin. The sea is the one
+semantic accent (the market); the ring is ivory (your position).
+
+The logo carries NO lettering. "Floorline" appears only as live text in the
+product UI, next to the mark.
 
 Assets written:
-  public/logo-mark.svg        mark only, for dark surfaces (ivory + accent)
-  public/logo-mark-mono.svg   mark only, single currentColor (any surface)
-  public/logo-dark.svg        full horizontal lockup, for dark surfaces
-  public/logo-light.svg       full horizontal lockup, for light surfaces
-  app/icon.svg                favicon tile (near-black canvas, rounded)
+  public/logo-mark.svg       tiled mark (near-black canvas, sea clipped to it)
+  public/logo-mark-mono.svg  single currentColor (ring + stripes, no tile)
+  app/icon.svg               favicon tile (same as the tiled mark)
 
-The mark — "the line that holds": a falling price line lands on a horizontal
-floor and stops there; the wedge between them is the bounded loss, tinted in
-the one semantic accent. Geometry is defined once, below, in a 32×32 box.
-
+Favicon: app/favicon.ico is a rendered snapshot of app/icon.svg (16/32/48).
+Regenerate it manually after changing the geometry:
+  qlmanage -t -s 1024 -o <tmp> app/icon.svg
+  python3 - <<'EOF'  (Pillow, resize 48/32/16, save app/favicon.ico)
 Run:  python3 scripts/make-logo.py
 """
 
+import math
 from pathlib import Path
 
-from fontTools.misc.transform import Transform
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.pens.transformPen import TransformPen
-from fontTools.ttLib import TTFont
-
 ROOT = Path(__file__).resolve().parent.parent
-FONT_PATH = ROOT / "assets/brand/InstrumentSerif-Regular.ttf"
-WORDMARK = "Floorline"
 
 # ─── Brand palette (brand.md) ────────────────────────────────────────────
-IVORY = "#EDEBE4"     # --foreground
-INK = "#0E0E10"       # --background
-ACCENT = "#3DDC97"    # --up / --accent — the only color in the system
-WEDGE_OPACITY = 0.16
+IVORY = "#EDEBE4"     # --foreground — the ring (your position)
+INK = "#0E0E10"       # --background — the tile
+ACCENT = "#3DDC97"    # --up / --accent — the sea (the market); the only color
 
-# ─── Mark geometry (defined once) ────────────────────────────────────────
-# viewBox 0 0 32 32 — the line falls, the floor catches it at center, and the
-# accent dot marks the point where it is held (the floor held = the promise).
-MARK_WEDGE = "M5 6 L16 25 L5 25 Z"       # the bounded loss between line and floor
-MARK_FALL = "M5 6 L16 25"                # the falling line, lands ON the floor
-MARK_FLOOR = "M4 25 H28"                 # the floor — it holds
-MARK_LANDING = (16, 25)                  # the caught point (accent dot)
-MARK_LANDING_R = 2.4                     # dot radius
-MARK_STROKE = 3
-MARK_TEXT_START_X = 37                   # wordmark origin in the lockup
-WORDMARK_EM_PX = 26                      # cap height ≈ 18.7px, baseline at y=25
+# ─── Mark geometry (defined once; viewBox 0 0 64 64) ─────────────────────
+RING_CX, RING_CY = 32.0, 27.0
+RING_R_OUT = 16.0     # outer radius
+RING_R_IN = 7.0       # hole radius
+STRIKE_MID = (RING_R_OUT + RING_R_IN) / 2   # stripe centerline radius
+STRIKE_W = 5.2                              # stripe stroke width
+STRIKE_SPAN_DEG = 24.0                      # each stripe's angular span
+STRIKE_CENTERS_DEG = (45.0, 135.0, 225.0, 315.0)
 
-
-def glyph_paths(font: TTFont, text: str, scale: float, dx: float, dy: float) -> tuple[str, float]:
-    """Return (svg path d for `text` with baseline at dy, total width in px)."""
-    glyph_set = font.getGlyphSet()
-    cmap = font.getBestCmap()
-    hmtx = font["hmtx"]
-    kern = _kern_map(font)
-
-    parts: list[str] = []
-    x_units = 0.0
-    prev = None
-    for ch in text:
-        g = cmap[ord(ch)]
-        if prev is not None:
-            x_units += kern.get((prev, g), 0)
-        pen = SVGPathPen(glyph_set, ntos=lambda v: f"{v:.1f}")
-        tpen = TransformPen(pen, Transform(scale, 0, 0, -scale, dx + x_units * scale, dy))
-        glyph_set[g].draw(tpen)
-        d = pen.getCommands()
-        if d:
-            parts.append(d)
-        x_units += hmtx[g][0]
-        prev = g
-    return " ".join(parts), x_units * scale
+SEA_PATH = (
+    "M0 46 C 9 40 18 40 27 46 C 36 52 45 52 54 46 "
+    "C 58 43.5 61 42.5 64 43 L 64 64 L 0 64 Z"
+)
 
 
-def _kern_map(font: TTFont) -> dict[tuple[str, str], float]:
-    """Collect GPOS PairPos XAdvance values (formats 1 and 2)."""
-    kern: dict[tuple[str, str], float] = {}
-    gpos = font.get("GPOS")
-    if gpos is None:
-        return kern
-    lookups = gpos.table.LookupList.Lookup
-    for feature in gpos.table.FeatureList.FeatureRecord:
-        if feature.FeatureTag != "kern":
-            continue
-        for li in feature.Feature.LookupListIndex:
-            lookup = lookups[li]
-            for st in lookup.SubTable:
-                if lookup.LookupType == 9:  # Extension
-                    st = st.ExtSubTable
-                coverage = st.Coverage.glyphs
-                if getattr(st, "Format", 1) == 1:
-                    pair_sets = getattr(st, "PairSet", None) or []
-                    for i, g1 in enumerate(coverage):
-                        if i >= len(pair_sets):
-                            continue
-                        for pvr in pair_sets[i].PairValueRecord:
-                            v1 = pvr.Value1
-                            x = getattr(v1, "XAdvance", 0) if v1 else 0
-                            if x:
-                                kern[(g1, pvr.SecondGlyph)] = x
-                elif getattr(st, "Format", 1) == 2:
-                    cd1, cd2 = st.ClassDef1.classDefs, st.ClassDef2.classDefs
-                    for g1 in coverage:
-                        c1 = cd1.get(g1, 0)
-                        for c2 in range(st.Class2Count):
-                            rec = st.Class1Record[c1].Class2Record[c2]
-                            x = rec.Value1.XAdvance if rec.Value1 else 0
-                            if x:
-                                for g2, cls in cd2.items():
-                                    if cls == c2:
-                                        kern.setdefault((g1, g2), x)
-    return kern
+def ring_point(cx: float, cy: float, r: float, deg: float) -> tuple[float, float]:
+    """Point on a circle; deg is math-convention (CCW, 0 = +x, up is +y)."""
+    rad = math.radians(deg)
+    return (cx + r * math.cos(rad), cy - r * math.sin(rad))
 
 
-def mark_group(stroke: str, accent: str, wedge_opacity: float) -> str:
-    lx, ly = MARK_LANDING
+def stripe_arc(center_deg: float) -> str:
+    """SVG arc for one stripe, from θ-span/2 to θ+span/2 at the mid radius."""
+    a1 = center_deg - STRIKE_SPAN_DEG / 2
+    a2 = center_deg + STRIKE_SPAN_DEG / 2
+    x1, y1 = ring_point(RING_CX, RING_CY, STRIKE_MID, a1)
+    x2, y2 = ring_point(RING_CX, RING_CY, STRIKE_MID, a2)
+    # math-CCW renders as sweep-flag 0 (screen y is flipped)
+    return f"M{x1:.2f} {y1:.2f} A{STRIKE_MID:.2f} {STRIKE_MID:.2f} 0 0 0 {x2:.2f} {y2:.2f}"
+
+
+def mark_group(stroke: str, accent: str) -> str:
+    """Ring + hole + accent stripes. `stroke` = ring/ink color, `accent` = sea."""
+    stripes = "\n    ".join(
+        f'<path d="{stripe_arc(d)}" fill="none" stroke="{accent}" stroke-width="{STRIKE_W}"/>'
+        for d in STRIKE_CENTERS_DEG
+    )
     return (
-        f'<path d="{MARK_WEDGE}" fill="{accent}" opacity="{wedge_opacity}"/>\n'
-        f'  <path d="{MARK_FALL}" stroke="{stroke}" stroke-width="{MARK_STROKE}" '
-        'stroke-linecap="round" stroke-linejoin="round"/>\n'
-        f'  <path d="{MARK_FLOOR}" stroke="{stroke}" stroke-width="{MARK_STROKE}" '
-        'stroke-linecap="round"/>\n'
-        f'  <circle cx="{lx}" cy="{ly}" r="{MARK_LANDING_R}" fill="{accent}"/>'
+        f'<circle cx="{RING_CX}" cy="{RING_CY}" r="{RING_R_OUT}" fill="{stroke}"/>\n'
+        f'  <circle cx="{RING_CX}" cy="{RING_CY}" r="{RING_R_IN}" fill="{INK}"/>\n'
+        f'  {stripes}'
     )
 
 
@@ -130,45 +80,27 @@ def write(path: Path, content: str) -> None:
 
 
 def main() -> None:
-    font = TTFont(str(FONT_PATH))
-    upem = font["head"].unitsPerEm
-    scale = WORDMARK_EM_PX / upem
-
-    # Mark-only assets
-    write(ROOT / "public/logo-mark.svg", (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">\n'
-        f'  {mark_group(IVORY, ACCENT, WEDGE_OPACITY)}\n'
-        '</svg>\n'
-    ))
-    write(ROOT / "public/logo-mark-mono.svg", (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">\n'
-        f'  {mark_group("currentColor", "currentColor", WEDGE_OPACITY)}\n'
-        '</svg>\n'
-    ))
-
-    # Favicon tile — the brand canvas behind the mark
-    write(ROOT / "app/icon.svg", (
+    # Tiled mark: sea clipped to the tile, ring floating on it
+    tile = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">\n'
+        '  <defs>\n'
+        '    <clipPath id="tile"><rect width="64" height="64" rx="14"/></clipPath>\n'
+        '  </defs>\n'
         f'  <rect width="64" height="64" rx="14" fill="{INK}"/>\n'
-        '  <g transform="translate(6.4 7.2) scale(1.6)" fill="none">\n'
-        f'    {mark_group(IVORY, ACCENT, WEDGE_OPACITY + 0.04)}\n'
-        '  </g>\n'
+        f'  <g clip-path="url(#tile)"><path d="{SEA_PATH}" fill="{ACCENT}"/></g>\n'
+        f'  {mark_group(IVORY, ACCENT)}\n'
         '</svg>\n'
-    ))
+    )
+    write(ROOT / "app/icon.svg", tile)
+    write(ROOT / "public/logo-mark.svg", tile)
 
-    # Full lockups — the wordmark baseline sits on the mark's floor line (y=25)
-    word_d, word_w = glyph_paths(font, WORDMARK, scale, MARK_TEXT_START_X, 25)
-    for name, stroke in (("logo-dark", IVORY), ("logo-light", INK)):
-        width = MARK_TEXT_START_X + word_w + 3
-        write(ROOT / f"public/{name}.svg", (
-            '<svg xmlns="http://www.w3.org/2000/svg" '
-            f'viewBox="0 0 {width:.1f} 32" fill="none">\n'
-            f'  {mark_group(stroke, ACCENT, WEDGE_OPACITY)}\n'
-            f'  <path d="{word_d}" fill="{stroke}"/>\n'
-            '</svg>\n'
-        ))
-
-    print(f"wordmark width: {word_w:.1f}px at {WORDMARK_EM_PX}px em")
+    # Mono mark: one currentColor, no tile, no sea — works on any surface
+    mono = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">\n'
+        f'  {mark_group("currentColor", "currentColor")}\n'
+        '</svg>\n'
+    )
+    write(ROOT / "public/logo-mark-mono.svg", mono)
 
 
 if __name__ == "__main__":

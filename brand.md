@@ -2,28 +2,28 @@
 
 > Set your own worst case. The floor holds.
 
-## Logo — "the line that holds"
+## Logo — the float ring
 
-A falling price line lands on a horizontal floor and is held. The wedge between
-the line and the floor is the bounded loss, tinted in the one semantic accent;
-the accent dot marks the point where the floor catches the line. The wordmark's
-baseline sits on the floor line itself.
+A lifebuoy riding a green sea: **when everything sinks, your position stays
+afloat** — and the ring reads as a coin. The logo carries no lettering;
+"Floorline" appears only as live text next to the mark in the UI.
 
-- **Geometry (single source):** `scripts/make-logo.py` — a 32×32 box, floor
-  `M4 25 H28`, fall `M5 6 L16 25`, wedge `M5 6 L16 25 L5 25 Z` at 16% accent,
-  landing dot `r 2.4` centered at `(16, 25)`. Strokes 3px, round caps.
-- **Wordmark:** "Floorline" outlined from Instrument Serif Regular (SIL OFL,
-  `assets/brand/`) at 26px em, baseline y=25, kerned via GPOS. No font
-  dependency in the assets.
-- **Assets:** `public/logo-mark.svg` (dark surfaces) ·
-  `public/logo-mark-mono.svg` (single currentColor) · `public/logo-dark.svg` /
-  `public/logo-light.svg` (full lockups) · `app/icon.svg` (favicon tile).
-- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — currentColor strokes +
-  `var(--accent)`, so it adapts to light/dark automatically.
-- **Regenerate:** `python3 scripts/make-logo.py`.
-- **Rules:** never recolor the strokes; the accent appears only in the wedge
-  and the landing dot; never place the dark lockup on light backgrounds —
-  use `logo-light.svg`. Clear space = one floor-length (≈ x×0.9) on all sides.
+- **Geometry (single source):** `scripts/make-logo.py` — a 64×64 box, ring
+  center `(32, 27)`, outer `r 16`, hole `r 7`; four accent stripes as 24°-wide
+  arcs at the 45°/135°/225°/315° diagonals on the `r 11.5` centerline,
+  `stroke-width 5.2`. The sea is the accent filling the tile's lower third
+  (clipped to the rounded tile).
+- **Assets:** `app/icon.svg` + `public/logo-mark.svg` (tiled, with sea) ·
+  `public/logo-mark-mono.svg` (single `currentColor`, no tile) ·
+  `app/favicon.ico` (rendered snapshot of `app/icon.svg`).
+- **In-app:** `<Logo />` (`app/components/Logo.tsx`) — `currentColor` ring +
+  `var(--accent)` stripes, adapts to light/dark automatically. The sea stays
+  on the tile; the in-app mark is ring + stripes only.
+- **Regenerate:** `python3 scripts/make-logo.py` (then re-render
+  `app/favicon.ico` per the script's docstring).
+- **Rules:** the accent appears only in the stripes and the sea; never
+  recolor the ring; the tiled mark works on any background; keep clear space
+  of one ring-radius on all sides.
 
 ## Direction
 
