@@ -96,7 +96,7 @@ export async function fetchPositions(accountId: string): Promise<VaultPosition[]
     ids.map(async (rawId) => {
       const id = typeof rawId === "string" ? Number(rawId) : rawId;
       const raw = await viewContract<RawPosition | null>(VAULT_CONTRACT_ID, "get_position", {
-        position_id: id,
+        position_id: String(id),
       });
       return mapPosition(id, raw ?? ({} as RawPosition));
     }),
@@ -107,7 +107,7 @@ export async function fetchPositions(accountId: string): Promise<VaultPosition[]
 /** `get_position(id)` → one position. */
 export async function fetchPosition(id: number): Promise<VaultPosition | null> {
   const raw = await viewContract<RawPosition | null>(VAULT_CONTRACT_ID, "get_position", {
-    position_id: id,
+    position_id: String(id),
   });
   return raw ? mapPosition(id, raw) : null;
 }

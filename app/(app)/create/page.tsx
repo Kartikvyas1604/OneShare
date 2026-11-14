@@ -137,7 +137,7 @@ export default function CreatePage() {
         receiver_id: VAULT_CONTRACT_ID,
         amount: depositYocto.toString(),
         msg: "deposit",
-      }, 150, depositYocto);
+      }, 150, 1n); // FT standard: ft_transfer_call attaches exactly 1 yoctoNEAR
 
       // The contract emits Deposited + mints the NFT. Fetch the newest id.
       setStepNote("Reading your position…");

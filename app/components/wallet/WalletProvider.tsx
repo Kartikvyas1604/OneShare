@@ -16,6 +16,7 @@ import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupNightly } from "@near-wallet-selector/nightly";
 import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
+import { setupE2EWallet } from "./E2EWallet";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { actionCreators } from "@near-js/transactions";
 import "@near-wallet-selector/modal-ui/styles.css";
@@ -73,6 +74,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             setupMyNearWallet(),
             setupLedger(),
             setupNightly(),
+            // Playwright-only: a real signing wallet module (disabled unless
+            // the page set the E2E flag in localStorage).
+            setupE2EWallet(),
           ],
         });
         const modalInstance = setupModal(selectorInstance, {
@@ -90,6 +94,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         };
         sync();
         selectorInstance.store.observable.subscribe(sync);
+
+        // E2E mode: silent sign-in through the test wallet (no modal).
+        if (
+          typeof window !== "undefined" &&
+          window.localStorage.getItem("E2E_WALLET_ENABLED") === "1"
+        ) {
+          try {
+            const wallet = await selectorInstance.wallet("e2e-wallet");
+            await (wallet.signIn as unknown as (p: { contractId: string }) => Promise<void>)({ contractId: VAULT_CONTRACT_ID });
+          } catch {
+            /* the connect modal remains the fallback */
+          }
+        }
 
         setSelector(selectorInstance);
         setModal(modalInstance);

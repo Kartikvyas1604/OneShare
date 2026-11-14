@@ -108,7 +108,11 @@ export function VaultDetail({ rawId }: { rawId: string }) {
       // outcome — including the contract's real errors — flows back here.
       const method =
         kind === "settle" ? "settle" : kind === "exit" ? "exit_early" : "emergency_recover";
-      await signCall(VAULT_CONTRACT_ID, method, { position_id: position.id }, 30);
+            const args =
+        kind === "settle" || kind === "exit"
+          ? { position_id: String(position.id), price_1e18: price1e18 }
+          : { position_id: String(position.id) };
+      await signCall(VAULT_CONTRACT_ID, method, args, kind === "exit" ? 200 : 150);
       setPhase("done");
       // Re-read the real on-chain state after a confirmed transaction.
       setRefetchKey((k) => k + 1);
@@ -168,7 +172,13 @@ export function VaultDetail({ rawId }: { rawId: string }) {
 
   const asset = riskAsset(position.risk_asset_id);
   const price = prices.get(position.risk_asset_id)?.price;
-  const hasPrice = typeof price === "number";
+  const wnearUsd = prices.get("nep141:wrap.near")?.price;
+  const hasPrice = typeof price === "number" && typeof wnearUsd === "number" && wnearUsd > 0;
+  // price_1e18 = whole-quote (wNEAR) per whole-risk-unit, scaled 1e18 — the
+  // contract's own convention (§4.2).
+  const price1e18 = hasPrice
+    ? BigInt(Math.floor((price / wnearUsd) * 1e18)).toString()
+    : "0";
   const nav = hasPrice ? navQuote(position, price) : null;
   const worst = worstCaseQuote(position);
   const cushion = hasPrice ? (nav as number) - position.floor_amount : null;
